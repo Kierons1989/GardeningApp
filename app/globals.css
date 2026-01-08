@@ -1,26 +1,354 @@
 @import "tailwindcss";
 
+/* ============================================
+   Garden Brain Design System
+   Editorial Botanical Aesthetic
+   ============================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Primary Colors - Sage Green Family */
+  --sage-50: #f4f7f5;
+  --sage-100: #e4ebe6;
+  --sage-200: #c9d7cd;
+  --sage-300: #a3bda9;
+  --sage-400: #7c9885;
+  --sage-500: #5d7d66;
+  --sage-600: #4a6552;
+  --sage-700: #3d5244;
+  --sage-800: #344338;
+  --sage-900: #2d3830;
+
+  /* Secondary Colors - Terracotta/Earth */
+  --earth-50: #fdf8f4;
+  --earth-100: #f9ede3;
+  --earth-200: #f2d9c6;
+  --earth-300: #e8c0a0;
+  --earth-400: #d4a47a;
+  --earth-500: #c4895c;
+  --earth-600: #b67347;
+  --earth-700: #975c3b;
+  --earth-800: #7a4d35;
+  --earth-900: #64412f;
+
+  /* Neutral Colors - Warm Grays */
+  --stone-50: #faf9f7;
+  --stone-100: #f5f3f0;
+  --stone-200: #e8e5e0;
+  --stone-300: #d5d0c8;
+  --stone-400: #b8b1a6;
+  --stone-500: #9a9285;
+  --stone-600: #7d756a;
+  --stone-700: #655e55;
+  --stone-800: #534d47;
+  --stone-900: #46413c;
+
+  /* Text Colors */
+  --text-primary: #2d3b36;
+  --text-secondary: #5c6963;
+  --text-muted: #8a9590;
+
+  /* Background */
+  --bg-primary: #faf8f5;
+  --bg-secondary: #f5f2ed;
+  --bg-tertiary: #ebe7e0;
+
+  /* Accent Colors */
+  --coral: #e07a5f;
+  --coral-light: #f4a593;
+
+  /* Semantic */
+  --success: #5d7d66;
+  --warning: #d4a47a;
+  --error: #c75146;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(45, 59, 54, 0.05);
+  --shadow-md: 0 4px 12px rgba(45, 59, 54, 0.08);
+  --shadow-lg: 0 8px 24px rgba(45, 59, 54, 0.12);
+  --shadow-xl: 0 16px 48px rgba(45, 59, 54, 0.16);
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-sage-50: var(--sage-50);
+  --color-sage-100: var(--sage-100);
+  --color-sage-200: var(--sage-200);
+  --color-sage-300: var(--sage-300);
+  --color-sage-400: var(--sage-400);
+  --color-sage-500: var(--sage-500);
+  --color-sage-600: var(--sage-600);
+  --color-sage-700: var(--sage-700);
+  --color-sage-800: var(--sage-800);
+  --color-sage-900: var(--sage-900);
+
+  --color-earth-50: var(--earth-50);
+  --color-earth-100: var(--earth-100);
+  --color-earth-200: var(--earth-200);
+  --color-earth-300: var(--earth-300);
+  --color-earth-400: var(--earth-400);
+  --color-earth-500: var(--earth-500);
+  --color-earth-600: var(--earth-600);
+  --color-earth-700: var(--earth-700);
+  --color-earth-800: var(--earth-800);
+  --color-earth-900: var(--earth-900);
+
+  --color-stone-50: var(--stone-50);
+  --color-stone-100: var(--stone-100);
+  --color-stone-200: var(--stone-200);
+  --color-stone-300: var(--stone-300);
+  --color-stone-400: var(--stone-400);
+  --color-stone-500: var(--stone-500);
+  --color-stone-600: var(--stone-600);
+  --color-stone-700: var(--stone-700);
+  --color-stone-800: var(--stone-800);
+  --color-stone-900: var(--stone-900);
+
+  --color-coral: var(--coral);
+  --color-coral-light: var(--coral-light);
+
+  --font-display: var(--font-cormorant);
+  --font-body: var(--font-dm-sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Base Styles */
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+/* Focus States */
+:focus-visible {
+  outline: 2px solid var(--sage-500);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background: var(--sage-200);
+  color: var(--sage-900);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--stone-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--stone-300);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--stone-400);
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes gentlePulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* Utility Classes */
+.animate-fade-in {
+  animation: fadeIn var(--transition-base) ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp var(--transition-slow) ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--transition-base) ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slideInFromLeft var(--transition-slow) ease-out forwards;
+}
+
+/* Staggered Animation Delays */
+.delay-1 { animation-delay: 50ms; }
+.delay-2 { animation-delay: 100ms; }
+.delay-3 { animation-delay: 150ms; }
+.delay-4 { animation-delay: 200ms; }
+.delay-5 { animation-delay: 250ms; }
+.delay-6 { animation-delay: 300ms; }
+
+/* Botanical Pattern Background */
+.bg-botanical {
+  background-image:
+    radial-gradient(ellipse at 20% 80%, rgba(124, 152, 133, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(212, 164, 122, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(124, 152, 133, 0.04) 0%, transparent 70%);
+}
+
+/* Glass Effect */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Card Hover Effect */
+.card-hover {
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Button Base */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-family: var(--font-dm-sans);
+  font-weight: 500;
+  font-size: 15px;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background: var(--sage-600);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--sage-700);
+}
+
+.btn-secondary {
+  background: var(--stone-100);
+  color: var(--text-primary);
+  border: 1px solid var(--stone-200);
+}
+
+.btn-secondary:hover {
+  background: var(--stone-200);
+  border-color: var(--stone-300);
+}
+
+/* Input Base */
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  font-family: var(--font-dm-sans);
+  font-size: 15px;
+  color: var(--text-primary);
+  background: white;
+  border: 1px solid var(--stone-200);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--sage-400);
+  box-shadow: 0 0 0 3px rgba(124, 152, 133, 0.15);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Label */
+.label {
+  display: block;
+  font-family: var(--font-dm-sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
 }
