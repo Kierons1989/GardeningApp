@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { createClient } from '@/lib/supabase/client'
 import type { AICareProfile } from '@/types/database'
 
 type Step = 'details' | 'generating' | 'review'
@@ -57,35 +56,36 @@ export default function NewPlantPage() {
 
   async function handleSave() {
     setSaving(true)
+    setAiError(null)
 
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    try {
+      const response = await fetch('/api/plants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          common_name: careProfile?.common_name,
+          species: careProfile?.species,
+          plant_type: careProfile?.plant_type,
+          area: area || undefined,
+          planted_in: plantedIn || undefined,
+          notes: notes || undefined,
+          ai_care_profile: careProfile,
+        }),
+      })
 
-    if (!user) {
-      router.push('/login')
-      return
-    }
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to save plant')
+      }
 
-    const { error } = await supabase.from('plants').insert({
-      user_id: user.id,
-      name,
-      common_name: careProfile?.common_name || null,
-      species: careProfile?.species || null,
-      plant_type: careProfile?.plant_type || null,
-      area: area || null,
-      planted_in: plantedIn || null,
-      notes: notes || null,
-      ai_care_profile: careProfile,
-    })
-
-    if (error) {
-      setAiError('Failed to save plant. Please try again.')
+      router.push('/plants')
+      router.refresh()
+    } catch (err) {
+      console.error('Save error:', err)
+      setAiError(err instanceof Error ? err.message : 'Failed to save plant. Please try again.')
       setSaving(false)
-      return
     }
-
-    router.push('/plants')
-    router.refresh()
   }
 
   return (
