@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(frontend-design)",
+      "Skill(frontend-design:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout:*)",
+      "Bash(cat:*)"
+    ]
+  }
+}

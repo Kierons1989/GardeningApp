@@ -45,25 +45,27 @@ export default function LoginPage() {
           >
             <svg
               viewBox="0 0 24 24"
-              className="w-6 h-6 text-white"
+              className="w-6 h-6"
               fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+              stroke="white"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.5 0 2.91-.33 4.19-.92" />
-              <path d="M15 8c-2-2-5-2-7 0s-2 5 0 7c2 2 5 2 7 0" />
-              <path d="M12 2v4" />
-              <path d="M12 12v10" />
+              <path d="M12 21V12" />
+              <path d="M12 12C12 12 8 10 6 6C10 6 12 8 12 12" />
+              <path d="M12 8C12 8 14 5 18 4C17 8 14 10 12 12" />
             </svg>
           </div>
           <span
-            className="text-2xl font-semibold"
+            className="text-2xl font-medium"
             style={{
               fontFamily: 'var(--font-cormorant)',
-              color: 'var(--text-primary)'
+              color: 'var(--text-primary)',
+              letterSpacing: '0.02em'
             }}
           >
-            Garden Brain
+            Tend
           </span>
         </Link>
       </div>
@@ -199,7 +201,7 @@ export default function LoginPage() {
               color: 'var(--text-muted)'
             }}
           >
-            New to Garden Brain?
+            New to Tend?
           </span>
         </div>
       </div>

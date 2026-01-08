@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, DM_Sans } from "next/font/google";
+import { Cormorant_Garamond, Crimson_Pro } from "next/font/google";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -9,16 +9,16 @@ const cormorant = Cormorant_Garamond({
   display: "swap",
 });
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const crimsonPro = Crimson_Pro({
+  variable: "--font-crimson",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Garden Brain - Your Personal Garden Companion",
-  description: "A calm, personalised UK gardening companion that knows your plants and tells you what to do and when.",
+  title: "Tend - Your Personal Garden Companion",
+  description: "Tend - your personal UK gardening companion. Know what to do and when for every plant in your garden.",
 };
 
 export default function RootLayout({
@@ -27,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${dmSans.variable}`}>
+    <html lang="en" className={`${cormorant.variable} ${crimsonPro.variable}`}>
       <body className="antialiased">
         {children}
       </body>

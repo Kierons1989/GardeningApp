@@ -10,117 +10,183 @@ export default function AuthLayout({
 }) {
   return (
     <div className="min-h-screen flex bg-botanical">
-      {/* Left Panel - Decorative */}
+      {/* Left Panel - Decorative Hero */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        {/* Gradient Background */}
+        {/* Rich Gradient Background */}
         <div
           className="absolute inset-0"
           style={{
             background: `
-              linear-gradient(135deg,
-                var(--sage-600) 0%,
-                var(--sage-700) 50%,
-                var(--sage-800) 100%
+              linear-gradient(165deg,
+                #3d5a4c 0%,
+                #2a4a3d 35%,
+                #1a3329 70%,
+                #142822 100%
               )
             `
           }}
         />
 
-        {/* Decorative Circles */}
-        <motion.div
-          className="absolute -top-32 -left-32 w-96 h-96 rounded-full"
-          style={{ background: 'rgba(255,255,255,0.05)' }}
-          animate={{
-            scale: [1, 1.1, 1],
-            rotate: [0, 10, 0]
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-10 w-64 h-64 rounded-full"
-          style={{ background: 'rgba(255,255,255,0.03)' }}
-          animate={{
-            scale: [1, 1.15, 1],
-            y: [0, -20, 0]
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className="absolute top-1/2 left-1/4 w-48 h-48 rounded-full"
-          style={{ background: 'var(--earth-400)', opacity: 0.15 }}
-          animate={{
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: "easeInOut"
+        {/* Warm Accent Glow */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(ellipse at 85% 20%, rgba(224, 122, 95, 0.15) 0%, transparent 45%),
+              radial-gradient(ellipse at 15% 80%, rgba(212, 164, 122, 0.1) 0%, transparent 40%),
+              radial-gradient(ellipse at 50% 50%, rgba(93, 125, 102, 0.15) 0%, transparent 60%)
+            `
           }}
         />
 
+        {/* Grain Texture Overlay */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          }}
+        />
+
+        {/* Scattered Botanical Marks */}
+        {[
+          { top: '12%', left: '8%', size: 40, rotation: -15, opacity: 0.08, delay: 0.2 },
+          { top: '25%', left: '70%', size: 32, rotation: 25, opacity: 0.07, delay: 0.4 },
+          { top: '55%', left: '5%', size: 28, rotation: 45, opacity: 0.06, delay: 0.3 },
+          { top: '70%', left: '75%', size: 36, rotation: -30, opacity: 0.08, delay: 0.5 },
+          { top: '85%', left: '25%', size: 24, rotation: 10, opacity: 0.06, delay: 0.6 },
+          { top: '40%', left: '85%', size: 30, rotation: -45, opacity: 0.07, delay: 0.35 },
+        ].map((leaf, i) => (
+          <motion.div
+            key={i}
+            className="absolute"
+            style={{
+              top: leaf.top,
+              left: leaf.left,
+              width: leaf.size,
+              height: leaf.size,
+              opacity: leaf.opacity,
+              transform: `rotate(${leaf.rotation}deg)`,
+            }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: leaf.opacity, scale: 1 }}
+            transition={{ duration: 1, delay: leaf.delay }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" className="w-full h-full">
+              <path
+                d="M12 20V12M12 12C12 12 7 10 4 5C9 5 12 8 12 12Z"
+                stroke="#f5efe6"
+                strokeWidth="1"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </motion.div>
+        ))}
+
+        {/* Small dots for texture */}
+        {[
+          { top: '18%', left: '45%', size: 3 },
+          { top: '35%', left: '15%', size: 2 },
+          { top: '60%', left: '60%', size: 3 },
+          { top: '75%', left: '40%', size: 2 },
+          { top: '45%', left: '30%', size: 2 },
+        ].map((dot, i) => (
+          <motion.div
+            key={`dot-${i}`}
+            className="absolute rounded-full"
+            style={{
+              top: dot.top,
+              left: dot.left,
+              width: dot.size,
+              height: dot.size,
+              background: 'rgba(245,239,230,0.12)',
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.5 + i * 0.1 }}
+          />
+        ))}
+
         {/* Content */}
-        <div className="relative z-10 flex flex-col justify-center px-16 text-white">
+        <div className="relative z-10 flex flex-col justify-center px-16">
+          {/* Logo */}
+          <motion.div
+            className="mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="w-11 h-11 rounded-xl flex items-center justify-center"
+                style={{ background: 'rgba(245,239,230,0.12)', backdropFilter: 'blur(8px)' }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="#f5efe6"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  {/* Distinctive single leaf with elegant curve */}
+                  <path d="M12 21V12" />
+                  <path d="M12 12C12 12 8 10 6 6C10 6 12 8 12 12" />
+                  <path d="M12 8C12 8 14 5 18 4C17 8 14 10 12 12" />
+                </svg>
+              </div>
+              <span
+                className="text-2xl font-medium tracking-wide"
+                style={{ fontFamily: 'var(--font-cormorant)', letterSpacing: '0.02em', color: '#f5efe6' }}
+              >
+                Tend
+              </span>
+            </div>
+          </motion.div>
+
+          {/* Main Headline */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
           >
             <h1
-              className="text-5xl font-semibold mb-6"
-              style={{ fontFamily: 'var(--font-cormorant)' }}
+              className="text-[4.5rem] font-medium mb-8 leading-[1.1] tracking-tight"
+              style={{ fontFamily: 'var(--font-cormorant)', color: '#f5efe6' }}
             >
-              Your garden,<br />
-              remembered.
+              Grow with<br />
+              <span style={{ color: '#e8c0a0' }}>confidence.</span>
             </h1>
             <p
-              className="text-lg opacity-90 max-w-md leading-relaxed"
-              style={{ fontFamily: 'var(--font-dm-sans)' }}
+              className="text-[1.2rem] max-w-sm leading-relaxed"
+              style={{ fontFamily: 'var(--font-crimson)', color: 'rgba(245,239,230,0.92)' }}
             >
-              A calm companion that knows your plants and tells you exactly
-              what to do and when. No more forgotten watering schedules or
-              missed pruning windows.
+              Your calm companion that knows your plants and tells you exactly
+              what to do and when.
             </p>
           </motion.div>
 
+          {/* Decorative Line */}
           <motion.div
-            className="mt-12 flex items-center gap-8"
+            className="mt-16 w-12 h-px"
+            style={{ background: 'rgba(232, 192, 160, 0.4)' }}
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 48, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+          />
+
+          {/* Tagline */}
+          <motion.p
+            className="mt-6 text-sm tracking-wide uppercase"
+            style={{ color: 'rgba(245,239,230,0.55)', letterSpacing: '0.15em' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
+            transition={{ duration: 0.6, delay: 0.7 }}
           >
-            <div className="flex -space-x-3">
-              {[...Array(4)].map((_, i) => (
-                <div
-                  key={i}
-                  className="w-10 h-10 rounded-full border-2 border-white/30"
-                  style={{
-                    background: `linear-gradient(135deg, var(--earth-${300 + i * 100}), var(--earth-${400 + i * 100}))`,
-                  }}
-                />
-              ))}
-            </div>
-            <p className="text-sm opacity-80">
-              Join thousands of UK gardeners
-            </p>
-          </motion.div>
+            For UK gardeners
+          </motion.p>
         </div>
-
-        {/* Botanical Pattern Overlay */}
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5c-4 8-12 15-20 15 8 0 16 7 20 15 4-8 12-15 20-15-8 0-16-7-20-15z' fill='%23ffffff' fill-opacity='1'/%3E%3C/svg%3E")`,
-            backgroundSize: '60px 60px'
-          }}
-        />
       </div>
 
       {/* Right Panel - Form */}
@@ -129,30 +195,32 @@ export default function AuthLayout({
         <div className="lg:hidden p-6">
           <Link href="/" className="inline-flex items-center gap-2">
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              className="w-9 h-9 rounded-lg flex items-center justify-center"
               style={{ background: 'var(--sage-600)' }}
             >
               <svg
                 viewBox="0 0 24 24"
-                className="w-5 h-5 text-white"
+                className="w-5 h-5"
                 fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
+                stroke="white"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.5 0 2.91-.33 4.19-.92" />
-                <path d="M15 8c-2-2-5-2-7 0s-2 5 0 7c2 2 5 2 7 0" />
-                <path d="M12 2v4" />
-                <path d="M12 12v10" />
+                <path d="M12 21V12" />
+                <path d="M12 12C12 12 8 10 6 6C10 6 12 8 12 12" />
+                <path d="M12 8C12 8 14 5 18 4C17 8 14 10 12 12" />
               </svg>
             </div>
             <span
-              className="text-xl font-semibold"
+              className="text-xl font-medium"
               style={{
                 fontFamily: 'var(--font-cormorant)',
-                color: 'var(--text-primary)'
+                color: 'var(--text-primary)',
+                letterSpacing: '0.02em'
               }}
             >
-              Garden Brain
+              Tend
             </span>
           </Link>
         </div>
