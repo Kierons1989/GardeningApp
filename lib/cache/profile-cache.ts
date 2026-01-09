@@ -1,5 +1,3 @@
-import { createHash } from 'crypto'
-
 /**
  * Generates a cache key for plant care profiles
  *
@@ -16,12 +14,12 @@ import { createHash } from 'crypto'
  * generateCacheKey("Tomato", "pot", 9, 2)
  * // Returns different hash (different version/zone)
  */
-export function generateCacheKey(
+export async function generateCacheKey(
   plantName: string,
   plantedIn: string | null,
   climateZone: number | null = null,
   version: number = 1
-): string {
+): Promise<string> {
   // Normalize plant name for consistent caching
   const normalized = plantName.toLowerCase().trim()
 
@@ -33,10 +31,11 @@ export function generateCacheKey(
     `v${version}`
   ]
 
-  // Generate deterministic hash
-  return createHash('sha256')
-    .update(components.join('|'))
-    .digest('hex')
+  // Generate deterministic hash using Web Crypto API
+  const data = new TextEncoder().encode(components.join('|'))
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
 /**

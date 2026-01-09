@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const normalizedName = normalizePlantName(plantName)
 
     // Generate cache key (climate zone = null for v1)
-    const cacheKey = generateCacheKey(normalizedName, plantedIn, null, CURRENT_CACHE_VERSION)
+    const cacheKey = await generateCacheKey(normalizedName, plantedIn, null, CURRENT_CACHE_VERSION)
 
     // Check cache first
     const { data: cached, error: cacheError } = await supabase
