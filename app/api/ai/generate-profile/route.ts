@@ -88,8 +88,16 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error generating care profile:', error)
 
+    // Return detailed error for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
+
     return NextResponse.json(
-      { error: 'Failed to generate care profile' },
+      {
+        error: 'Failed to generate care profile',
+        details: errorMessage,
+        stack: process.env.NODE_ENV === 'development' ? errorStack : undefined
+      },
       { status: 500 }
     )
   }
