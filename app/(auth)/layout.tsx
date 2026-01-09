@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function AuthLayout({
   children,
@@ -109,58 +110,35 @@ export default function AuthLayout({
 
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-center px-16">
-          {/* Logo */}
+          {/* Logo Hero */}
           <motion.div
-            className="mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className="w-11 h-11 rounded-xl flex items-center justify-center"
-                style={{ background: 'rgba(245,239,230,0.12)', backdropFilter: 'blur(8px)' }}
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="#f5efe6"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  {/* Distinctive single leaf with elegant curve */}
-                  <path d="M12 21V12" />
-                  <path d="M12 12C12 12 8 10 6 6C10 6 12 8 12 12" />
-                  <path d="M12 8C12 8 14 5 18 4C17 8 14 10 12 12" />
-                </svg>
-              </div>
-              <span
-                className="text-2xl font-medium tracking-wide"
-                style={{ fontFamily: 'var(--font-cormorant)', letterSpacing: '0.02em', color: '#f5efe6' }}
-              >
-                Tend
-              </span>
-            </div>
-          </motion.div>
-
-          {/* Main Headline */}
-          <motion.div
+            className="mb-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
-            <h1
-              className="text-[4.5rem] font-medium mb-8 leading-[1.1] tracking-tight"
-              style={{ fontFamily: 'var(--font-cormorant)', color: '#f5efe6' }}
+            <Image
+              src="/tend-logo.svg"
+              alt="Tend"
+              width={334}
+              height={126}
+              className="h-24 w-auto mb-10"
+              style={{
+                filter: 'brightness(0) saturate(100%) invert(88%) sepia(18%) saturate(502%) hue-rotate(329deg) brightness(102%) contrast(91%)'
+              }}
+              priority
+            />
+
+            {/* Supporting Copy */}
+            <h2
+              className="text-[2rem] font-medium mb-6 leading-tight max-w-md"
+              style={{ fontFamily: 'var(--font-cormorant)', color: 'rgba(245,239,230,0.95)' }}
             >
-              Grow with<br />
-              <span style={{ color: '#e8c0a0' }}>confidence.</span>
-            </h1>
+              Grow with confidence
+            </h2>
             <p
-              className="text-[1.2rem] max-w-sm leading-relaxed"
-              style={{ fontFamily: 'var(--font-crimson)', color: 'rgba(245,239,230,0.92)' }}
+              className="text-[1.05rem] max-w-sm leading-relaxed"
+              style={{ fontFamily: 'var(--font-crimson)', color: 'rgba(245,239,230,0.75)' }}
             >
               Your calm companion that knows your plants and tells you exactly
               what to do and when.
@@ -169,8 +147,8 @@ export default function AuthLayout({
 
           {/* Decorative Line */}
           <motion.div
-            className="mt-16 w-12 h-px"
-            style={{ background: 'rgba(232, 192, 160, 0.4)' }}
+            className="w-12 h-px"
+            style={{ background: 'rgba(232, 192, 160, 0.35)' }}
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: 48, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.5 }}
@@ -179,7 +157,7 @@ export default function AuthLayout({
           {/* Tagline */}
           <motion.p
             className="mt-6 text-sm tracking-wide uppercase"
-            style={{ color: 'rgba(245,239,230,0.55)', letterSpacing: '0.15em' }}
+            style={{ color: 'rgba(245,239,230,0.5)', letterSpacing: '0.15em' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.7 }}
@@ -193,35 +171,14 @@ export default function AuthLayout({
       <div className="flex-1 flex flex-col">
         {/* Mobile Header */}
         <div className="lg:hidden p-6">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <div
-              className="w-9 h-9 rounded-lg flex items-center justify-center"
-              style={{ background: 'var(--sage-600)' }}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="w-5 h-5"
-                fill="none"
-                stroke="white"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 21V12" />
-                <path d="M12 12C12 12 8 10 6 6C10 6 12 8 12 12" />
-                <path d="M12 8C12 8 14 5 18 4C17 8 14 10 12 12" />
-              </svg>
-            </div>
-            <span
-              className="text-xl font-medium"
-              style={{
-                fontFamily: 'var(--font-cormorant)',
-                color: 'var(--text-primary)',
-                letterSpacing: '0.02em'
-              }}
-            >
-              Tend
-            </span>
+          <Link href="/">
+            <Image
+              src="/tend-logo.svg"
+              alt="Tend"
+              width={167}
+              height={63}
+              className="h-10 w-auto"
+            />
           </Link>
         </div>
 

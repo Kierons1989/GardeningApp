@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
@@ -81,35 +82,14 @@ export default function DashboardLayout({
       >
         {/* Logo */}
         <div className="p-6 border-b" style={{ borderColor: 'var(--stone-200)' }}>
-          <Link href="/" className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: 'var(--sage-600)' }}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="w-6 h-6"
-                fill="none"
-                stroke="white"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 21V12" />
-                <path d="M12 12C12 12 8 10 6 6C10 6 12 8 12 12" />
-                <path d="M12 8C12 8 14 5 18 4C17 8 14 10 12 12" />
-              </svg>
-            </div>
-            <span
-              className="text-xl font-medium"
-              style={{
-                fontFamily: 'var(--font-cormorant)',
-                color: 'var(--text-primary)',
-                letterSpacing: '0.02em'
-              }}
-            >
-              Tend
-            </span>
+          <Link href="/">
+            <Image
+              src="/tend-logo.svg"
+              alt="Tend"
+              width={167}
+              height={63}
+              className="h-10 w-auto"
+            />
           </Link>
         </div>
 
@@ -191,35 +171,14 @@ export default function DashboardLayout({
           borderColor: 'var(--stone-200)',
         }}
       >
-        <Link href="/" className="flex items-center gap-2">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ background: 'var(--sage-600)' }}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="w-5 h-5"
-              fill="none"
-              stroke="white"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 21V12" />
-              <path d="M12 12C12 12 8 10 6 6C10 6 12 8 12 12" />
-              <path d="M12 8C12 8 14 5 18 4C17 8 14 10 12 12" />
-            </svg>
-          </div>
-          <span
-            className="text-lg font-medium"
-            style={{
-              fontFamily: 'var(--font-cormorant)',
-              color: 'var(--text-primary)',
-              letterSpacing: '0.02em'
-            }}
-          >
-            Tend
-          </span>
+        <Link href="/">
+          <Image
+            src="/tend-logo.svg"
+            alt="Tend"
+            width={167}
+            height={63}
+            className="h-9 w-auto"
+          />
         </Link>
 
         <button

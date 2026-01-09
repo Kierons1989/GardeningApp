@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 
@@ -93,40 +94,6 @@ export default function SignUpPage() {
 
   return (
     <div>
-      {/* Logo for desktop */}
-      <div className="hidden lg:block mb-8">
-        <Link href="/" className="inline-flex items-center gap-2">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: 'var(--sage-600)' }}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="w-6 h-6"
-              fill="none"
-              stroke="white"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 21V12" />
-              <path d="M12 12C12 12 8 10 6 6C10 6 12 8 12 12" />
-              <path d="M12 8C12 8 14 5 18 4C17 8 14 10 12 12" />
-            </svg>
-          </div>
-          <span
-            className="text-2xl font-medium"
-            style={{
-              fontFamily: 'var(--font-cormorant)',
-              color: 'var(--text-primary)',
-              letterSpacing: '0.02em'
-            }}
-          >
-            Tend
-          </span>
-        </Link>
-      </div>
-
       {/* Welcome Text */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
