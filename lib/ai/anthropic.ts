@@ -17,7 +17,7 @@ export class AnthropicProvider implements AIProvider {
     const prompt = buildCareProfilePrompt(plantName, context)
 
     const response = await this.client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-haiku-4-20250514',
       max_tokens: 2048,
       messages: [
         {
@@ -70,15 +70,16 @@ export class AnthropicProvider implements AIProvider {
       content: msg.content,
     }))
 
-    // If it's a new conversation, include the system context in the user message
-    if (anthropicMessages.length === 1) {
-      anthropicMessages[0].content = systemPrompt
-    }
-
     const response = await this.client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-haiku-4-20250514',
       max_tokens: 1024,
-      system: 'You are a helpful UK gardening expert. Be friendly, practical, and concise.',
+      system: [
+        {
+          type: "text",
+          text: systemPrompt,
+          cache_control: { type: "ephemeral" }
+        }
+      ],
       messages: anthropicMessages,
     })
 

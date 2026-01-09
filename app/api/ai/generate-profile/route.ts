@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getAIProvider } from '@/lib/ai'
-import type { PlantContext } from '@/types/database'
+import { generateCacheKey, normalizePlantName, CURRENT_CACHE_VERSION } from '@/lib/cache/profile-cache'
+import type { PlantContext, CareProfileCache } from '@/types/database'
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,16 +28,61 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Build context
+    // Normalize plant name for better cache hits
+    const normalizedName = normalizePlantName(plantName)
+
+    // Generate cache key (climate zone = null for v1)
+    const cacheKey = generateCacheKey(normalizedName, plantedIn, null, CURRENT_CACHE_VERSION)
+
+    // Check cache first
+    const { data: cached, error: cacheError } = await supabase
+      .from('care_profile_cache')
+      .select('care_profile, id, hits')
+      .eq('cache_key', cacheKey)
+      .single()
+
+    if (cached && !cacheError) {
+      // Cache hit! Increment counter and return
+      await supabase
+        .from('care_profile_cache')
+        .update({ hits: cached.hits + 1 })
+        .eq('id', cached.id)
+
+      console.log(`Cache HIT for "${normalizedName}" (${plantedIn || 'unspecified'})`)
+      return NextResponse.json(cached.care_profile)
+    }
+
+    // Cache miss - generate with AI
+    console.log(`Cache MISS for "${normalizedName}" (${plantedIn || 'unspecified'}) - generating...`)
+
     const context: PlantContext = {
       area: area || null,
       plantedIn: plantedIn || null,
       currentMonth: new Date().getMonth() + 1,
     }
 
-    // Generate care profile
     const aiProvider = getAIProvider()
-    const careProfile = await aiProvider.generateCareProfile(plantName, context)
+    const careProfile = await aiProvider.generateCareProfile(normalizedName, context)
+
+    // Store in cache for future use
+    const { error: insertError } = await supabase
+      .from('care_profile_cache')
+      .insert({
+        plant_name: normalizedName,
+        planted_in: plantedIn,
+        climate_zone: null,  // Version 1 doesn't use zones yet
+        cache_version: CURRENT_CACHE_VERSION,
+        cache_key: cacheKey,
+        care_profile: careProfile,
+        hits: 0,
+      })
+
+    if (insertError) {
+      // Cache insert failed, but that's okay - we still have the profile
+      console.warn('Failed to cache profile:', insertError.message)
+    } else {
+      console.log(`Cached new profile for "${normalizedName}"`)
+    }
 
     return NextResponse.json(careProfile)
   } catch (error) {

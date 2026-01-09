@@ -97,3 +97,15 @@ export interface ChatContext {
   history: TaskHistory[];
   currentDate: string;
 }
+
+export interface CareProfileCache {
+  id: string;
+  plant_name: string;
+  planted_in: string | null;
+  climate_zone: number | null;
+  cache_version: number;
+  cache_key: string;
+  care_profile: AICareProfile;
+  created_at: string;
+  hits: number;
+}
