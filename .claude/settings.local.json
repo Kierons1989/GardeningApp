@@ -14,7 +14,8 @@
       "Bash(git push:*)",
       "Bash(git commit:*)",
       "Bash(wc:*)",
-      "Bash(npx supabase:*)"
+      "Bash(npx supabase:*)",
+      "Bash(node -e:*)"
     ]
   }
 }
