@@ -17,7 +17,7 @@ export class AnthropicProvider implements AIProvider {
     const prompt = buildCareProfilePrompt(plantName, topLevel, context)
 
     const response = await this.client.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-5-haiku-latest',
       max_tokens: 2048,
       messages: [
         {
@@ -71,7 +71,7 @@ export class AnthropicProvider implements AIProvider {
     }))
 
     const response = await this.client.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-5-haiku-latest',
       max_tokens: 1024,
       system: [
         {
@@ -93,7 +93,7 @@ export class AnthropicProvider implements AIProvider {
 
   async generateText(prompt: string): Promise<string> {
     const response = await this.client.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-5-haiku-latest',
       max_tokens: 1024,
       messages: [
         {
