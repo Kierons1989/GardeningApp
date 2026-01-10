@@ -112,7 +112,7 @@ export default function PlantChat({ plant, taskHistory }: PlantChatProps) {
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               {[
                 'When should I prune?',
-                'How often to water?',
+                'How often should I water?',
                 'Any pest problems to watch for?',
               ].map((suggestion) => (
                 <button
