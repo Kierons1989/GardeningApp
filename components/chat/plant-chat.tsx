@@ -45,7 +45,9 @@ export default function PlantChat({ plant, taskHistory }: PlantChatProps) {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to get response')
+        const errorData = await response.json()
+        console.error('Chat API error:', errorData)
+        throw new Error(errorData.details || errorData.error || 'Failed to get response')
       }
 
       const data = await response.json()
@@ -53,12 +55,17 @@ export default function PlantChat({ plant, taskHistory }: PlantChatProps) {
         ...newMessages,
         { role: 'assistant', content: data.response },
       ])
-    } catch {
+    } catch (error) {
+      console.error('Chat error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+
       setMessages([
         ...newMessages,
         {
           role: 'assistant',
-          content: 'Sorry, I had trouble responding. Please try again.',
+          content: process.env.NODE_ENV === 'development'
+            ? `Error: ${errorMessage}. Check console for details.`
+            : 'Sorry, I had trouble responding. Please try again.',
         },
       ])
     } finally {
