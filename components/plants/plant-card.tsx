@@ -13,8 +13,19 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
   const careProfile = plant.plant_types?.ai_care_profile || plant.ai_care_profile
   const taskCount = careProfile?.tasks?.length || 0
   const hasProfile = !!careProfile
+  const topLevel = plant.plant_types?.top_level
   const middleLevel = plant.plant_types?.middle_level
+  const cultivarName = plant.cultivar_name
   const growthHabit = plant.plant_types?.growth_habit || []
+
+  // Determine card title and subtitle
+  const cardTitle = cultivarName
+    ? cultivarName
+    : topLevel && middleLevel
+      ? `${topLevel} - ${middleLevel}`
+      : plant.name
+
+  const cardSubtitle = cultivarName && middleLevel ? middleLevel : null
 
   return (
     <motion.div
@@ -58,15 +69,15 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
                 color: 'var(--text-primary)',
               }}
             >
-              {plant.name}
+              {cardTitle}
             </h3>
 
-            {middleLevel && (
+            {cardSubtitle && (
               <p
                 className="text-sm truncate mb-2"
                 style={{ color: 'var(--text-muted)' }}
               >
-                {middleLevel}
+                {cardSubtitle}
               </p>
             )}
 
