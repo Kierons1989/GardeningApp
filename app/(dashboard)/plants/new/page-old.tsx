@@ -139,6 +139,7 @@ export default function NewPlantPage() {
       animate={{ opacity: 1 }}
       className="max-w-2xl mx-auto"
     >
+      {/* Back Link */}
       <Link
         href="/plants"
         className="inline-flex items-center gap-2 mb-6 text-sm font-medium transition-colors"
@@ -150,6 +151,7 @@ export default function NewPlantPage() {
         Back to plants
       </Link>
 
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -165,7 +167,7 @@ export default function NewPlantPage() {
           Add a Plant
         </h1>
         <p style={{ color: 'var(--text-secondary)' }}>
-          Tell us what you're growing and we'll create a personalised care schedule
+          Tell us about your plant and we&apos;ll create a personalised care schedule
         </p>
       </motion.div>
 
@@ -223,14 +225,13 @@ export default function NewPlantPage() {
 
       {/* Step Content */}
       <AnimatePresence mode="wait">
-        {/* Step 1: Input */}
-        {step === 'input' && (
+        {step === 'details' && (
           <motion.form
-            key="input"
+            key="details"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            onSubmit={handleIdentifyPlant}
+            onSubmit={handleGenerateProfile}
             className="rounded-2xl p-8"
             style={{
               background: 'white',
@@ -238,24 +239,26 @@ export default function NewPlantPage() {
             }}
           >
             <div className="space-y-6">
+              {/* Plant Name */}
               <div>
-                <label htmlFor="userInput" className="label">
+                <label htmlFor="name" className="label">
                   What are you growing? *
                 </label>
                 <input
-                  id="userInput"
+                  id="name"
                   type="text"
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   className="input"
-                  placeholder="e.g., Iceberg Rose, Cherry Tomato, Runaway Bride Hydrangea"
+                  placeholder="e.g., David Austin roses, Cherry tomatoes, Lawn"
                   required
                 />
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-                  Type the name as it appears on the label - we'll identify it for you
+                  Be as specific as you like - variety names help us give better advice
                 </p>
               </div>
 
+              {/* Area */}
               <div>
                 <label htmlFor="area" className="label">
                   Where is it? (optional)
@@ -266,10 +269,11 @@ export default function NewPlantPage() {
                   value={area}
                   onChange={(e) => setArea(e.target.value)}
                   className="input"
-                  placeholder="e.g., Front garden, Back border"
+                  placeholder="e.g., Front garden, Back border, Greenhouse"
                 />
               </div>
 
+              {/* Planted In */}
               <div>
                 <label className="label">
                   Planted in (optional)
@@ -304,6 +308,7 @@ export default function NewPlantPage() {
                 </div>
               </div>
 
+              {/* Notes */}
               <div>
                 <label htmlFor="notes" className="label">
                   Any notes? (optional)
@@ -313,14 +318,14 @@ export default function NewPlantPage() {
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className="input min-h-[100px] resize-none"
-                  placeholder="e.g., Planted last spring"
+                  placeholder="e.g., Planted last spring, North-facing spot"
                 />
               </div>
             </div>
 
             <div className="mt-8 flex justify-end">
               <button type="submit" className="btn btn-primary">
-                Identify plant
+                Generate care profile
                 <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -329,187 +334,6 @@ export default function NewPlantPage() {
           </motion.form>
         )}
 
-        {/* Step 2: Identifying */}
-        {step === 'identifying' && (
-          <motion.div
-            key="identifying"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="rounded-2xl p-12 text-center"
-            style={{
-              background: 'white',
-              boxShadow: 'var(--shadow-md)',
-            }}
-          >
-            <div className="relative w-24 h-24 mx-auto mb-8">
-              <motion.div
-                className="absolute inset-0 rounded-full"
-                style={{ background: 'var(--sage-100)' }}
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <motion.span
-                  className="text-4xl"
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  🌱
-                </motion.span>
-              </div>
-            </div>
-
-            <h2
-              className="text-2xl font-semibold mb-3"
-              style={{
-                fontFamily: 'var(--font-cormorant)',
-                color: 'var(--text-primary)',
-              }}
-            >
-              Identifying your plant
-            </h2>
-            <p style={{ color: 'var(--text-secondary)' }}>
-              Analyzing "{userInput}"...
-            </p>
-          </motion.div>
-        )}
-
-        {/* Step 3: Confirm Identification */}
-        {step === 'confirm' && identification && (
-          <motion.div
-            key="confirm"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="rounded-2xl p-8"
-            style={{
-              background: 'white',
-              boxShadow: 'var(--shadow-md)',
-            }}
-          >
-            <h2
-              className="text-2xl font-semibold mb-6"
-              style={{
-                fontFamily: 'var(--font-cormorant)',
-                color: 'var(--text-primary)',
-              }}
-            >
-              We identified your plant
-            </h2>
-
-            <div className="space-y-6">
-              <div
-                className="p-6 rounded-xl"
-                style={{ background: 'var(--sage-50)', border: '1px solid var(--sage-200)' }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-4xl">🌿</span>
-                  <div>
-                    <div className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>
-                      {topLevel}
-                    </div>
-                    <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                      {middleLevel}
-                    </div>
-                  </div>
-                </div>
-
-                {cultivarName && (
-                  <div className="mb-4">
-                    <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                      Variety: {cultivarName}
-                    </span>
-                  </div>
-                )}
-
-                {growthHabit.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {growthHabit.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-3 py-1 rounded-full text-sm"
-                        style={{ background: 'white', color: 'var(--sage-700)' }}
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-                  Looks good? You can edit the details below if needed.
-                </p>
-
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="topLevel" className="label text-sm">
-                      Plant Group
-                    </label>
-                    <input
-                      id="topLevel"
-                      type="text"
-                      value={topLevel}
-                      onChange={(e) => setTopLevel(e.target.value)}
-                      className="input"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="middleLevel" className="label text-sm">
-                      Plant Type
-                    </label>
-                    <input
-                      id="middleLevel"
-                      type="text"
-                      value={middleLevel}
-                      onChange={(e) => setMiddleLevel(e.target.value)}
-                      className="input"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="cultivarName" className="label text-sm">
-                      Variety/Cultivar (optional)
-                    </label>
-                    <input
-                      id="cultivarName"
-                      type="text"
-                      value={cultivarName}
-                      onChange={(e) => setCultivarName(e.target.value)}
-                      className="input"
-                      placeholder="e.g., Iceberg"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-4 mt-8">
-              <button
-                type="button"
-                onClick={() => setStep('input')}
-                className="btn btn-secondary flex-1"
-              >
-                Start over
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmAndGenerate}
-                className="btn btn-primary flex-1"
-              >
-                Generate care profile
-                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Step 4: Generating Care Profile */}
         {step === 'generating' && (
           <motion.div
             key="generating"
@@ -522,6 +346,7 @@ export default function NewPlantPage() {
               boxShadow: 'var(--shadow-md)',
             }}
           >
+            {/* Animated Plant Icon */}
             <div className="relative w-24 h-24 mx-auto mb-8">
               <motion.div
                 className="absolute inset-0 rounded-full"
@@ -529,7 +354,9 @@ export default function NewPlantPage() {
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+              >
                 <motion.span
                   className="text-4xl"
                   animate={{ rotate: [0, 10, -10, 0] }}
@@ -550,12 +377,11 @@ export default function NewPlantPage() {
               Creating your care profile
             </h2>
             <p style={{ color: 'var(--text-secondary)' }}>
-              Generating UK-specific care advice for {middleLevel}...
+              We&apos;re generating UK-specific care advice for your {name}...
             </p>
           </motion.div>
         )}
 
-        {/* Step 5: Review */}
         {step === 'review' && careProfile && (
           <motion.div
             key="review"
@@ -564,6 +390,7 @@ export default function NewPlantPage() {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
+            {/* Profile Summary Card */}
             <div
               className="rounded-2xl p-8"
               style={{
@@ -586,25 +413,12 @@ export default function NewPlantPage() {
                       color: 'var(--text-primary)',
                     }}
                   >
-                    {careProfile.common_name || middleLevel}
+                    {careProfile.common_name || name}
                   </h2>
                   {careProfile.species && (
                     <p className="italic" style={{ color: 'var(--text-muted)' }}>
                       {careProfile.species}
                     </p>
-                  )}
-                  {growthHabit.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {growthHabit.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2 py-1 rounded-full text-xs"
-                          style={{ background: 'var(--sage-50)', color: 'var(--sage-700)' }}
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
                   )}
                 </div>
               </div>
@@ -623,6 +437,7 @@ export default function NewPlantPage() {
               </div>
             </div>
 
+            {/* Tasks Preview */}
             <div
               className="rounded-2xl p-8"
               style={{
@@ -674,6 +489,7 @@ export default function NewPlantPage() {
               </div>
             </div>
 
+            {/* Tips Preview */}
             {careProfile.tips.length > 0 && (
               <div
                 className="rounded-2xl p-8"
@@ -702,13 +518,14 @@ export default function NewPlantPage() {
               </div>
             )}
 
+            {/* Actions */}
             <div className="flex gap-4 pt-4">
               <button
                 type="button"
-                onClick={() => setStep('input')}
+                onClick={() => setStep('details')}
                 className="btn btn-secondary flex-1"
               >
-                Start over
+                Edit details
               </button>
               <button
                 type="button"

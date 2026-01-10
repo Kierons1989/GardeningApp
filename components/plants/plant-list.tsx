@@ -25,17 +25,17 @@ export default function PlantList({ plants }: PlantListProps) {
     visible: { opacity: 1, y: 0 },
   }
 
-  // Group plants by area
-  const plantsByArea = plants.reduce<Record<string, Plant[]>>((acc, plant) => {
-    const area = plant.area || 'Unassigned'
-    if (!acc[area]) acc[area] = []
-    acc[area].push(plant)
+  // Group plants by top level (plant type group)
+  const plantsByTopLevel = plants.reduce<Record<string, Plant[]>>((acc, plant) => {
+    const topLevel = plant.plant_types?.top_level || plant.plant_type || 'Other Plants'
+    if (!acc[topLevel]) acc[topLevel] = []
+    acc[topLevel].push(plant)
     return acc
   }, {})
 
-  const areas = Object.keys(plantsByArea).sort((a, b) => {
-    if (a === 'Unassigned') return 1
-    if (b === 'Unassigned') return -1
+  const topLevels = Object.keys(plantsByTopLevel).sort((a, b) => {
+    if (a === 'Other Plants') return 1
+    if (b === 'Other Plants') return -1
     return a.localeCompare(b)
   })
 
@@ -118,11 +118,11 @@ export default function PlantList({ plants }: PlantListProps) {
         </motion.div>
       )}
 
-      {/* Plants Grid by Area */}
+      {/* Plants Grid by Top Level */}
       {plants.length > 0 && (
         <div className="space-y-10">
-          {areas.map((area) => (
-            <motion.section key={area} variants={itemVariants}>
+          {topLevels.map((topLevel) => (
+            <motion.section key={topLevel} variants={itemVariants}>
               <div className="flex items-center gap-3 mb-4">
                 <h2
                   className="text-xl font-semibold"
@@ -131,7 +131,7 @@ export default function PlantList({ plants }: PlantListProps) {
                     color: 'var(--text-primary)',
                   }}
                 >
-                  {area}
+                  {topLevel}
                 </h2>
                 <span
                   className="text-sm px-2 py-1 rounded-full"
@@ -140,12 +140,12 @@ export default function PlantList({ plants }: PlantListProps) {
                     color: 'var(--text-muted)',
                   }}
                 >
-                  {plantsByArea[area].length}
+                  {plantsByTopLevel[topLevel].length}
                 </span>
               </div>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {plantsByArea[area].map((plant, index) => (
+                {plantsByTopLevel[topLevel].map((plant, index) => (
                   <PlantCard key={plant.id} plant={plant} index={index} />
                 ))}
               </div>

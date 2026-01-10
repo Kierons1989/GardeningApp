@@ -13,8 +13,8 @@ export class AnthropicProvider implements AIProvider {
     })
   }
 
-  async generateCareProfile(plantName: string, context: PlantContext): Promise<AICareProfile> {
-    const prompt = buildCareProfilePrompt(plantName, context)
+  async generateCareProfile(plantName: string, context: PlantContext, topLevel?: string): Promise<AICareProfile> {
+    const prompt = buildCareProfilePrompt(plantName, topLevel, context)
 
     const response = await this.client.messages.create({
       model: 'claude-3-5-haiku-20241022',
@@ -81,6 +81,26 @@ export class AnthropicProvider implements AIProvider {
         }
       ],
       messages: anthropicMessages,
+    })
+
+    const textContent = response.content.find((block) => block.type === 'text')
+    if (!textContent || textContent.type !== 'text') {
+      throw new Error('No text content in response')
+    }
+
+    return textContent.text
+  }
+
+  async generateText(prompt: string): Promise<string> {
+    const response = await this.client.messages.create({
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
     })
 
     const textContent = response.content.find((block) => block.type === 'text')

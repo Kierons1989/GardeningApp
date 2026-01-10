@@ -10,8 +10,11 @@ interface PlantCardProps {
 }
 
 export default function PlantCard({ plant, index }: PlantCardProps) {
-  const taskCount = plant.ai_care_profile?.tasks?.length || 0
-  const hasProfile = !!plant.ai_care_profile
+  const careProfile = plant.plant_types?.ai_care_profile || plant.ai_care_profile
+  const taskCount = careProfile?.tasks?.length || 0
+  const hasProfile = !!careProfile
+  const middleLevel = plant.plant_types?.middle_level
+  const growthHabit = plant.plant_types?.growth_habit || []
 
   return (
     <motion.div
@@ -41,7 +44,7 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
               />
             ) : (
               <span className="text-2xl">
-                {getPlantEmoji(plant.plant_type)}
+                {getPlantEmoji(plant.plant_types?.top_level || plant.plant_type)}
               </span>
             )}
           </div>
@@ -58,14 +61,29 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
               {plant.name}
             </h3>
 
-            {plant.common_name && plant.common_name !== plant.name && (
+            {middleLevel && (
               <p
                 className="text-sm truncate mb-2"
                 style={{ color: 'var(--text-muted)' }}
               >
-                {plant.common_name}
+                {middleLevel}
               </p>
             )}
+
+            <div className="flex items-center gap-2 flex-wrap mb-2">
+              {growthHabit.slice(0, 2).map((tag) => (
+                <span
+                  key={tag}
+                  className="text-xs px-2 py-0.5 rounded-full"
+                  style={{
+                    background: 'var(--sage-50)',
+                    color: 'var(--sage-700)',
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
 
             <div className="flex items-center gap-3">
               {/* Task Count */}
@@ -135,7 +153,7 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
         )}
 
         {/* Summary Preview */}
-        {plant.ai_care_profile?.summary && (
+        {careProfile?.summary && (
           <div
             className="mt-4 pt-4 border-t"
             style={{ borderColor: 'var(--stone-100)' }}
@@ -144,7 +162,7 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
               className="text-sm line-clamp-2"
               style={{ color: 'var(--text-secondary)' }}
             >
-              {plant.ai_care_profile.summary}
+              {careProfile.summary}
             </p>
           </div>
         )}
@@ -156,6 +174,12 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
 function getPlantEmoji(plantType: string | null): string {
   const emojiMap: Record<string, string> = {
     rose: '🌹',
+    hydrangea: '🌺',
+    dahlia: '🌼',
+    tomato: '🍅',
+    clematis: '🌸',
+    lavender: '💜',
+    hosta: '🌿',
     shrub: '🌳',
     perennial: '🌸',
     bulb: '🌷',

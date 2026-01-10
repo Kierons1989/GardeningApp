@@ -6,18 +6,31 @@ export interface Profile {
   created_at: string;
 }
 
+export interface PlantType {
+  id: string;
+  top_level: string;
+  middle_level: string;
+  growth_habit: string[];
+  ai_care_profile: AICareProfile | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Plant {
   id: string;
   user_id: string;
   name: string;
   common_name: string | null;
   species: string | null;
-  plant_type: string | null;
+  plant_type: string | null; // Deprecated: use plant_type_id
+  plant_type_id: string | null;
+  plant_types?: PlantType | null; // Joined relation
+  cultivar_name: string | null;
   area: string | null;
   planted_in: 'ground' | 'pot' | 'raised_bed' | null;
   notes: string | null;
   photo_url: string | null;
-  ai_care_profile: AICareProfile | null;
+  ai_care_profile: AICareProfile | null; // Deprecated: care profiles now in plant_types table
   created_at: string;
   updated_at: string;
 }
@@ -106,6 +119,15 @@ export interface CareProfileCache {
   cache_version: number;
   cache_key: string;
   care_profile: AICareProfile;
+  middle_level: string | null;
   created_at: string;
   hits: number;
+}
+
+export interface PlantIdentification {
+  top_level: string;
+  middle_level: string;
+  cultivar_name: string | null;
+  growth_habit: string[];
+  confidence: 'high' | 'medium' | 'low';
 }

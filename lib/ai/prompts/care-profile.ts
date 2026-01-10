@@ -1,17 +1,24 @@
 import type { PlantContext } from '@/types/database'
 
-export function buildCareProfilePrompt(plantName: string, context: PlantContext): string {
+export function buildCareProfilePrompt(
+  middleLevel: string,
+  topLevel?: string,
+  context?: PlantContext
+): string {
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ]
 
-  return `You are a UK gardening expert. Generate a comprehensive care profile for this plant.
+  const plantDescription = topLevel ? `${middleLevel} (${topLevel})` : middleLevel
+  const currentMonth = context?.currentMonth || new Date().getMonth() + 1
 
-PLANT: ${plantName}
-LOCATION: ${context.area || 'Not specified'}
-PLANTED IN: ${context.plantedIn || 'Not specified'}
-CURRENT MONTH: ${monthNames[context.currentMonth - 1]}
+  return `You are a UK gardening expert. Generate a comprehensive care profile for this plant type.
+
+PLANT TYPE: ${plantDescription}
+LOCATION: ${context?.area || 'Not specified'}
+PLANTED IN: ${context?.plantedIn || 'Not specified'}
+CURRENT MONTH: ${monthNames[currentMonth - 1]}
 
 Respond with JSON matching this exact schema:
 {

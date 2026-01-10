@@ -12,7 +12,9 @@
       "Bash(git reset:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nFix cache key generation for Vercel deployment\n\nReplace Node.js crypto module with Web Crypto API to support\nserverless environments. Fixes 500 error on profile generation.\n\n- Switch from createHash to crypto.subtle.digest\n- Make generateCacheKey async\n- Update API route to await cache key\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git push:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(wc:*)",
+      "Bash(npx supabase:*)"
     ]
   }
 }
