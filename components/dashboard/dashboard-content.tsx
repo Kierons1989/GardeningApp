@@ -1,8 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { Plant, TaskHistory, TaskSuggestion, AITask } from '@/types/database'
 import TaskActions from '@/components/tasks/task-actions'
 import { getCategoryColor } from '@/lib/utils/category-colors'
@@ -331,6 +331,7 @@ function TaskCard({
   index: number
   minimal?: boolean
 }) {
+  const [showInstructions, setShowInstructions] = useState(false)
   const colors = getCategoryColor(suggestion.task.category)
 
   const effortColors = {
@@ -429,6 +430,52 @@ function TaskCard({
           >
             {suggestion.task.why_this_matters}
           </p>
+
+          {suggestion.task.how_to && (
+            <div className="mb-4">
+              <button
+                onClick={() => setShowInstructions(!showInstructions)}
+                className="flex items-center gap-2 text-sm font-medium transition-colors"
+                style={{ color: 'var(--sage-600)' }}
+              >
+                <svg
+                  className="w-4 h-4 transition-transform"
+                  style={{
+                    transform: showInstructions ? 'rotate(90deg)' : 'rotate(0deg)',
+                  }}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                {showInstructions ? 'Hide' : 'Show'} detailed instructions
+              </button>
+
+              <AnimatePresence>
+                {showInstructions && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div
+                      className="mt-3 p-4 rounded-lg text-sm whitespace-pre-line"
+                      style={{
+                        background: 'var(--stone-50)',
+                        border: '1px solid var(--stone-200)',
+                        color: 'var(--text-secondary)',
+                      }}
+                    >
+                      {suggestion.task.how_to}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
           <TaskActions
             plantId={suggestion.plant.id}
