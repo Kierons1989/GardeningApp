@@ -381,27 +381,104 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
         </motion.div>
       </div>
 
-      {/* Care Tips */}
-      {careProfile?.tips && careProfile.tips.length > 0 && (
+      {/* Full Care Calendar */}
+      {careProfile?.tasks && careProfile.tasks.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           className="mt-6 rounded-2xl p-6"
           style={{
-            background: 'var(--earth-50)',
-            border: '1px solid var(--earth-200)',
+            background: 'white',
+            boxShadow: 'var(--shadow-md)',
           }}
         >
-          <h2
-            className="text-xl font-semibold mb-4"
-            style={{
-              fontFamily: 'var(--font-cormorant)',
-              color: 'var(--text-primary)',
-            }}
-          >
-            💡 Care Tips
-          </h2>
+          <div className="flex items-center gap-2 mb-6">
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="var(--sage-600)" strokeWidth="1.5">
+              <rect x="3" y="4" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M3 10h18M8 2v4M16 2v4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <h2
+              className="text-xl font-semibold"
+              style={{
+                fontFamily: 'var(--font-cormorant)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              Full Care Calendar
+            </h2>
+          </div>
+
+          <div className="grid gap-4">
+            {getTasksByMonth(careProfile.tasks).map(({ month, tasks }) => (
+              <div
+                key={month}
+                className="p-4 rounded-xl"
+                style={{ background: 'var(--stone-50)' }}
+              >
+                <h3
+                  className="font-semibold mb-3"
+                  style={{
+                    fontFamily: 'var(--font-cormorant)',
+                    color: 'var(--text-primary)',
+                  }}
+                >
+                  {month}
+                </h3>
+                <div className="space-y-2">
+                  {tasks.map((task) => (
+                    <div
+                      key={task.key}
+                      className="flex items-start gap-2 text-sm"
+                    >
+                      <span
+                        className="px-2 py-0.5 rounded text-xs mt-0.5 flex-shrink-0"
+                        style={{
+                          background: getCategoryColor(task.category).bg,
+                          color: getCategoryColor(task.category).text,
+                        }}
+                      >
+                        {task.category.replace(/_/g, ' ')}
+                      </span>
+                      <span style={{ color: 'var(--text-secondary)' }}>
+                        {task.title}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Care Tips */}
+      {careProfile?.tips && careProfile.tips.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mt-6 rounded-2xl p-6"
+          style={{
+            background: 'white',
+            boxShadow: 'var(--shadow-md)',
+          }}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="var(--sage-400)" stroke="var(--sage-600)" strokeWidth="1.5">
+              <circle cx="12" cy="12" r="5" />
+              <path d="M12 1v6M12 17v6M23 12h-6M7 12H1" strokeLinecap="round" />
+            </svg>
+            <h2
+              className="text-xl font-semibold"
+              style={{
+                fontFamily: 'var(--font-cormorant)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              Care Tips
+            </h2>
+          </div>
           <ul className="space-y-2">
             {careProfile.tips.map((tip, i) => (
               <li key={i} className="flex gap-2" style={{ color: 'var(--text-secondary)' }}>
@@ -454,4 +531,47 @@ function formatTaskKey(key: string): string {
   return key
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function getTasksByMonth(tasks: any[]) {
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ]
+
+  const tasksByMonth: Record<number, any[]> = {}
+
+  tasks.forEach((task) => {
+    const { month_start, month_end } = task
+
+    if (month_start <= month_end) {
+      // Normal range (e.g., March to June)
+      for (let m = month_start; m <= month_end; m++) {
+        if (!tasksByMonth[m]) tasksByMonth[m] = []
+        tasksByMonth[m].push(task)
+      }
+    } else {
+      // Wraps around year (e.g., November to February)
+      for (let m = month_start; m <= 12; m++) {
+        if (!tasksByMonth[m]) tasksByMonth[m] = []
+        tasksByMonth[m].push(task)
+      }
+      for (let m = 1; m <= month_end; m++) {
+        if (!tasksByMonth[m]) tasksByMonth[m] = []
+        tasksByMonth[m].push(task)
+      }
+    }
+  })
+
+  // Convert to array and sort by month
+  return Object.entries(tasksByMonth)
+    .map(([month, tasks]) => ({
+      month: monthNames[parseInt(month) - 1],
+      tasks
+    }))
+    .sort((a, b) => {
+      const aIndex = monthNames.indexOf(a.month)
+      const bIndex = monthNames.indexOf(b.month)
+      return aIndex - bIndex
+    })
 }
