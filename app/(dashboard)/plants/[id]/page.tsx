@@ -15,10 +15,19 @@ export default async function PlantPage({ params }: PlantPageProps) {
     redirect('/login')
   }
 
-  // Fetch plant
+  // Fetch plant with plant type and care profile
   const { data: plant, error } = await supabase
     .from('plants')
-    .select('*')
+    .select(`
+      *,
+      plant_types (
+        id,
+        top_level,
+        middle_level,
+        growth_habit,
+        ai_care_profile
+      )
+    `)
     .eq('id', id)
     .eq('user_id', user.id)
     .single()
