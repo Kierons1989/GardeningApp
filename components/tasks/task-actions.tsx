@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useToast } from '@/components/ui/toast'
 
 interface TaskActionsProps {
   plantId: string
@@ -12,8 +13,10 @@ interface TaskActionsProps {
 
 export default function TaskActions({ plantId, taskKey, onActionComplete }: TaskActionsProps) {
   const router = useRouter()
+  const { showToast } = useToast()
   const [loading, setLoading] = useState<string | null>(null)
   const [showSnoozeOptions, setShowSnoozeOptions] = useState(false)
+  const [completing, setCompleting] = useState(false)
 
   async function handleAction(action: 'done' | 'skipped' | 'snoozed', snoozeUntil?: string) {
     setLoading(action)
@@ -32,11 +35,25 @@ export default function TaskActions({ plantId, taskKey, onActionComplete }: Task
       })
 
       if (response.ok) {
+        // Show success animation for done action
+        if (action === 'done') {
+          setCompleting(true)
+          await new Promise(resolve => setTimeout(resolve, 800)) // Wait for animation
+          showToast('Task completed! Great work!', 'success')
+        } else if (action === 'skipped') {
+          showToast('Task skipped', 'info')
+        } else if (action === 'snoozed') {
+          showToast('Task snoozed for later', 'info')
+        }
+
         onActionComplete?.()
         router.refresh()
+      } else {
+        showToast('Failed to save task action', 'error')
       }
     } catch (error) {
       console.error('Error saving task action:', error)
+      showToast('Failed to save task action', 'error')
     } finally {
       setLoading(null)
     }
@@ -50,6 +67,44 @@ export default function TaskActions({ plantId, taskKey, onActionComplete }: Task
 
   return (
     <div className="flex items-center gap-2 relative">
+      {/* Success Checkmark Overlay */}
+      <AnimatePresence>
+        {completing && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            className="absolute inset-0 -top-4 -left-4 -right-4 -bottom-4 flex items-center justify-center z-30 rounded-2xl"
+            style={{
+              background: 'rgba(93, 125, 102, 0.95)',
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="w-16 h-16"
+                fill="none"
+                stroke="white"
+                strokeWidth="2.5"
+              >
+                <motion.path
+                  d="M5 13l4 4L19 7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ delay: 0.3, duration: 0.4 }}
+                />
+              </svg>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Done Button */}
       <button
         onClick={() => handleAction('done')}

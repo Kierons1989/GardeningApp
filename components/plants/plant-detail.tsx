@@ -8,6 +8,8 @@ import type { Plant, TaskHistory } from '@/types/database'
 import { createClient } from '@/lib/supabase/client'
 import TaskActions from '@/components/tasks/task-actions'
 import PlantChat from '@/components/chat/plant-chat'
+import { getCategoryColor } from '@/lib/utils/category-colors'
+import { getPlantTypeIcon } from '@/components/ui/botanical-icons'
 
 interface PlantDetailProps {
   plant: Plant
@@ -85,7 +87,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
             className="w-20 h-20 rounded-2xl flex items-center justify-center flex-shrink-0"
             style={{ background: 'var(--sage-100)' }}
           >
-            <span className="text-4xl">{getPlantEmoji(plant.plant_type)}</span>
+            {getPlantTypeIcon(plant.plant_type, 'w-10 h-10', { color: 'var(--sage-700)' })}
           </div>
 
           {/* Plant Info */}
@@ -117,12 +119,32 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowChat(!showChat)}
-                  className="btn btn-secondary"
+                  className="relative"
+                  style={{
+                    background: showChat ? 'var(--sage-600)' : 'var(--sage-100)',
+                    color: showChat ? 'white' : 'var(--sage-700)',
+                    padding: '10px 20px',
+                    borderRadius: 'var(--radius-md)',
+                    fontFamily: 'var(--font-crimson)',
+                    fontWeight: '500',
+                    fontSize: '15px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all var(--transition-fast)',
+                    border: showChat ? 'none' : '1px solid var(--sage-200)',
+                  }}
                 >
                   <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  Ask AI
+                  {showChat ? 'Hide Chat' : 'Ask AI'}
+                  {!showChat && (
+                    <span
+                      className="absolute -top-1 -right-1 w-3 h-3 rounded-full animate-pulse"
+                      style={{ background: 'var(--coral)' }}
+                    />
+                  )}
                 </button>
                 <button
                   onClick={handleDelete}
@@ -159,9 +181,17 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                   className="inline-flex items-center gap-1.5 text-sm"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  {plant.planted_in === 'ground' && '🌍'}
-                  {plant.planted_in === 'pot' && '🪴'}
-                  {plant.planted_in === 'raised_bed' && '📦'}
+                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    {plant.planted_in === 'ground' && (
+                      <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" />
+                    )}
+                    {plant.planted_in === 'pot' && (
+                      <path d="M8 4h8L18 20H6L8 4zM8 4h8" strokeLinecap="round" strokeLinejoin="round" />
+                    )}
+                    {plant.planted_in === 'raised_bed' && (
+                      <rect x="3" y="8" width="18" height="12" rx="1" strokeLinecap="round" strokeLinejoin="round" />
+                    )}
+                  </svg>
                   {formatPlantedIn(plant.planted_in)}
                 </span>
               )}
@@ -173,7 +203,11 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                     color: 'var(--sage-700)',
                   }}
                 >
-                  🌡️ {plant.ai_care_profile.uk_hardiness}
+                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M12 2v4M12 18v4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M2 12h4M18 12h4M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="12" cy="12" r="3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  {plant.ai_care_profile.uk_hardiness}
                 </span>
               )}
             </div>
@@ -218,7 +252,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
         </motion.div>
       )}
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-6">
         {/* Current Tasks */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -387,23 +421,6 @@ function isTaskInWindow(monthStart: number, monthEnd: number, currentMonth: numb
   return currentMonth >= monthStart || currentMonth <= monthEnd
 }
 
-function getPlantEmoji(plantType: string | null): string {
-  const emojiMap: Record<string, string> = {
-    rose: '🌹',
-    shrub: '🌳',
-    perennial: '🌸',
-    bulb: '🌷',
-    lawn: '🌿',
-    fruit: '🍎',
-    vegetable: '🥬',
-    tree: '🌲',
-    climber: '🍇',
-    herb: '🌿',
-    succulent: '🪴',
-  }
-  return emojiMap[plantType?.toLowerCase() || ''] || '🌱'
-}
-
 function formatPlantedIn(plantedIn: string): string {
   const labels: Record<string, string> = {
     ground: 'In ground',
@@ -419,20 +436,6 @@ function formatMonthRange(start: number, end: number): string {
     return months[start - 1]
   }
   return `${months[start - 1]} - ${months[end - 1]}`
-}
-
-function getCategoryColor(category: string): { bg: string; text: string } {
-  const colors: Record<string, { bg: string; text: string }> = {
-    pruning: { bg: 'var(--sage-100)', text: 'var(--sage-700)' },
-    feeding: { bg: 'var(--earth-100)', text: 'var(--earth-700)' },
-    pest_control: { bg: '#fef3c7', text: '#92400e' },
-    planting: { bg: 'var(--sage-100)', text: 'var(--sage-700)' },
-    watering: { bg: '#dbeafe', text: '#1e40af' },
-    harvesting: { bg: '#fce7f3', text: '#9d174d' },
-    winter_care: { bg: '#e0e7ff', text: '#3730a3' },
-    general: { bg: 'var(--stone-100)', text: 'var(--stone-700)' },
-  }
-  return colors[category] || colors.general
 }
 
 function getActionColor(action: string): { bg: string; text: string } {

@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/types/database'
+import { ToastProvider } from '@/components/ui/toast'
 
 const navItems = [
   {
@@ -81,6 +82,7 @@ export default function DashboardLayout({
   }
 
   return (
+    <ToastProvider>
     <div className="min-h-screen bg-botanical">
       {/* Desktop Sidebar */}
       <aside
@@ -98,7 +100,7 @@ export default function DashboardLayout({
               alt="Tend"
               width={167}
               height={63}
-              className="h-10 w-auto"
+              className="h-7 w-auto"
             />
           </Link>
         </div>
@@ -187,7 +189,7 @@ export default function DashboardLayout({
             alt="Tend"
             width={167}
             height={63}
-            className="h-9 w-auto"
+            className="h-7 w-auto"
           />
         </Link>
 
@@ -270,5 +272,6 @@ export default function DashboardLayout({
         </div>
       </main>
     </div>
+    </ToastProvider>
   )
 }

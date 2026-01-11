@@ -5,6 +5,9 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import type { Plant, TaskHistory, TaskSuggestion, AITask } from '@/types/database'
 import TaskActions from '@/components/tasks/task-actions'
+import { getCategoryColor } from '@/lib/utils/category-colors'
+import { getCategoryIcon, getPlantTypeIcon } from '@/components/ui/botanical-icons'
+import { EmptyGardenIllustration, NoTasksIllustration } from '@/components/ui/empty-states'
 
 interface DashboardContentProps {
   plants: Plant[]
@@ -109,22 +112,7 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
             boxShadow: 'var(--shadow-md)',
           }}
         >
-          <div
-            className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
-            style={{ background: 'var(--sage-100)' }}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="w-10 h-10"
-              style={{ color: 'var(--sage-600)' }}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <path d="M12 22V8" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M5.5 11.5C5.5 9 7 4 12 4s6.5 5 6.5 7.5c0 3-2.5 4.5-6.5 4.5s-6.5-1.5-6.5-4.5z" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
+          <EmptyGardenIllustration className="w-48 h-48 mx-auto mb-6" />
           <h2
             className="text-2xl font-semibold mb-3"
             style={{
@@ -152,9 +140,9 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
 
       {/* Dashboard with tasks */}
       {plants.length > 0 && (
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Tasks Column */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="md:col-span-1 lg:col-span-2 space-y-6">
             {/* This Week */}
             <motion.section variants={itemVariants}>
               <div className="flex items-center justify-between mb-4">
@@ -186,6 +174,7 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
                     border: '1px solid var(--stone-200)',
                   }}
                 >
+                  <NoTasksIllustration className="w-32 h-32 mx-auto mb-4" />
                   <p style={{ color: 'var(--text-muted)' }}>
                     No tasks for this week. Enjoy your garden!
                   </p>
@@ -293,7 +282,7 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
                       className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{ background: 'var(--earth-100)' }}
                     >
-                      <span className="text-lg">🌱</span>
+                      {getPlantTypeIcon(plant.plant_type, 'w-5 h-5', { color: 'var(--earth-700)' })}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p
@@ -342,18 +331,14 @@ function TaskCard({
   index: number
   minimal?: boolean
 }) {
-  const categoryColors: Record<string, { bg: string; text: string }> = {
-    pruning: { bg: 'var(--sage-100)', text: 'var(--sage-700)' },
-    feeding: { bg: 'var(--earth-100)', text: 'var(--earth-700)' },
-    pest_control: { bg: '#fef3c7', text: '#92400e' },
-    planting: { bg: 'var(--sage-100)', text: 'var(--sage-700)' },
-    watering: { bg: '#dbeafe', text: '#1e40af' },
-    harvesting: { bg: '#fce7f3', text: '#9d174d' },
-    winter_care: { bg: '#e0e7ff', text: '#3730a3' },
-    general: { bg: 'var(--stone-100)', text: 'var(--stone-700)' },
-  }
+  const colors = getCategoryColor(suggestion.task.category)
 
-  const colors = categoryColors[suggestion.task.category] || categoryColors.general
+  const effortColors = {
+    high: { border: 'var(--coral)', bg: 'rgba(224, 122, 95, 0.05)' },
+    medium: { border: 'var(--earth-400)', bg: 'rgba(212, 164, 122, 0.05)' },
+    low: { border: 'var(--sage-300)', bg: 'rgba(163, 189, 169, 0.05)' },
+  }
+  const effortColor = effortColors[suggestion.task.effort_level] || effortColors.medium
 
   if (minimal) {
     return (
@@ -368,9 +353,7 @@ function TaskCard({
           className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
           style={{ background: colors.bg }}
         >
-          <span className="text-sm" style={{ color: colors.text }}>
-            {getCategoryIcon(suggestion.task.category)}
-          </span>
+          {getCategoryIcon(suggestion.task.category, 'w-5 h-5', { color: colors.text })}
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>
@@ -389,10 +372,11 @@ function TaskCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="rounded-xl p-5 card-hover"
+      className="rounded-xl p-5 card-hover relative overflow-hidden"
       style={{
-        background: 'white',
+        background: effortColor.bg,
         boxShadow: 'var(--shadow-sm)',
+        borderLeft: `3px solid ${effortColor.border}`,
       }}
     >
       <div className="flex items-start gap-4">
@@ -400,9 +384,7 @@ function TaskCard({
           className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{ background: colors.bg }}
         >
-          <span className="text-lg" style={{ color: colors.text }}>
-            {getCategoryIcon(suggestion.task.category)}
-          </span>
+          {getCategoryIcon(suggestion.task.category, 'w-6 h-6', { color: colors.text })}
         </div>
 
         <div className="flex-1 min-w-0">
@@ -422,12 +404,23 @@ function TaskCard({
                 {suggestion.plant.name}
               </Link>
             </div>
-            <span
-              className="text-xs px-2 py-1 rounded-full flex-shrink-0"
-              style={{ background: colors.bg, color: colors.text }}
-            >
-              {formatCategory(suggestion.task.category)}
-            </span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span
+                className="text-xs px-2 py-1 rounded-full"
+                style={{ background: colors.bg, color: colors.text }}
+              >
+                {formatCategory(suggestion.task.category)}
+              </span>
+              <span
+                className="text-xs font-medium px-2 py-1 rounded-full"
+                style={{
+                  background: effortColor.border,
+                  color: 'white',
+                }}
+              >
+                {suggestion.task.effort_level}
+              </span>
+            </div>
           </div>
 
           <p
@@ -486,20 +479,6 @@ function getDueBucket(task: AITask, currentMonth: number): 'this_week' | 'next_t
     return 'this_week'
   }
   return 'next_two_weeks'
-}
-
-function getCategoryIcon(category: string): string {
-  const icons: Record<string, string> = {
-    pruning: '✂️',
-    feeding: '🌿',
-    pest_control: '🐛',
-    planting: '🌱',
-    watering: '💧',
-    harvesting: '🧺',
-    winter_care: '❄️',
-    general: '📋',
-  }
-  return icons[category] || '📋'
 }
 
 function formatCategory(category: string): string {

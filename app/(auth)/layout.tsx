@@ -122,7 +122,7 @@ export default function AuthLayout({
               alt="Tend"
               width={334}
               height={126}
-              className="h-24 w-auto mb-10"
+              className="h-16 w-auto mb-10"
               style={{
                 filter: 'brightness(0) saturate(100%) invert(88%) sepia(18%) saturate(502%) hue-rotate(329deg) brightness(102%) contrast(91%)'
               }}
@@ -177,7 +177,7 @@ export default function AuthLayout({
               alt="Tend"
               width={167}
               height={63}
-              className="h-10 w-auto"
+              className="h-7 w-auto"
             />
           </Link>
         </div>
