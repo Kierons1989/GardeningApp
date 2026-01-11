@@ -101,7 +101,7 @@ export default function NewPlantPage() {
 
     try {
       const displayName = cultivarName
-        ? `${cultivarName} ${middleLevel}`
+        ? `${cultivarName} - ${middleLevel}`
         : middleLevel
 
       const response = await fetch('/api/plants', {
