@@ -18,11 +18,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, common_name, species, plant_type, area, planted_in, notes, ai_care_profile } = body as {
+    const { name, common_name, species, plant_type, plant_type_id, cultivar_name, area, planted_in, notes, ai_care_profile } = body as {
       name: string
       common_name?: string
       species?: string
       plant_type?: string
+      plant_type_id?: number
+      cultivar_name?: string
       area?: string
       planted_in?: 'ground' | 'pot' | 'raised_bed'
       notes?: string
@@ -83,6 +85,8 @@ export async function POST(request: NextRequest) {
       common_name: common_name || null,
       species: species || null,
       plant_type: plant_type || null,
+      plant_type_id: plant_type_id || null,
+      cultivar_name: cultivar_name || null,
       area: area || null,
       planted_in: planted_in || null,
       notes: notes || null,
