@@ -165,7 +165,9 @@ export default function SettingsPage() {
                   className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
                   style={{ background: 'var(--sage-100)' }}
                 >
-                  <span className="text-2xl">🌡️</span>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="var(--sage-600)" strokeWidth="1.5">
+                    <path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </div>
                 <div className="flex-1">
                   <h3
@@ -240,15 +242,21 @@ export default function SettingsPage() {
           border: '1px solid var(--earth-200)',
         }}
       >
-        <h3
-          className="font-semibold mb-3"
-          style={{
-            fontFamily: 'var(--font-cormorant)',
-            color: 'var(--text-primary)',
-          }}
-        >
-          💡 About Climate Zones
-        </h3>
+        <div className="flex items-center gap-2 mb-3">
+          <svg viewBox="0 0 24 24" className="w-5 h-5" fill="var(--earth-400)" stroke="var(--earth-600)" strokeWidth="1.5">
+            <circle cx="12" cy="12" r="5" />
+            <path d="M12 1v6M12 17v6M23 12h-6M7 12H1" strokeLinecap="round" />
+          </svg>
+          <h3
+            className="font-semibold"
+            style={{
+              fontFamily: 'var(--font-cormorant)',
+              color: 'var(--text-primary)',
+            }}
+          >
+            About Climate Zones
+          </h3>
+        </div>
         <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
           We use USDA hardiness zones to provide location-specific care advice. These zones are based on average minimum winter temperatures.
         </p>

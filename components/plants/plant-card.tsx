@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import type { Plant } from '@/types/database'
+import { getPlantTypeIcon } from '@/components/ui/botanical-icons'
 
 interface PlantCardProps {
   plant: Plant
@@ -54,9 +55,7 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
                 className="w-full h-full object-cover rounded-xl"
               />
             ) : (
-              <span className="text-2xl">
-                {getPlantEmoji(plant.plant_types?.top_level || plant.plant_type)}
-              </span>
+              getPlantTypeIcon(plant.plant_types?.top_level || plant.plant_type || '', 'w-7 h-7', { color: 'var(--sage-600)' })
             )}
           </div>
 
@@ -180,29 +179,6 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
       </Link>
     </motion.div>
   )
-}
-
-function getPlantEmoji(plantType: string | null): string {
-  const emojiMap: Record<string, string> = {
-    rose: '🌹',
-    hydrangea: '🌺',
-    dahlia: '🌼',
-    tomato: '🍅',
-    clematis: '🌸',
-    lavender: '💜',
-    hosta: '🌿',
-    shrub: '🌳',
-    perennial: '🌸',
-    bulb: '🌷',
-    lawn: '🌿',
-    fruit: '🍎',
-    vegetable: '🥬',
-    tree: '🌲',
-    climber: '🍇',
-    herb: '🌿',
-    succulent: '🪴',
-  }
-  return emojiMap[plantType?.toLowerCase() || ''] || '🌱'
 }
 
 function formatPlantedIn(plantedIn: string): string {
