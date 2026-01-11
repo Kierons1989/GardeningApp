@@ -41,6 +41,13 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // Fetch user's climate zone
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('climate_zone')
+      .eq('id', user.id)
+      .single()
+
     // Generate care profile for this plant type
     console.log(`Generating care profile for "${middleLevel}" (${topLevel})`)
 
@@ -48,6 +55,7 @@ export async function POST(request: NextRequest) {
       area: area || null,
       plantedIn: plantedIn || null,
       currentMonth: new Date().getMonth() + 1,
+      climateZone: profile?.climate_zone || null,
     }
 
     const aiProvider = getAIProvider()

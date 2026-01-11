@@ -13,11 +13,17 @@ export function buildCareProfilePrompt(
   const plantDescription = topLevel ? `${middleLevel} (${topLevel})` : middleLevel
   const currentMonth = context?.currentMonth || new Date().getMonth() + 1
 
+  // Climate zone context
+  const zoneInfo = context?.climateZone
+    ? `USDA Zone ${context.climateZone}`
+    : 'General UK (Zone 8-9)'
+
   return `You are a UK gardening expert. Generate a comprehensive care profile for this plant type.
 
 PLANT TYPE: ${plantDescription}
 LOCATION: ${context?.area || 'Not specified'}
 PLANTED IN: ${context?.plantedIn || 'Not specified'}
+CLIMATE ZONE: ${zoneInfo}
 CURRENT MONTH: ${monthNames[currentMonth - 1]}
 
 Respond with JSON matching this exact schema:
@@ -44,14 +50,18 @@ Respond with JSON matching this exact schema:
 }
 
 IMPORTANT GUIDELINES:
-- All timing and advice should be UK-specific (climate zones 8-9, maritime climate)
-- Include seasonal tasks appropriate for UK gardens
+- All timing and advice should be UK-specific, tailored to the specified climate zone
+- Zone 7 (coldest): Scottish Highlands - later springs, earlier frosts, more winter protection needed
+- Zone 8 (moderate): Most of UK - standard UK gardening calendar
+- Zone 9 (mild): Southern/coastal - earlier springs, later frosts, less winter protection
+- Zone 10 (warmest): Scilly Isles/SW Cornwall - very mild, almost frost-free
+- Include seasonal tasks appropriate for UK gardens and the specific climate zone
 - Be practical and actionable, not generic
 - For month windows that span year end (e.g., Nov-Feb), use month_start: 11, month_end: 2
 - Generate 4-8 tasks covering the full year cycle
 - Tasks should cover the main care activities: pruning, feeding, watering, pest control as appropriate
 - Consider if the plant is in a pot vs ground (pots need more watering, winter protection)
-- Tips should be genuinely useful, not obvious
+- Tips should be genuinely useful and zone-appropriate, not obvious
 - Return ONLY valid JSON, no markdown code blocks or explanation`
 }
 

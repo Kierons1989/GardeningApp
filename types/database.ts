@@ -3,6 +3,8 @@
 export interface Profile {
   id: string;
   display_name: string | null;
+  location: string | null;
+  climate_zone: number | null;
   created_at: string;
 }
 
@@ -98,6 +100,7 @@ export interface PlantContext {
   area?: string | null;
   plantedIn?: string | null;
   currentMonth: number;
+  climateZone?: number | null;
 }
 
 export interface ChatMessage {
