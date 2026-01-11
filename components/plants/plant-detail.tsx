@@ -21,8 +21,11 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
   const [showChat, setShowChat] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
+  // Get care profile from either location (plant_types relation or directly on plant)
+  const careProfile = plant.plant_types?.ai_care_profile || plant.ai_care_profile
+
   const currentMonth = new Date().getMonth() + 1
-  const activeTasks = plant.ai_care_profile?.tasks.filter((task) => {
+  const activeTasks = careProfile?.tasks.filter((task) => {
     const inWindow = isTaskInWindow(task.month_start, task.month_end, currentMonth)
     if (!inWindow) return false
 
@@ -87,7 +90,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
             className="w-20 h-20 rounded-2xl flex items-center justify-center flex-shrink-0"
             style={{ background: 'var(--sage-100)' }}
           >
-            {getPlantTypeIcon(plant.plant_type, 'w-10 h-10', { color: 'var(--sage-700)' })}
+            {getPlantTypeIcon(plant.plant_types?.top_level || plant.plant_type || '', 'w-10 h-10', { color: 'var(--sage-700)' })}
           </div>
 
           {/* Plant Info */}
@@ -195,7 +198,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                   {formatPlantedIn(plant.planted_in)}
                 </span>
               )}
-              {plant.ai_care_profile?.uk_hardiness && (
+              {careProfile?.uk_hardiness && (
                 <span
                   className="inline-flex items-center gap-1.5 text-sm px-2 py-0.5 rounded-full"
                   style={{
@@ -207,7 +210,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                     <path d="M12 2v4M12 18v4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M2 12h4M18 12h4M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8" strokeLinecap="round" strokeLinejoin="round" />
                     <circle cx="12" cy="12" r="3" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  {plant.ai_care_profile.uk_hardiness}
+                  {careProfile.uk_hardiness}
                 </span>
               )}
             </div>
@@ -215,7 +218,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
         </div>
 
         {/* Summary */}
-        {plant.ai_care_profile?.summary && (
+        {careProfile?.summary && (
           <p
             className="mt-6 pt-6 border-t"
             style={{
@@ -223,7 +226,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
               color: 'var(--text-secondary)',
             }}
           >
-            {plant.ai_care_profile.summary}
+            {careProfile.summary}
           </p>
         )}
 
@@ -379,7 +382,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
       </div>
 
       {/* Care Tips */}
-      {plant.ai_care_profile?.tips && plant.ai_care_profile.tips.length > 0 && (
+      {careProfile?.tips && careProfile.tips.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -400,7 +403,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
             💡 Care Tips
           </h2>
           <ul className="space-y-2">
-            {plant.ai_care_profile.tips.map((tip, i) => (
+            {careProfile.tips.map((tip, i) => (
               <li key={i} className="flex gap-2" style={{ color: 'var(--text-secondary)' }}>
                 <span>•</span>
                 <span>{tip}</span>
