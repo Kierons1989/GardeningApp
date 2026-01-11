@@ -413,11 +413,11 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
             {getTasksByMonth(careProfile.tasks).map(({ month, tasks }) => (
               <div
                 key={month}
-                className="p-4 rounded-xl"
+                className="p-5 rounded-xl"
                 style={{ background: 'var(--stone-50)' }}
               >
                 <h3
-                  className="font-semibold mb-3"
+                  className="font-semibold mb-4 text-lg"
                   style={{
                     fontFamily: 'var(--font-cormorant)',
                     color: 'var(--text-primary)',
@@ -425,24 +425,43 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                 >
                   {month}
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {tasks.map((task) => (
                     <div
                       key={task.key}
-                      className="flex items-start gap-2 text-sm"
+                      className="p-4 rounded-lg"
+                      style={{
+                        background: 'white',
+                        border: '1px solid var(--stone-200)'
+                      }}
                     >
-                      <span
-                        className="px-2 py-0.5 rounded text-xs mt-0.5 flex-shrink-0"
-                        style={{
-                          background: getCategoryColor(task.category).bg,
-                          color: getCategoryColor(task.category).text,
-                        }}
-                      >
-                        {task.category.replace(/_/g, ' ')}
-                      </span>
-                      <span style={{ color: 'var(--text-secondary)' }}>
-                        {task.title}
-                      </span>
+                      <div className="flex items-start gap-3 mb-2">
+                        <span
+                          className="px-2.5 py-1 rounded text-xs font-medium flex-shrink-0"
+                          style={{
+                            background: getCategoryColor(task.category).bg,
+                            color: getCategoryColor(task.category).text,
+                          }}
+                        >
+                          {task.category.replace(/_/g, ' ')}
+                        </span>
+                        <div className="flex-1">
+                          <h4
+                            className="font-semibold mb-1"
+                            style={{ color: 'var(--text-primary)' }}
+                          >
+                            {task.title}
+                          </h4>
+                          {task.why_this_matters && (
+                            <p
+                              className="text-sm leading-relaxed"
+                              style={{ color: 'var(--text-secondary)' }}
+                            >
+                              {task.why_this_matters}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
