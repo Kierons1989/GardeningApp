@@ -34,8 +34,8 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
     })
   }
 
-  // Get care profile from either location (plant_types relation or directly on plant)
-  const careProfile = plant.plant_types?.ai_care_profile || plant.ai_care_profile
+  // Get care profile from plant_types relation
+  const careProfile = plant.plant_types?.ai_care_profile
 
   const currentMonth = new Date().getMonth() + 1
   const activeTasks = careProfile?.tasks.filter((task) => {
@@ -103,7 +103,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
             className="w-20 h-20 rounded-2xl flex items-center justify-center flex-shrink-0"
             style={{ background: 'var(--sage-100)' }}
           >
-            {getPlantTypeIcon(plant.plant_types?.top_level || plant.plant_type || '', 'w-10 h-10', { color: 'var(--sage-700)' })}
+            {getPlantTypeIcon(plant.plant_types?.top_level || '', 'w-10 h-10', { color: 'var(--sage-700)' })}
           </div>
 
           {/* Plant Info */}
@@ -530,7 +530,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                                   className="text-sm leading-relaxed space-y-3"
                                   style={{ color: 'var(--text-secondary)' }}
                                 >
-                                  {task.how_to.split('\n\n').map((paragraph, i) => (
+                                  {task.how_to.split('\n\n').map((paragraph: string, i: number) => (
                                     <p key={i}>{paragraph}</p>
                                   ))}
                                 </div>

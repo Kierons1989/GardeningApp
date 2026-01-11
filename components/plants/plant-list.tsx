@@ -28,7 +28,7 @@ export default function PlantList({ plants }: PlantListProps) {
   }, [plants])
 
   const uniqueTypes = useMemo(() => {
-    const types = plants.map(p => p.plant_types?.top_level || p.plant_type).filter(Boolean) as string[]
+    const types = plants.map(p => p.plant_types?.top_level).filter(Boolean) as string[]
     return Array.from(new Set(types)).sort()
   }, [plants])
 
@@ -49,7 +49,7 @@ export default function PlantList({ plants }: PlantListProps) {
 
       // Type filter
       if (selectedType) {
-        const plantType = plant.plant_types?.top_level || plant.plant_type
+        const plantType = plant.plant_types?.top_level
         if (plantType !== selectedType) return false
       }
 
@@ -78,7 +78,7 @@ export default function PlantList({ plants }: PlantListProps) {
   // Group plants by top level (plant type group)
   const plantsByTopLevel = useMemo(() => {
     return filteredAndSortedPlants.reduce<Record<string, Plant[]>>((acc, plant) => {
-      const topLevel = plant.plant_types?.top_level || plant.plant_type || 'Other Plants'
+      const topLevel = plant.plant_types?.top_level || 'Other Plants'
       if (!acc[topLevel]) acc[topLevel] = []
       acc[topLevel].push(plant)
       return acc

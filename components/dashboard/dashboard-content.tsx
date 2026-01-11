@@ -21,9 +21,10 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
     const suggestions: TaskSuggestion[] = []
 
     plants.forEach((plant) => {
-      if (!plant.ai_care_profile?.tasks) return
+      const careProfile = plant.plant_types?.ai_care_profile
+      if (!careProfile?.tasks) return
 
-      plant.ai_care_profile.tasks.forEach((task: AITask) => {
+      careProfile.tasks.forEach((task: AITask) => {
         // Check if task is in current window
         const inWindow = isTaskInWindow(task.month_start, task.month_end, currentMonth)
         if (!inWindow) return
@@ -282,7 +283,7 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
                       className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{ background: 'var(--earth-100)' }}
                     >
-                      {getPlantTypeIcon(plant.plant_type, 'w-5 h-5', { color: 'var(--earth-700)' })}
+                      {getPlantTypeIcon(plant.plant_types?.top_level || '', 'w-5 h-5', { color: 'var(--earth-700)' })}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p

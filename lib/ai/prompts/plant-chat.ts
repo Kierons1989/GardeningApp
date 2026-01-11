@@ -16,7 +16,8 @@ export function buildPlantChatPrompt(
     })
     .join('\n')
 
-  const tasks = plant.ai_care_profile?.tasks
+  const careProfile = plant.plant_types?.ai_care_profile
+  const tasks = careProfile?.tasks
     ?.map((t) => `- ${t.title} (${t.category}, ${formatMonthRange(t.month_start, t.month_end)})`)
     .join('\n')
 
@@ -25,16 +26,16 @@ export function buildPlantChatPrompt(
 PLANT DETAILS:
 - User's name for it: ${plant.name}
 - Common name: ${plant.common_name || 'Unknown'}
-- Type: ${plant.plant_type || 'Unknown'}
+- Type: ${plant.plant_types?.middle_level || 'Unknown'}
 - Species: ${plant.species || 'Unknown'}
 - Location: ${plant.area || 'Not specified'}
 - Planted in: ${plant.planted_in || 'Not specified'}
 - User's notes: ${plant.notes || 'None'}
 
 CARE PROFILE:
-${plant.ai_care_profile?.summary || 'No care profile generated yet.'}
+${careProfile?.summary || 'No care profile generated yet.'}
 
-Hardiness: ${plant.ai_care_profile?.uk_hardiness || 'Unknown'}
+Hardiness: ${careProfile?.uk_hardiness || 'Unknown'}
 
 Scheduled tasks:
 ${tasks || 'No tasks scheduled'}

@@ -24,7 +24,6 @@ export interface Plant {
   name: string;
   common_name: string | null;
   species: string | null;
-  plant_type: string | null; // Deprecated: use plant_type_id
   plant_type_id: string | null;
   plant_types?: PlantType | null; // Joined relation
   cultivar_name: string | null;
@@ -32,7 +31,6 @@ export interface Plant {
   planted_in: 'ground' | 'pot' | 'raised_bed' | null;
   notes: string | null;
   photo_url: string | null;
-  ai_care_profile: AICareProfile | null; // Deprecated: care profiles now in plant_types table
   created_at: string;
   updated_at: string;
 }
@@ -106,12 +104,23 @@ export interface PlantContext {
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+  timestamp?: string;
 }
 
 export interface ChatContext {
   plant: Plant;
   history: TaskHistory[];
   currentDate: string;
+}
+
+export interface PlantConversation {
+  id: string;
+  user_id: string;
+  plant_id: string;
+  session_id: string;
+  messages: ChatMessage[];
+  created_at: string;
+  updated_at: string;
 }
 
 export interface CareProfileCache {

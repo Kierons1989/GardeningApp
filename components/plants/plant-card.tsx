@@ -11,7 +11,7 @@ interface PlantCardProps {
 }
 
 export default function PlantCard({ plant, index }: PlantCardProps) {
-  const careProfile = plant.plant_types?.ai_care_profile || plant.ai_care_profile
+  const careProfile = plant.plant_types?.ai_care_profile
   const taskCount = careProfile?.tasks?.length || 0
   const hasProfile = !!careProfile
   const topLevel = plant.plant_types?.top_level
@@ -55,7 +55,7 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
                 className="w-full h-full object-cover rounded-xl"
               />
             ) : (
-              getPlantTypeIcon(plant.plant_types?.top_level || plant.plant_type || '', 'w-7 h-7', { color: 'var(--sage-600)' })
+              getPlantTypeIcon(plant.plant_types?.top_level || '', 'w-7 h-7', { color: 'var(--sage-600)' })
             )}
           </div>
 

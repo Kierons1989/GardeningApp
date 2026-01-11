@@ -13,7 +13,30 @@ export default function PlantChat({ plant, taskHistory }: PlantChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [loadingHistory, setLoadingHistory] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Load conversation history on mount
+  useEffect(() => {
+    async function loadConversation() {
+      try {
+        const response = await fetch(`/api/ai/chat?plantId=${plant.id}`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.conversation) {
+            setMessages(data.conversation.messages || [])
+            setSessionId(data.conversation.session_id)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load conversation:', error)
+      } finally {
+        setLoadingHistory(false)
+      }
+    }
+    loadConversation()
+  }, [plant.id])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -41,6 +64,7 @@ export default function PlantChat({ plant, taskHistory }: PlantChatProps) {
         body: JSON.stringify({
           plantId: plant.id,
           messages: newMessages,
+          sessionId,
         }),
       })
 
@@ -49,10 +73,12 @@ export default function PlantChat({ plant, taskHistory }: PlantChatProps) {
       }
 
       const data = await response.json()
-      setMessages([
-        ...newMessages,
-        { role: 'assistant', content: data.response },
-      ])
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: data.response,
+        timestamp: new Date().toISOString(),
+      }
+      setMessages([...newMessages, assistantMessage])
     } catch {
       setMessages([
         ...newMessages,
@@ -76,21 +102,38 @@ export default function PlantChat({ plant, taskHistory }: PlantChatProps) {
     >
       {/* Header */}
       <div
-        className="px-6 py-4 border-b"
+        className="px-6 py-4 border-b flex items-center justify-between"
         style={{ borderColor: 'var(--stone-200)' }}
       >
-        <h3
-          className="text-lg font-semibold"
-          style={{
-            fontFamily: 'var(--font-cormorant)',
-            color: 'var(--text-primary)',
-          }}
-        >
-          Ask about {plant.name}
-        </h3>
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-          Get UK-specific advice for your plant
-        </p>
+        <div>
+          <h3
+            className="text-lg font-semibold"
+            style={{
+              fontFamily: 'var(--font-cormorant)',
+              color: 'var(--text-primary)',
+            }}
+          >
+            Ask about {plant.name}
+          </h3>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Get UK-specific advice for your plant
+          </p>
+        </div>
+        {messages.length > 0 && (
+          <button
+            onClick={() => {
+              setMessages([])
+              setSessionId(null)
+            }}
+            className="text-sm px-3 py-1.5 rounded-lg transition-colors"
+            style={{
+              background: 'var(--stone-100)',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            New conversation
+          </button>
+        )}
       </div>
 
       {/* Messages */}
@@ -98,7 +141,26 @@ export default function PlantChat({ plant, taskHistory }: PlantChatProps) {
         className="p-4 space-y-4 overflow-y-auto"
         style={{ maxHeight: '400px', minHeight: '200px' }}
       >
-        {messages.length === 0 && (
+        {loadingHistory ? (
+          <div className="text-center py-8">
+            <div
+              className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+              style={{ background: 'var(--sage-100)' }}
+            >
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              >
+                <svg viewBox="0 0 24 24" className="w-6 h-6" style={{ color: 'var(--sage-600)' }} fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" strokeLinecap="round" />
+                </svg>
+              </motion.div>
+            </div>
+            <p style={{ color: 'var(--text-muted)' }}>
+              Loading conversation...
+            </p>
+          </div>
+        ) : messages.length === 0 ? (
           <div className="text-center py-8">
             <div
               className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
@@ -129,7 +191,7 @@ export default function PlantChat({ plant, taskHistory }: PlantChatProps) {
               ))}
             </div>
           </div>
-        )}
+        ) : null}
 
         <AnimatePresence>
           {messages.map((message, index) => (

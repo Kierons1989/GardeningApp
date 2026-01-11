@@ -10,10 +10,19 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  // Fetch user's plants
+  // Fetch user's plants with plant_types relation
   const { data: plants } = await supabase
     .from('plants')
-    .select('*')
+    .select(`
+      *,
+      plant_types (
+        id,
+        top_level,
+        middle_level,
+        growth_habit,
+        ai_care_profile
+      )
+    `)
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
