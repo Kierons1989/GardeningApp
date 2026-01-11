@@ -42,8 +42,8 @@ Respond with JSON matching this exact schema:
       "month_end": 1-12,
       "recurrence_type": "once_per_window|weekly_in_window|monthly_in_window",
       "effort_level": "low|medium|high",
-      "why_this_matters": "string - one sentence explaining importance for plant health",
-      "how_to": "string - brief practical steps (2-3 sentences)"
+      "why_this_matters": "string - 1-2 sentences explaining the importance and benefits of this task",
+      "how_to": "string - COMPREHENSIVE detailed guidance (4-8 paragraphs). Include: multiple approaches/methods with pros/cons, zone-specific considerations, step-by-step instructions for each method, timing nuances, what to look for, common mistakes to avoid, and options for different experience/effort levels. Be thorough and educational - this is the main instructional content."
     }
   ],
   "tips": ["string - practical UK-specific care tips, 3-5 items"]
@@ -62,6 +62,23 @@ IMPORTANT GUIDELINES:
 - Tasks should cover the main care activities: pruning, feeding, watering, pest control as appropriate
 - Consider if the plant is in a pot vs ground (pots need more watering, winter protection)
 - Tips should be genuinely useful and zone-appropriate, not obvious
+
+CRITICAL - DETAILED "how_to" INSTRUCTIONS:
+The "how_to" field is the PRIMARY educational content. It must be extensive and comprehensive:
+- Present MULTIPLE valid approaches when they exist (e.g., for dahlias: lift and store, mulch in ground, bring pots inside)
+- Explain the PROS and CONS of each approach
+- Provide ZONE-SPECIFIC guidance (what works in Zone 9 may not work in Zone 7)
+- Include DETAILED step-by-step instructions for each method
+- Explain TIMING nuances and what to look for
+- Highlight COMMON MISTAKES and how to avoid them
+- Offer options for different SKILL/EFFORT levels
+- Use paragraph breaks for readability
+- Aim for 200-400 words per task - this is educational content, not a brief tip
+- Write in a friendly, knowledgeable tone that educates rather than just instructs
+
+Example of good "how_to" depth:
+"There are three main approaches to overwintering dahlias, each with different trade-offs:\n\nLifting and storing (most reliable): After the first frost blackens the foliage, cut stems back to 6 inches. Carefully dig around the plant 12 inches out to avoid damaging tubers. Lift the clump, shake off loose soil, and let dry upside-down for a few days. Trim stems to 4 inches, remove damaged tubers, and store in barely-damp compost in a frost-free shed (5-10°C). Check monthly for rot. This method guarantees survival but requires storage space and effort.\n\nIn-ground with mulch (less reliable, less work): In Zone 9-10 areas, you can leave dahlias in the ground. After frost, cut back stems and apply a 6-inch layer of mulch (compost, bark, or straw) over the crown. The risk is that a severe winter can still kill tubers, and slugs may damage them in wet conditions. Only attempt this in mild areas with well-drained soil.\n\nContainer plants (easiest): Move pots into a frost-free greenhouse or shed. No need to lift - just let the plant die back naturally, cut back stems, and reduce watering to barely moist. This is the easiest method if you have space, combining protection with minimal handling."
+
 - Return ONLY valid JSON, no markdown code blocks or explanation`
 }
 

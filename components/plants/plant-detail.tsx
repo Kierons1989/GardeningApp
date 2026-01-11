@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { Plant, TaskHistory } from '@/types/database'
 import { createClient } from '@/lib/supabase/client'
 import TaskActions from '@/components/tasks/task-actions'
@@ -20,6 +20,19 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
   const router = useRouter()
   const [showChat, setShowChat] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set())
+
+  const toggleTask = (taskKey: string) => {
+    setExpandedTasks(prev => {
+      const next = new Set(prev)
+      if (next.has(taskKey)) {
+        next.delete(taskKey)
+      } else {
+        next.add(taskKey)
+      }
+      return next
+    })
+  }
 
   // Get care profile from either location (plant_types relation or directly on plant)
   const careProfile = plant.plant_types?.ai_care_profile || plant.ai_care_profile
@@ -426,44 +439,108 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                   {month}
                 </h3>
                 <div className="space-y-4">
-                  {tasks.map((task) => (
-                    <div
-                      key={task.key}
-                      className="p-4 rounded-lg"
-                      style={{
-                        background: 'white',
-                        border: '1px solid var(--stone-200)'
-                      }}
-                    >
-                      <div className="flex items-start gap-3 mb-2">
-                        <span
-                          className="px-2.5 py-1 rounded text-xs font-medium flex-shrink-0"
-                          style={{
-                            background: getCategoryColor(task.category).bg,
-                            color: getCategoryColor(task.category).text,
-                          }}
-                        >
-                          {task.category.replace(/_/g, ' ')}
-                        </span>
-                        <div className="flex-1">
-                          <h4
-                            className="font-semibold mb-1"
-                            style={{ color: 'var(--text-primary)' }}
-                          >
-                            {task.title}
-                          </h4>
-                          {task.why_this_matters && (
-                            <p
-                              className="text-sm leading-relaxed"
-                              style={{ color: 'var(--text-secondary)' }}
+                  {tasks.map((task) => {
+                    const isExpanded = expandedTasks.has(task.key)
+                    return (
+                      <div
+                        key={task.key}
+                        className="rounded-lg overflow-hidden"
+                        style={{
+                          background: 'white',
+                          border: '1px solid var(--stone-200)'
+                        }}
+                      >
+                        <div className="p-4">
+                          <div className="flex items-start gap-3 mb-2">
+                            <span
+                              className="px-2.5 py-1 rounded text-xs font-medium flex-shrink-0"
+                              style={{
+                                background: getCategoryColor(task.category).bg,
+                                color: getCategoryColor(task.category).text,
+                              }}
                             >
-                              {task.why_this_matters}
-                            </p>
+                              {task.category.replace(/_/g, ' ')}
+                            </span>
+                            <div className="flex-1">
+                              <h4
+                                className="font-semibold mb-1"
+                                style={{ color: 'var(--text-primary)' }}
+                              >
+                                {task.title}
+                              </h4>
+                              {task.why_this_matters && (
+                                <p
+                                  className="text-sm leading-relaxed"
+                                  style={{ color: 'var(--text-secondary)' }}
+                                >
+                                  {task.why_this_matters}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {task.how_to && (
+                            <button
+                              onClick={() => toggleTask(task.key)}
+                              className="mt-3 flex items-center gap-2 text-sm font-medium transition-colors"
+                              style={{
+                                color: 'var(--sage-600)',
+                              }}
+                            >
+                              <svg
+                                viewBox="0 0 24 24"
+                                className="w-4 h-4 transition-transform"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                style={{
+                                  transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'
+                                }}
+                              >
+                                <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                              {isExpanded ? 'Hide detailed instructions' : 'Show detailed instructions'}
+                            </button>
                           )}
                         </div>
+
+                        <AnimatePresence>
+                          {isExpanded && task.how_to && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              style={{
+                                borderTop: '1px solid var(--stone-200)',
+                                background: 'var(--stone-50)'
+                              }}
+                            >
+                              <div className="p-4">
+                                <h5
+                                  className="font-semibold mb-3 flex items-center gap-2"
+                                  style={{ color: 'var(--text-primary)' }}
+                                >
+                                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                  How to do this
+                                </h5>
+                                <div
+                                  className="text-sm leading-relaxed space-y-3"
+                                  style={{ color: 'var(--text-secondary)' }}
+                                >
+                                  {task.how_to.split('\n\n').map((paragraph, i) => (
+                                    <p key={i}>{paragraph}</p>
+                                  ))}
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             ))}
