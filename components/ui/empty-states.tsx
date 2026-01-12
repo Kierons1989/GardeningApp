@@ -2,7 +2,7 @@
  * Simple empty states using Phosphor icons
  */
 
-import { Plant as PlantIcon, CheckCircle, MagnifyingGlass } from 'phosphor-react'
+import { Flower, CheckCircle, MagnifyingGlass } from 'phosphor-react'
 import { motion } from 'framer-motion'
 
 interface EmptyStateProps {
@@ -21,7 +21,7 @@ export function EmptyGardenIllustration({ className }: EmptyStateProps) {
         className="w-32 h-32 rounded-full mx-auto flex items-center justify-center"
         style={{ background: 'var(--sage-100)' }}
       >
-        <PlantIcon size={64} weight="light" color="var(--sage-600)" />
+        <Flower size={64} weight="light" color="var(--sage-600)" />
       </div>
     </motion.div>
   )
