@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * Simple empty states using Phosphor icons
  */
