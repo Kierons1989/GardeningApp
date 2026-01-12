@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { getZoneDescription, getZoneTemperatureRange } from '@/lib/climate/uk-zones'
 import type { Profile } from '@/types/database'
+import Icon from '@/components/ui/icon'
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -165,9 +166,7 @@ export default function SettingsPage() {
                   className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
                   style={{ background: 'var(--sage-100)' }}
                 >
-                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="var(--sage-600)" strokeWidth="1.5">
-                    <path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Icon name="Thermometer" size={20} weight="light" className="w-6 h-6" style={{ color: 'var(--sage-600)' }} ariaLabel="zone" />
                 </div>
                 <div className="flex-1">
                   <h3
@@ -222,9 +221,7 @@ export default function SettingsPage() {
               ) : (
                 <>
                   Save Location
-                  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Icon name="Check" size={20} weight="light" className="w-5 h-5" ariaLabel="save" />
                 </>
               )}
             </button>
@@ -243,10 +240,7 @@ export default function SettingsPage() {
         }}
       >
         <div className="flex items-center gap-2 mb-3">
-          <svg viewBox="0 0 24 24" className="w-5 h-5" fill="var(--earth-400)" stroke="var(--earth-600)" strokeWidth="1.5">
-            <circle cx="12" cy="12" r="5" />
-            <path d="M12 1v6M12 17v6M23 12h-6M7 12H1" strokeLinecap="round" />
-          </svg>
+          <Icon name="GlobeHemisphereWest" size={20} weight="light" className="w-5 h-5" style={{ color: 'var(--earth-600)' }} ariaLabel="about climate zones" />
           <h3
             className="font-semibold"
             style={{

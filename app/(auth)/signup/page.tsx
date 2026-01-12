@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
+import Icon from '@/components/ui/icon'
 
 export default function SignUpPage() {
   const [displayName, setDisplayName] = useState('')
@@ -52,16 +53,7 @@ export default function SignUpPage() {
           className="w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center"
           style={{ background: 'var(--sage-100)' }}
         >
-          <svg
-            viewBox="0 0 24 24"
-            className="w-8 h-8"
-            style={{ color: 'var(--sage-600)' }}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <Icon name="Check" size={28} weight="light" className="w-8 h-8" style={{ color: 'var(--sage-600)' }} ariaLabel="success" />
         </div>
 
         <h2

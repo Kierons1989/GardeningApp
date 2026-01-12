@@ -391,10 +391,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
           }}
         >
           <div className="flex items-center gap-2 mb-6">
-            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="var(--sage-600)" strokeWidth="1.5">
-              <rect x="3" y="4" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M3 10h18M8 2v4M16 2v4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Icon name="Calendar" size={20} weight="light" className="w-5 h-5" style={{ color: 'var(--sage-600)' }} ariaLabel="calendar" />
             <h2
               className="text-xl font-semibold"
               style={{
@@ -471,18 +468,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                                 color: 'var(--sage-600)',
                               }}
                             >
-                              <svg
-                                viewBox="0 0 24 24"
-                                className="w-4 h-4 transition-transform"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                style={{
-                                  transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'
-                                }}
-                              >
-                                <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
+                              <Icon name="CaretRight" size={16} weight="light" className="w-4 h-4 transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }} ariaLabel="expand" />
                               {isExpanded ? 'Hide detailed instructions' : 'Show detailed instructions'}
                             </button>
                           )}
@@ -505,9 +491,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                                   className="font-semibold mb-3 flex items-center gap-2"
                                   style={{ color: 'var(--text-primary)' }}
                                 >
-                                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" strokeLinecap="round" strokeLinejoin="round" />
-                                  </svg>
+                                  <Icon name="BookOpen" size={16} weight="light" className="w-4 h-4" ariaLabel="how-to" />
                                   How to do this
                                 </h5>
                                 <div
@@ -545,10 +529,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
           }}
         >
           <div className="flex items-center gap-2 mb-4">
-            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="var(--sage-400)" stroke="var(--sage-600)" strokeWidth="1.5">
-              <circle cx="12" cy="12" r="5" />
-              <path d="M12 1v6M12 17v6M23 12h-6M7 12H1" strokeLinecap="round" />
-            </svg>
+            <Icon name="Lightbulb" size={20} weight="light" className="w-5 h-5" style={{ color: 'var(--sage-600)' }} ariaLabel="tips" />
             <h2
               className="text-xl font-semibold"
               style={{

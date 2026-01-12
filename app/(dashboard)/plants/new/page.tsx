@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { AICareProfile, PlantIdentification, PlantType } from '@/types/database'
-import { getCategoryIcon } from '@/components/ui/botanical-icons'
+import { getCategoryIcon, getPlantedInIcon } from '@/components/ui/botanical-icons'
+import Icon from '@/components/ui/icon'
 
 type Step = 'input' | 'identifying' | 'confirm' | 'generating' | 'review'
 
@@ -77,22 +78,27 @@ export default function NewPlantPage() {
           topLevel,
           middleLevel,
           growthHabit,
-          area,
-          plantedIn,
+          common_name: careProfile?.common_name,
+          species: careProfile?.species,
+          plant_type_id: plantType?.id,
+          cultivar_name: cultivarName || undefined,
+          area: area || undefined,
+          planted_in: plantedIn || undefined,
+          notes: notes || undefined,
         }),
       })
 
       if (!response.ok) {
-        throw new Error('Failed to generate care profile')
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to save plant')
       }
 
-      const data = await response.json()
-      setPlantType(data.plantType)
-      setCareProfile(data.careProfile)
-      setStep('review')
-    } catch {
-      setAiError('Failed to generate care profile. Please try again.')
-      setStep('confirm')
+      router.push('/plants')
+      router.refresh()
+    } catch (err) {
+      console.error('Save error:', err)
+      setAiError(err instanceof Error ? err.message : 'Failed to save plant. Please try again.')
+      setSaving(false)
     }
   }
 
@@ -101,15 +107,11 @@ export default function NewPlantPage() {
     setAiError(null)
 
     try {
-      const displayName = cultivarName
-        ? `${cultivarName} - ${middleLevel}`
-        : middleLevel
-
       const response = await fetch('/api/plants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: displayName,
+          name: careProfile?.common_name || middleLevel || userInput,
           common_name: careProfile?.common_name,
           species: careProfile?.species,
           plant_type_id: plantType?.id,
@@ -145,9 +147,7 @@ export default function NewPlantPage() {
         className="inline-flex items-center gap-2 mb-6 text-sm font-medium transition-colors"
         style={{ color: 'var(--text-muted)' }}
       >
-        <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <Icon name="CaretLeft" size={16} weight="light" className="w-4 h-4" ariaLabel="back" />
         Back to plants
       </Link>
 
@@ -280,32 +280,17 @@ export default function NewPlantPage() {
                     {
                       value: 'ground',
                       label: 'Ground',
-                      icon: (
-                        <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" />
-                          <path d="M12 2a15 15 0 00-4 10h8a15 15 0 00-4-10z" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )
+                      icon: getPlantedInIcon('ground', 'w-6 h-6', { color: 'var(--text-muted)' }, 20),
                     },
                     {
                       value: 'pot',
                       label: 'Pot',
-                      icon: (
-                        <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <path d="M8 10L6 20h12l-2-10" strokeLinecap="round" strokeLinejoin="round" />
-                          <ellipse cx="12" cy="10" rx="6" ry="2" />
-                        </svg>
-                      )
+                      icon: getPlantedInIcon('pot', 'w-6 h-6', { color: 'var(--text-muted)' }, 20),
                     },
                     {
                       value: 'raised_bed',
                       label: 'Raised bed',
-                      icon: (
-                        <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <rect x="3" y="10" width="18" height="10" rx="1" strokeLinecap="round" strokeLinejoin="round" />
-                          <path d="M3 14h18M7 10v10M17 10v10" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )
+                      icon: getPlantedInIcon('raised_bed', 'w-6 h-6', { color: 'var(--text-muted)' }, 20),
                     },
                   ].map((option) => (
                     <button
@@ -345,9 +330,7 @@ export default function NewPlantPage() {
             <div className="mt-8 flex justify-end">
               <button type="submit" className="btn btn-primary">
                 Identify plant
-                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <Icon name="ArrowRight" size={18} weight="light" className="w-5 h-5" ariaLabel="identify" />
               </button>
             </div>
           </motion.form>
@@ -433,10 +416,7 @@ export default function NewPlantPage() {
                 style={{ background: 'var(--sage-50)', border: '1px solid var(--sage-200)' }}
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <svg viewBox="0 0 24 24" className="w-10 h-10" fill="none" stroke="var(--sage-600)" strokeWidth="1.5">
-                    <path d="M12 22V12M12 12C12 12 7 10 4 5C9 5 12 8 12 12Z" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M12 12C12 12 17 10 20 5C15 5 12 8 12 12Z" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Icon name="MagnifyingGlass" size={28} weight="light" className="w-10 h-10" style={{ color: 'var(--sage-600)' }} ariaLabel="identified" />
                   <div>
                     <div className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>
                       {topLevel}
@@ -533,9 +513,7 @@ export default function NewPlantPage() {
                 className="btn btn-primary flex-1"
               >
                 Generate care profile
-                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <Icon name="ArrowRight" size={18} weight="light" className="w-5 h-5" ariaLabel="generate" />
               </button>
             </div>
           </motion.div>
@@ -613,10 +591,7 @@ export default function NewPlantPage() {
                   className="w-16 h-16 rounded-xl flex items-center justify-center"
                   style={{ background: 'var(--sage-100)' }}
                 >
-                  <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="var(--sage-600)" strokeWidth="1.5">
-                    <path d="M12 22V12M12 12C12 12 7 10 4 5C9 5 12 8 12 12Z" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M12 12C12 12 17 10 20 5C15 5 12 8 12 12Z" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Icon name="Seedling" size={28} weight="light" className="w-8 h-8" style={{ color: 'var(--sage-600)' }} ariaLabel="plant" />
                 </div>
                 <div>
                   <h2
@@ -657,9 +632,7 @@ export default function NewPlantPage() {
                 className="inline-flex items-center gap-2 px-3 py-2 rounded-lg"
                 style={{ background: 'var(--sage-50)' }}
               >
-                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="var(--sage-600)" strokeWidth="1.5">
-                  <path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <Icon name="Thermometer" size={16} weight="light" className="w-4 h-4" style={{ color: 'var(--sage-600)' }} ariaLabel="hardiness" />
                 <span className="text-sm font-medium" style={{ color: 'var(--sage-700)' }}>
                   {careProfile.uk_hardiness}
                 </span>
@@ -733,10 +706,7 @@ export default function NewPlantPage() {
                   }}
 
                 >
-                  <svg viewBox="0 0 24 24" className="w-5 h-5 inline mr-2" fill="var(--earth-400)" stroke="var(--earth-600)" strokeWidth="1.5">
-                    <circle cx="12" cy="12" r="5" />
-                    <path d="M12 1v6M12 17v6M23 12h-6M7 12H1" strokeLinecap="round" />
-                  </svg>
+                  <Icon name="Lightbulb" size={20} weight="light" className="w-5 h-5 inline mr-2" style={{ color: 'var(--earth-600)' }} ariaLabel="tips" />
                   Quick Tips
                 </h3>
                 <ul className="space-y-2">
@@ -773,9 +743,7 @@ export default function NewPlantPage() {
                 ) : (
                   <>
                     Add to garden
-                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <Icon name="Check" size={20} weight="light" className="w-5 h-5" ariaLabel="add" />
                   </>
                 )}
               </button>
