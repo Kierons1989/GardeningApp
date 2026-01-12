@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { CircleNotch, ChatCircle, PaperPlaneRight } from 'phosphor-react'
 import type { Plant, TaskHistory, ChatMessage } from '@/types/database'
 
 interface PlantChatProps {
@@ -151,9 +152,7 @@ export default function PlantChat({ plant, taskHistory }: PlantChatProps) {
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
               >
-                <svg viewBox="0 0 24 24" className="w-6 h-6" style={{ color: 'var(--sage-600)' }} fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" strokeLinecap="round" />
-                </svg>
+                <CircleNotch size={32} weight="light" color="var(--sage-600)" />
               </motion.div>
             </div>
             <p style={{ color: 'var(--text-muted)' }}>
@@ -166,7 +165,7 @@ export default function PlantChat({ plant, taskHistory }: PlantChatProps) {
               className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
               style={{ background: 'var(--sage-100)' }}
             >
-              <span className="text-2xl">💬</span>
+              <ChatCircle size={40} weight="light" color="var(--sage-600)" />
             </div>
             <p style={{ color: 'var(--text-muted)' }}>
               Ask me anything about caring for your {plant.common_name || plant.name}
@@ -273,9 +272,7 @@ export default function PlantChat({ plant, taskHistory }: PlantChatProps) {
             opacity: !input.trim() || loading ? 0.5 : 1,
           }}
         >
-          <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <PaperPlaneRight size={20} weight="light" />
         </button>
       </form>
     </div>
