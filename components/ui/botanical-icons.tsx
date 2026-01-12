@@ -12,7 +12,7 @@
  * Each helper returns a Phosphor icon rendered with `weight="light"`.
  */
 
-import * as Phosphor from 'phosphor-react'
+import * as Phosphor from '@phosphor-icons/react'
 
 interface IconProps {
   className?: string
@@ -20,47 +20,49 @@ interface IconProps {
   size?: number | string
 }
 
-function renderPhosphorIcon(name: string, { className, style, size }: IconProps = {}) {
-  const Icon = (Phosphor as any)[name]
-  if (!Icon) return null
-  const props: Record<string, any> = { weight: 'light' }
-  if (className) props.className = className
-  if (style) props.style = style
-  if (size) props.size = size
-  return <Icon {...props} />
-}
+type IconComponent = any
 
-export function getCategoryIcon(category: string, className?: string, style?: React.CSSProperties) {
-  const props = { className, style }
-  const map: Record<string, string> = {
-    pruning: 'Scissors',
-    feeding: 'Spoon',
-    pest_control: 'Bug',
-    planting: 'Seedling',
-    watering: 'Drop',
-    harvesting: 'Basket',
-    winter_care: 'Snowflake',
-    general: 'Clipboard',
+function resolveIcon(candidates: string[], fallback = 'SquaresFour') {
+  for (const name of candidates) {
+    if ((Phosphor as any)[name]) return (Phosphor as any)[name]
+    if ((Phosphor as any)[name + 'Icon']) return (Phosphor as any)[name + 'Icon']
   }
-  const name = map[category] || 'SquaresFour'
-  return renderPhosphorIcon(name, props)
+  return (Phosphor as any)[fallback] || null
 }
 
-export function getPlantTypeIcon(plantType: string | null, className?: string, style?: React.CSSProperties) {
-  const props = { className, style }
+export function getCategoryIcon(category: string, className?: string, style?: React.CSSProperties, size?: number | string) {
+  const map: Record<string, string[]> = {
+    pruning: ['Scissors', 'Scythe', 'Broom'],
+    feeding: ['Spoon', 'BowlFood', 'ForkKnife'],
+    pest_control: ['Bug', 'BugBeetle'],
+    planting: ['Acorn', 'Avocado', 'Cactus'],
+    watering: ['Droplet', 'Drop', 'Water', 'WaterDrop'],
+    harvesting: ['Basket', 'BowlFood'],
+    winter_care: ['Snowflake', 'SnowflakeIcon'],
+    general: ['Clipboard', 'Note', 'Article'],
+  }
+
+  const candidates = map[category] || ['SquaresFour']
+  const Component = resolveIcon(candidates)
+  return Component ? <Component weight="light" size={size} className={className} style={style} /> : null
+}
+
+export function getPlantTypeIcon(plantType: string | null, className?: string, style?: React.CSSProperties, size?: number | string) {
   const type = plantType?.toLowerCase() || ''
-  const map: Record<string, string> = {
-    rose: 'Flower',
-    shrub: 'Tree',
-    perennial: 'Flower',
-    bulb: 'Lightbulb',
-    vegetable: 'Carrot',
-    fruit: 'Apple',
-    tree: 'Tree',
-    climber: 'Seedling',
-    herb: 'Leaf',
-    succulent: 'Seedling',
+  const map: Record<string, string[]> = {
+    rose: ['Flower', 'Bouquet', 'FlowerLotus'],
+    shrub: ['Bush', 'Cactus', 'Tree'],
+    perennial: ['Flower', 'Leaf', 'Plant'],
+    bulb: ['Lightbulb', 'Bulb', 'Light'],
+    vegetable: ['Carrot', 'Avocado', 'BowlFood'],
+    fruit: ['Avocado', 'AppleLogo', 'BowlFood'],
+    tree: ['Tree', 'Barn', 'Cactus'],
+    climber: ['Hook', 'Chain', 'Acorn'],
+    herb: ['Leaf', 'Herb', 'Plant'],
+    succulent: ['Cactus', 'CactusIcon', 'Leaf'],
   }
-  const name = map[type] || 'Leaf'
-  return renderPhosphorIcon(name, props)
+
+  const candidates = map[type] || ['Leaf', 'SquaresFour']
+  const Component = resolveIcon(candidates)
+  return Component ? <Component weight="light" size={size} className={className} style={style} /> : null
 }

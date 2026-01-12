@@ -7,6 +7,7 @@ import type { Plant, TaskHistory, TaskSuggestion, AITask } from '@/types/databas
 import TaskActions from '@/components/tasks/task-actions'
 import { getCategoryColor } from '@/lib/utils/category-colors'
 import { getCategoryIcon, getPlantTypeIcon } from '@/components/ui/botanical-icons'
+import Icon from '@/components/ui/icon'
 import { EmptyGardenIllustration, NoTasksIllustration } from '@/components/ui/empty-states'
 
 interface DashboardContentProps {
@@ -131,9 +132,7 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
             with UK-specific seasonal guidance.
           </p>
           <Link href="/plants/new" className="btn btn-primary">
-            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Icon name="Plus" size={18} weight="light" className="w-5 h-5" />
             Add your first plant
           </Link>
         </motion.div>
@@ -238,16 +237,7 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
                   className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: 'var(--sage-100)' }}
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="w-6 h-6"
-                    style={{ color: 'var(--sage-600)' }}
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Icon name="Plus" size={20} weight="light" className="w-6 h-6" style={{ color: 'var(--sage-600)' }} />
                 </div>
                 <div>
                   <p className="font-medium" style={{ color: 'var(--text-primary)' }}>
@@ -439,17 +429,13 @@ function TaskCard({
                 className="flex items-center gap-2 text-sm font-medium transition-colors"
                 style={{ color: 'var(--sage-600)' }}
               >
-                <svg
+                <Icon
+                  name="CaretRight"
+                  size={16}
+                  weight="light"
                   className="w-4 h-4 transition-transform"
-                  style={{
-                    transform: showInstructions ? 'rotate(90deg)' : 'rotate(0deg)',
-                  }}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+                  style={{ transform: showInstructions ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                />
                 {showInstructions ? 'Hide' : 'Show'} detailed instructions
               </button>
 
