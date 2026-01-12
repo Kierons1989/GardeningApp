@@ -113,7 +113,7 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
             boxShadow: 'var(--shadow-md)',
           }}
         >
-          <EmptyGardenIllustration className="w-48 h-48 mx-auto mb-6" />
+          <EmptyGardenIllustration className="w-48 h-48 mx-auto mb-2" />
           <h2
             className="text-2xl font-semibold mb-3"
             style={{
