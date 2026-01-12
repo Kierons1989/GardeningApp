@@ -45,7 +45,7 @@
   /* Text Colors */
   --text-primary: #2d3b36;
   --text-secondary: #5c6963;
-  --text-muted: #8a9590;
+  --text-muted: #6b7370; /* Darkened for WCAG AA contrast (was #8a9590) */
 
   /* Background */
   --bg-primary: #faf8f5;

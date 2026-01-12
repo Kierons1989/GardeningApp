@@ -266,7 +266,7 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
                   <Link
                     key={plant.id}
                     href={`/plants/${plant.id}`}
-                    className="flex items-center gap-3 p-3 rounded-lg transition-colors"
+                    className="flex items-center gap-3 p-3 rounded-lg transition-colors hover:bg-stone-50"
                     style={{ background: 'white' }}
                   >
                     <div

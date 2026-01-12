@@ -37,7 +37,7 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
     >
       <Link
         href={`/plants/${plant.id}`}
-        className="block rounded-xl p-5 card-hover"
+        className="group block rounded-xl p-5 card-hover"
         style={{
           background: 'white',
           boxShadow: 'var(--shadow-sm)',

@@ -177,7 +177,7 @@ export default function PlantList({ plants }: PlantListProps) {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="px-4 py-2 rounded-lg text-sm font-medium border-0 cursor-pointer"
+                className="px-4 py-2 rounded-lg text-sm font-medium border-0 cursor-pointer transition-colors hover:bg-stone-200"
                 style={{
                   background: 'var(--stone-100)',
                   color: 'var(--text-secondary)',
@@ -191,7 +191,7 @@ export default function PlantList({ plants }: PlantListProps) {
 
               <button
                 onClick={() => setViewMode(viewMode === 'grouped' ? 'grid' : 'grouped')}
-                className="ml-auto px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                className="ml-auto px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-stone-200"
                 style={{
                   background: 'var(--stone-100)',
                   color: 'var(--text-secondary)',
