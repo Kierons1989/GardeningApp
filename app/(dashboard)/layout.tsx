@@ -19,7 +19,7 @@ const navItems = [
   {
     href: '/plants',
     label: 'My Plants',
-    icon: <Icon name="Seedling" size={20} weight="light" className="w-5 h-5" ariaLabel="My Plants" />,
+    icon: <Icon name="Plant" size={20} weight="light" className="w-5 h-5" ariaLabel="My Plants" />,
   },
   {
     href: '/settings',

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { AICareProfile, PlantIdentification, PlantType } from '@/types/database'
-import { getCategoryIcon, getPlantedInIcon } from '@/components/ui/botanical-icons'
+import { getCategoryIcon } from '@/components/ui/botanical-icons'
 import { SpinningLeafLoader, GrowingPlantLoader } from '@/components/ui/botanical-loader'
 import Icon from '@/components/ui/icon'
 
@@ -72,16 +72,35 @@ export default function NewPlantPage() {
     setAiError(null)
 
     try {
-      const response = await fetch('/api/ai/generate-type-profile', {
+      // Step 1: Generate the care profile for this plant type
+      const typeResponse = await fetch('/api/ai/generate-type-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           topLevel,
           middleLevel,
           growthHabit,
-          common_name: careProfile?.common_name,
-          species: careProfile?.species,
-          plant_type_id: plantType?.id,
+          area: area || undefined,
+          planted_in: plantedIn || undefined,
+        }),
+      })
+
+      if (!typeResponse.ok) {
+        const data = await typeResponse.json()
+        throw new Error(data.error || 'Failed to generate care profile')
+      }
+
+      const { plantType: generatedType, careProfile: generatedProfile } = await typeResponse.json()
+
+      // Step 2: Create the plant record linked to this plant type
+      const plantResponse = await fetch('/api/plants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: generatedProfile?.common_name || middleLevel || userInput,
+          common_name: generatedProfile?.common_name,
+          species: generatedProfile?.species,
+          plant_type_id: generatedType?.id,
           cultivar_name: cultivarName || undefined,
           area: area || undefined,
           planted_in: plantedIn || undefined,
@@ -89,8 +108,8 @@ export default function NewPlantPage() {
         }),
       })
 
-      if (!response.ok) {
-        const data = await response.json()
+      if (!plantResponse.ok) {
+        const data = await plantResponse.json()
         throw new Error(data.error || 'Failed to save plant')
       }
 
@@ -99,7 +118,7 @@ export default function NewPlantPage() {
     } catch (err) {
       console.error('Save error:', err)
       setAiError(err instanceof Error ? err.message : 'Failed to save plant. Please try again.')
-      setSaving(false)
+      setStep('confirm') // Go back to confirm step so user can retry
     }
   }
 
@@ -278,21 +297,9 @@ export default function NewPlantPage() {
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    {
-                      value: 'ground',
-                      label: 'Ground',
-                      icon: getPlantedInIcon('ground', 'w-6 h-6', { color: 'var(--text-muted)' }, 20),
-                    },
-                    {
-                      value: 'pot',
-                      label: 'Pot',
-                      icon: getPlantedInIcon('pot', 'w-6 h-6', { color: 'var(--text-muted)' }, 20),
-                    },
-                    {
-                      value: 'raised_bed',
-                      label: 'Raised bed',
-                      icon: getPlantedInIcon('raised_bed', 'w-6 h-6', { color: 'var(--text-muted)' }, 20),
-                    },
+                    { value: 'ground', label: 'Ground', iconName: 'Mountains' },
+                    { value: 'pot', label: 'Pot', iconName: 'Flower' },
+                    { value: 'raised_bed', label: 'Raised bed', iconName: 'Stack' },
                   ].map((option) => (
                     <button
                       key={option.value}
@@ -305,7 +312,14 @@ export default function NewPlantPage() {
                         color: plantedIn === option.value ? 'var(--sage-700)' : 'var(--text-secondary)',
                       }}
                     >
-                      <div className="mb-2">{option.icon}</div>
+                      <div className="mb-2 flex justify-center">
+                        <Icon
+                          name={option.iconName}
+                          size={24}
+                          weight="light"
+                          style={{ color: plantedIn === option.value ? 'var(--sage-600)' : 'var(--text-muted)' }}
+                        />
+                      </div>
                       <span className="text-sm font-medium">
                         {option.label}
                       </span>

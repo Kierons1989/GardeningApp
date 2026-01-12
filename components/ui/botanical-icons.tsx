@@ -70,11 +70,11 @@ export function getPlantTypeIcon(plantType: string | null, className?: string, s
 export function getPlantedInIcon(plantedIn: string | null, className?: string, style?: React.CSSProperties, size?: number | string) {
   const key = plantedIn || ''
   const map: Record<string, string[]> = {
-    ground: ['GlobeHemisphereWest', 'MapPin', 'Circle'],
-    pot: ['Flower', 'Plant', 'FlowerLotus'],
-    raised_bed: ['Box', 'Stack', 'SquaresFour'],
+    ground: ['Globe', 'GlobeSimple', 'Mountains'],
+    pot: ['FlowerPot', 'PottedPlant', 'Flower'],
+    raised_bed: ['Stack', 'Rows', 'Square'],
   }
-  const candidates = map[key] || ['SquaresFour']
+  const candidates = map[key] || ['Square']
   const Component = resolveIcon(candidates)
   return Component ? <Component weight="light" size={size} className={className} style={style} /> : null
 }
