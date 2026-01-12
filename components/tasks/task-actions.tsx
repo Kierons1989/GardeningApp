@@ -68,18 +68,53 @@ export default function TaskActions({ plantId, taskKey, onActionComplete }: Task
 
   return (
     <div className="flex items-center gap-2 relative">
-      {/* Success Checkmark Overlay */}
+      {/* Success Checkmark Overlay with Celebration */}
       <AnimatePresence>
         {completing && (
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            className="absolute inset-0 -top-4 -left-4 -right-4 -bottom-4 flex items-center justify-center z-30 rounded-2xl"
+            className="absolute inset-0 -top-4 -left-4 -right-4 -bottom-4 flex items-center justify-center z-30 rounded-2xl overflow-hidden"
             style={{
               background: 'rgba(93, 125, 102, 0.95)',
             }}
           >
+            {/* Floating botanical particles */}
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute"
+                initial={{
+                  opacity: 0,
+                  scale: 0,
+                  x: 0,
+                  y: 0,
+                }}
+                animate={{
+                  opacity: [0, 1, 0],
+                  scale: [0.5, 1, 0.5],
+                  x: [0, (i % 2 === 0 ? 1 : -1) * (30 + i * 15)],
+                  y: [0, -40 - i * 10],
+                }}
+                transition={{
+                  delay: 0.3 + i * 0.08,
+                  duration: 0.6,
+                  ease: 'easeOut',
+                }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.7)"
+                  strokeWidth="1.5"
+                >
+                  <path d="M12 20V12M12 12C12 12 9 10 7 7C10 7 12 9 12 12Z" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </motion.div>
+            ))}
+
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
@@ -110,7 +145,7 @@ export default function TaskActions({ plantId, taskKey, onActionComplete }: Task
       <button
         onClick={() => handleAction('done')}
         disabled={loading !== null}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all"
+        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:bg-sage-200 active:scale-95"
         style={{
           background: loading === 'done' ? 'var(--sage-600)' : 'var(--sage-100)',
           color: loading === 'done' ? 'white' : 'var(--sage-700)',
@@ -132,7 +167,7 @@ export default function TaskActions({ plantId, taskKey, onActionComplete }: Task
       <button
         onClick={() => handleAction('skipped')}
         disabled={loading !== null}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all"
+        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:bg-stone-200 active:scale-95"
         style={{
           background: 'var(--stone-100)',
           color: 'var(--text-secondary)',
@@ -155,7 +190,7 @@ export default function TaskActions({ plantId, taskKey, onActionComplete }: Task
         <button
           onClick={() => setShowSnoozeOptions(!showSnoozeOptions)}
           disabled={loading !== null}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:bg-earth-200 active:scale-95"
           style={{
             background: showSnoozeOptions ? 'var(--earth-200)' : 'var(--earth-100)',
             color: 'var(--earth-700)',

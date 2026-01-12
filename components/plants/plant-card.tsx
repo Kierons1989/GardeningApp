@@ -37,10 +37,11 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
     >
       <Link
         href={`/plants/${plant.id}`}
-        className="group block rounded-xl p-5 card-hover"
+        className="group block rounded-xl p-6 card-hover"
         style={{
           background: 'white',
           boxShadow: 'var(--shadow-sm)',
+          border: '1px solid var(--stone-100)',
         }}
       >
         <div className="flex items-start gap-4">
@@ -85,7 +86,7 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
               {growthHabit.slice(0, 2).map((tag) => (
                 <span
                   key={tag}
-                  className="text-xs px-2 py-0.5 rounded-full"
+                  className="text-xs px-2.5 py-1 rounded-full"
                   style={{
                     background: 'var(--sage-50)',
                     color: 'var(--sage-700)',

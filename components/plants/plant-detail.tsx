@@ -200,7 +200,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
               )}
               {careProfile?.uk_hardiness && (
                 <span
-                  className="inline-flex items-center gap-1.5 text-sm px-2 py-0.5 rounded-full"
+                  className="inline-flex items-center gap-1.5 text-sm px-2.5 py-1 rounded-full"
                   style={{
                     background: 'var(--sage-100)',
                     color: 'var(--sage-700)',
@@ -407,7 +407,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
             {getTasksByMonth(careProfile.tasks).map(({ month, tasks }) => (
               <div
                 key={month}
-                className="p-5 rounded-xl"
+                className="p-6 rounded-xl"
                 style={{ background: 'var(--stone-50)' }}
               >
                 <h3

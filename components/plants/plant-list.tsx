@@ -376,7 +376,7 @@ export default function PlantList({ plants }: PlantListProps) {
                   {topLevel}
                 </h2>
                 <span
-                  className="text-sm px-2 py-1 rounded-full"
+                  className="text-sm px-2.5 py-1 rounded-full"
                   style={{
                     background: 'var(--stone-100)',
                     color: 'var(--text-muted)',

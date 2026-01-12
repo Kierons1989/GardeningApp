@@ -231,6 +231,7 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
                 style={{
                   background: 'white',
                   boxShadow: 'var(--shadow-sm)',
+                  border: '1px solid var(--stone-100)',
                 }}
               >
                 <div
@@ -364,11 +365,11 @@ function TaskCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="rounded-xl p-5 card-hover relative overflow-hidden"
+      className="rounded-xl p-6 card-hover relative overflow-hidden"
       style={{
         background: effortColor.bg,
         boxShadow: 'var(--shadow-sm)',
-        borderLeft: `3px solid ${effortColor.border}`,
+        borderLeft: `4px solid ${effortColor.border}`,
       }}
     >
       <div className="flex items-start gap-4">

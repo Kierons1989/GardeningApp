@@ -208,27 +208,65 @@ export default function DashboardLayout({
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute right-0 top-16 bottom-0 w-64"
+              className="absolute right-0 top-16 bottom-0 w-72 flex flex-col"
               style={{ background: 'white' }}
               onClick={(e) => e.stopPropagation()}
             >
-              <nav className="p-4">
+              {/* User Profile Header */}
+              <div className="p-4 border-b" style={{ borderColor: 'var(--stone-200)' }}>
+                <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: 'var(--stone-50)' }}>
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'var(--sage-200)' }}
+                  >
+                    <span
+                      className="text-sm font-medium"
+                      style={{ color: 'var(--sage-700)' }}
+                    >
+                      {profile?.display_name?.[0]?.toUpperCase() || 'G'}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-sm font-medium truncate"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      {profile?.display_name || 'Gardener'}
+                    </p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      View profile
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Navigation */}
+              <nav className="flex-1 p-4">
                 <ul className="space-y-1">
                   {navItems.map((item) => {
                     const isActive = pathname === item.href
                     return (
-                      <li key={item.href}>
+                      <li key={item.href} className="relative">
                         <Link
                           href={item.href}
                           onClick={() => setMobileMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 rounded-lg"
+                          className="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"
                           style={{
                             background: isActive ? 'var(--sage-50)' : 'transparent',
                             color: isActive ? 'var(--sage-700)' : 'var(--text-secondary)',
                           }}
                         >
-                          {item.icon}
+                          <span style={{ opacity: isActive ? 1 : 0.7 }}>
+                            {item.icon}
+                          </span>
                           <span className="font-medium">{item.label}</span>
+                          {isActive && (
+                            <motion.div
+                              layoutId="mobileActiveNav"
+                              className="absolute left-0 w-1 h-6 rounded-r"
+                              style={{ background: 'var(--sage-600)' }}
+                            />
+                          )}
                         </Link>
                       </li>
                     )
@@ -236,11 +274,13 @@ export default function DashboardLayout({
                 </ul>
               </nav>
 
-              <div className="absolute bottom-0 left-0 right-0 p-4 border-t" style={{ borderColor: 'var(--stone-200)' }}>
+              {/* Sign Out */}
+              <div className="p-4 border-t" style={{ borderColor: 'var(--stone-200)' }}>
                 <button
                   onClick={handleSignOut}
                   className="w-full btn btn-secondary"
                 >
+                  <Icon name="SignOut" size={18} weight="light" ariaLabel="sign out" />
                   Sign out
                 </button>
               </div>

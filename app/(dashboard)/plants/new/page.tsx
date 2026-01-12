@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { AICareProfile, PlantIdentification, PlantType } from '@/types/database'
 import { getCategoryIcon, getPlantedInIcon } from '@/components/ui/botanical-icons'
+import { SpinningLeafLoader, GrowingPlantLoader } from '@/components/ui/botanical-loader'
 import Icon from '@/components/ui/icon'
 
 type Step = 'input' | 'identifying' | 'confirm' | 'generating' | 'review'
@@ -353,22 +354,11 @@ export default function NewPlantPage() {
               <motion.div
                 className="absolute inset-0 rounded-full"
                 style={{ background: 'var(--sage-100)' }}
-                animate={{ scale: [1, 1.2, 1] }}
+                animate={{ scale: [1, 1.15, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
               <div className="absolute inset-0 flex items-center justify-center">
-                <motion.svg
-                  viewBox="0 0 24 24"
-                  className="w-12 h-12"
-                  fill="none"
-                  stroke="var(--sage-600)"
-                  strokeWidth="1.5"
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <path d="M12 22V12M12 12C12 12 7 10 4 5C9 5 12 8 12 12Z" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M12 12C12 12 17 10 20 5C15 5 12 8 12 12Z" strokeLinecap="round" strokeLinejoin="round" />
-                </motion.svg>
+                <SpinningLeafLoader size="lg" />
               </div>
             </div>
 
@@ -532,26 +522,15 @@ export default function NewPlantPage() {
               boxShadow: 'var(--shadow-md)',
             }}
           >
-            <div className="relative w-24 h-24 mx-auto mb-8">
+            <div className="relative w-28 h-28 mx-auto mb-8">
               <motion.div
                 className="absolute inset-0 rounded-full"
                 style={{ background: 'var(--sage-100)' }}
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2.5, repeat: Infinity }}
               />
               <div className="absolute inset-0 flex items-center justify-center">
-                <motion.svg
-                  viewBox="0 0 24 24"
-                  className="w-12 h-12"
-                  fill="none"
-                  stroke="var(--sage-600)"
-                  strokeWidth="1.5"
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <path d="M12 22V12M12 12C12 12 7 10 4 5C9 5 12 8 12 12Z" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M12 12C12 12 17 10 20 5C15 5 12 8 12 12Z" strokeLinecap="round" strokeLinejoin="round" />
-                </motion.svg>
+                <GrowingPlantLoader size="lg" />
               </div>
             </div>
 
