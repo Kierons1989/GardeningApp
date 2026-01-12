@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import type { Plant } from '@/types/database'
 import { getPlantTypeIcon } from '@/components/ui/botanical-icons'
+import Icon from '@/components/ui/icon'
 
 interface PlantCardProps {
   plant: Plant
@@ -105,10 +106,7 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
                     color: 'var(--earth-700)',
                   }}
                 >
-                  <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M9 5a2 2 0 012-2h2a2 2 0 012 2v0a2 2 0 01-2 2h-2a2 2 0 01-2-2z" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Icon name="Clipboard" size={12} weight="light" className="w-3 h-3" ariaLabel="tasks" />
                   {taskCount} task{taskCount !== 1 ? 's' : ''}
                 </span>
               )}
@@ -130,16 +128,7 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
             className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
             style={{ background: 'var(--stone-100)' }}
           >
-            <svg
-              viewBox="0 0 24 24"
-              className="w-4 h-4"
-              style={{ color: 'var(--text-muted)' }}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Icon name="CaretRight" size={16} weight="light" className="w-4 h-4" style={{ color: 'var(--text-muted)' }} ariaLabel="open" />
           </div>
         </div>
 
@@ -153,10 +142,7 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
               className="text-sm flex items-center gap-2"
               style={{ color: 'var(--text-muted)' }}
             >
-              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 6v6l4 2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <Icon name="Clock" size={16} weight="light" className="w-4 h-4" ariaLabel="pending" />
               Care profile pending
             </p>
           </div>

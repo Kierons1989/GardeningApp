@@ -10,6 +10,8 @@ import TaskActions from '@/components/tasks/task-actions'
 import PlantChat from '@/components/chat/plant-chat'
 import { getCategoryColor } from '@/lib/utils/category-colors'
 import { getPlantTypeIcon } from '@/components/ui/botanical-icons'
+import Icon from '@/components/ui/icon'
+import { getPlantedInIcon, getLocationIcon } from '@/components/ui/botanical-icons'
 
 interface PlantDetailProps {
   plant: Plant
@@ -85,9 +87,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
         className="inline-flex items-center gap-2 mb-6 text-sm font-medium transition-colors"
         style={{ color: 'var(--text-muted)' }}
       >
-        <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <Icon name="CaretLeft" size={16} weight="light" className="w-4 h-4" ariaLabel="back" />
         Back to plants
       </Link>
 
@@ -155,9 +155,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                     border: showChat ? 'none' : '1px solid var(--sage-200)',
                   }}
                 >
-                  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Icon name="Chat" size={20} weight="light" className="w-5 h-5" ariaLabel="chat" />
                   {showChat ? 'Hide Chat' : 'Ask AI'}
                   {!showChat && (
                     <span
@@ -175,9 +173,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                     background: 'rgba(199, 81, 70, 0.1)',
                   }}
                 >
-                  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Icon name="Trash" size={20} weight="light" className="w-5 h-5" ariaLabel="delete" />
                 </button>
               </div>
             </div>
@@ -189,10 +185,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                   className="inline-flex items-center gap-1.5 text-sm"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
-                    <circle cx="12" cy="10" r="3" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  {getLocationIcon('w-4 h-4', { color: 'var(--text-secondary)' }, 16)}
                   {plant.area}
                 </span>
               )}
@@ -201,17 +194,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                   className="inline-flex items-center gap-1.5 text-sm"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    {plant.planted_in === 'ground' && (
-                      <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" />
-                    )}
-                    {plant.planted_in === 'pot' && (
-                      <path d="M8 4h8L18 20H6L8 4zM8 4h8" strokeLinecap="round" strokeLinejoin="round" />
-                    )}
-                    {plant.planted_in === 'raised_bed' && (
-                      <rect x="3" y="8" width="18" height="12" rx="1" strokeLinecap="round" strokeLinejoin="round" />
-                    )}
-                  </svg>
+                  {getPlantedInIcon(plant.planted_in, 'w-4 h-4', { color: 'var(--text-secondary)' }, 16)}
                   {formatPlantedIn(plant.planted_in)}
                 </span>
               )}
@@ -223,10 +206,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                     color: 'var(--sage-700)',
                   }}
                 >
-                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M12 2v4M12 18v4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M2 12h4M18 12h4M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8" strokeLinecap="round" strokeLinejoin="round" />
-                    <circle cx="12" cy="12" r="3" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Icon name="Snowflake" size={16} weight="light" className="w-4 h-4" ariaLabel="hardiness" />
                   {careProfile.uk_hardiness}
                 </span>
               )}
@@ -375,9 +355,9 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                       color: getActionColor(history.action).text,
                     }}
                   >
-                    {history.action === 'done' && '✓'}
-                    {history.action === 'skipped' && '→'}
-                    {history.action === 'snoozed' && '⏰'}
+                    {history.action === 'done' && <Icon name="Check" size={16} weight="light" ariaLabel="done" />}
+                    {history.action === 'skipped' && <Icon name="ArrowRight" size={16} weight="light" ariaLabel="skipped" />}
+                    {history.action === 'snoozed' && <Icon name="Clock" size={16} weight="light" ariaLabel="snoozed" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>

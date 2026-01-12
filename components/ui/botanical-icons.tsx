@@ -66,3 +66,20 @@ export function getPlantTypeIcon(plantType: string | null, className?: string, s
   const Component = resolveIcon(candidates)
   return Component ? <Component weight="light" size={size} className={className} style={style} /> : null
 }
+
+export function getPlantedInIcon(plantedIn: string | null, className?: string, style?: React.CSSProperties, size?: number | string) {
+  const key = plantedIn || ''
+  const map: Record<string, string[]> = {
+    ground: ['GlobeHemisphereWest', 'MapPin', 'Circle'],
+    pot: ['Flower', 'Plant', 'FlowerLotus'],
+    raised_bed: ['Box', 'Stack', 'SquaresFour'],
+  }
+  const candidates = map[key] || ['SquaresFour']
+  const Component = resolveIcon(candidates)
+  return Component ? <Component weight="light" size={size} className={className} style={style} /> : null
+}
+
+export function getLocationIcon(className?: string, style?: React.CSSProperties, size?: number | string) {
+  const Component = resolveIcon(['MapPin', 'MapPinLine', 'MapPinDot'], 'MapPin')
+  return Component ? <Component weight="light" size={size} className={className} style={style} /> : null
+}

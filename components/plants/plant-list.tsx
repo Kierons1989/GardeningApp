@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { Plant } from '@/types/database'
 import PlantCard from './plant-card'
 import { EmptyGardenIllustration, NoResultsIllustration } from '@/components/ui/empty-states'
+import Icon from '@/components/ui/icon'
 
 interface PlantListProps {
   plants: Plant[]
@@ -133,9 +134,7 @@ export default function PlantList({ plants }: PlantListProps) {
           </div>
 
           <Link href="/plants/new" className="btn btn-primary">
-            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Icon name="Plus" size={20} weight="light" className="w-5 h-5" ariaLabel="add plant" />
             <span className="hidden sm:inline">Add Plant</span>
           </Link>
         </div>
@@ -145,17 +144,7 @@ export default function PlantList({ plants }: PlantListProps) {
           <div className="space-y-3">
             {/* Search Bar */}
             <div className="relative">
-              <svg
-                viewBox="0 0 24 24"
-                className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2"
-                style={{ color: 'var(--text-muted)' }}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <circle cx="11" cy="11" r="8" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M21 21l-4.35-4.35" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <Icon name="MagnifyingGlass" size={20} weight="light" className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2" ariaLabel="search" style={{ color: 'var(--text-muted)' }} />
               <input
                 type="text"
                 placeholder="Search plants by name..."
@@ -175,9 +164,7 @@ export default function PlantList({ plants }: PlantListProps) {
                   color: showFilters || hasActiveFilters ? 'var(--sage-700)' : 'var(--text-secondary)',
                 }}
               >
-                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <Icon name="Funnel" size={16} weight="light" className="w-4 h-4" ariaLabel="filters" />
                 Filters
                 {hasActiveFilters && (
                   <span
@@ -210,13 +197,11 @@ export default function PlantList({ plants }: PlantListProps) {
                   color: 'var(--text-secondary)',
                 }}
               >
-                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
-                  {viewMode === 'grouped' ? (
-                    <path d="M10 3H3v7h7V3zM21 3h-7v7h7V3zM21 14h-7v7h7v-7zM10 14H3v7h7v-7z" strokeLinecap="round" strokeLinejoin="round" />
-                  ) : (
-                    <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" strokeLinecap="round" strokeLinejoin="round" />
-                  )}
-                </svg>
+                {viewMode === 'grouped' ? (
+                  <Icon name="SquaresFour" size={16} weight="light" className="w-4 h-4" ariaLabel="grid view" />
+                ) : (
+                  <Icon name="List" size={16} weight="light" className="w-4 h-4" ariaLabel="list view" />
+                )}
               </button>
             </div>
 

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import Icon from '@/components/ui/icon'
 
 interface Toast {
   id: string
@@ -70,44 +71,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   }}
                 >
                   {toast.type === 'success' && (
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="w-4 h-4"
-                      style={{ color: 'var(--sage-600)' }}
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                    >
-                      <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <Icon name="Check" size={16} weight="light" className="w-4 h-4" style={{ color: 'var(--sage-600)' }} ariaLabel="success" />
                   )}
                   {toast.type === 'error' && (
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="w-4 h-4"
-                      style={{ color: 'var(--error)' }}
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                    >
-                      <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <Icon name="X" size={16} weight="light" className="w-4 h-4" style={{ color: 'var(--error)' }} ariaLabel="error" />
                   )}
                   {toast.type === 'info' && (
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="w-4 h-4"
-                      style={{ color: 'var(--stone-600)' }}
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                    >
-                      <path
-                        d="M12 16v-4m0-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
+                    <Icon name="Info" size={16} weight="light" className="w-4 h-4" style={{ color: 'var(--stone-600)' }} ariaLabel="info" />
                   )}
                 </div>
                 <p
@@ -121,15 +91,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   className="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity"
                   style={{ color: 'var(--text-muted)' }}
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Icon name="X" size={16} weight="light" className="w-4 h-4" ariaLabel="dismiss" />
                 </button>
               </div>
             </motion.div>

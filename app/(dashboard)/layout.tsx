@@ -8,38 +8,23 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/types/database'
 import { ToastProvider } from '@/components/ui/toast'
+import Icon from '@/components/ui/icon'
 
 const navItems = [
   {
     href: '/',
     label: 'Dashboard',
-    icon: (
-      <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M9 22V12h6v10" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
+    icon: <Icon name="House" size={20} weight="light" className="w-5 h-5" ariaLabel="Dashboard" />,
   },
   {
     href: '/plants',
     label: 'My Plants',
-    icon: (
-      <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M12 22V8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M5.5 11.5C5.5 9 7 4 12 4s6.5 5 6.5 7.5c0 3-2.5 4.5-6.5 4.5s-6.5-1.5-6.5-4.5z" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M9 17c-2 0-4-1-4-3s3-5 7-5 7 3 7 5-2 3-4 3" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
+    icon: <Icon name="Seedling" size={20} weight="light" className="w-5 h-5" ariaLabel="My Plants" />,
   },
   {
     href: '/settings',
     label: 'Settings',
-    icon: (
-      <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <circle cx="12" cy="12" r="3" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M12 1v6m0 6v6M5.6 5.6l4.2 4.2m4.4 4.4l4.2 4.2M1 12h6m6 0h6M5.6 18.4l4.2-4.2m4.4-4.4l4.2-4.2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
+    icon: <Icon name="Gear" size={20} weight="light" className="w-5 h-5" ariaLabel="Settings" />,
   },
 ]
 
@@ -197,14 +182,13 @@ export default function DashboardLayout({
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="p-2 rounded-lg"
           style={{ background: 'var(--stone-100)' }}
+          aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
         >
-          <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-            {mobileMenuOpen ? (
-              <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
-            ) : (
-              <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" strokeLinejoin="round" />
-            )}
-          </svg>
+          {mobileMenuOpen ? (
+            <Icon name="X" size={20} weight="light" ariaLabel="close menu" />
+          ) : (
+            <Icon name="List" size={20} weight="light" ariaLabel="open menu" />
+          )}
         </button>
       </header>
 
