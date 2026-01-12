@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '@/components/ui/toast'
+import Icon from '@/components/ui/icon'
 
 interface TaskActionsProps {
   plantId: string
@@ -122,9 +123,7 @@ export default function TaskActions({ plantId, taskKey, onActionComplete }: Task
             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
           />
         ) : (
-          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <Icon name="Check" size={16} weight="light" ariaLabel="done" />
         )}
         Done
       </button>
@@ -146,9 +145,7 @@ export default function TaskActions({ plantId, taskKey, onActionComplete }: Task
             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
           />
         ) : (
-          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M5 5l14 14M5 19L19 5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <Icon name="X" size={16} weight="light" ariaLabel="skip" />
         )}
         Skip
       </button>
@@ -171,15 +168,10 @@ export default function TaskActions({ plantId, taskKey, onActionComplete }: Task
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             />
           ) : (
-            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 6v6l4 2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Icon name="Clock" size={16} weight="light" ariaLabel="snooze" />
           )}
           Snooze
-          <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <Icon name="CaretDown" size={12} weight="light" ariaLabel="expand" />
         </button>
 
         {/* Snooze Options Dropdown */}
