@@ -4,7 +4,7 @@
  * Simple empty states using Phosphor icons
  */
 
-import { Flower, CheckCircle, MagnifyingGlass } from 'phosphor-react'
+import { Flower, CheckCircle, MagnifyingGlass } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
 
 interface EmptyStateProps {

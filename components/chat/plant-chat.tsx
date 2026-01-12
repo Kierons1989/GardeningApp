@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CircleNotch, ChatCircle, PaperPlaneRight } from 'phosphor-react'
+import { CircleNotch, ChatCircle, PaperPlaneRight } from '@phosphor-icons/react'
 import type { Plant, TaskHistory, ChatMessage } from '@/types/database'
 
 interface PlantChatProps {
