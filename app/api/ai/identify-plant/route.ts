@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     let identification: PlantIdentification
     try {
       identification = JSON.parse(result)
-    } catch (parseError) {
+    } catch {
       console.error('Failed to parse AI response:', result)
       return NextResponse.json(
         { error: 'Failed to parse plant identification', details: result },

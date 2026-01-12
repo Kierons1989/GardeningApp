@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { Plant, TaskHistory } from '@/types/database'
+import type { Plant, TaskHistory, AITask } from '@/types/database'
 import { createClient } from '@/lib/supabase/client'
 import TaskActions from '@/components/tasks/task-actions'
 import PlantChat from '@/components/chat/plant-chat'
@@ -21,6 +21,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
   const [showChat, setShowChat] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set())
+  const [currentTime] = useState(() => Date.now())
 
   const toggleTask = (taskKey: string) => {
     setExpandedTasks(prev => {
@@ -37,23 +38,26 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
   // Get care profile from plant_types relation
   const careProfile = plant.plant_types?.ai_care_profile
 
-  const currentMonth = new Date().getMonth() + 1
-  const activeTasks = careProfile?.tasks.filter((task) => {
-    const inWindow = isTaskInWindow(task.month_start, task.month_end, currentMonth)
-    if (!inWindow) return false
+  const activeTasks = useMemo(() => {
+    const currentMonth = new Date(currentTime).getMonth() + 1
 
-    // Check if already done recently
-    const recentAction = taskHistory.find((h) => h.task_key === task.key)
-    if (recentAction) {
-      const daysSince = Math.floor(
-        (Date.now() - new Date(recentAction.created_at).getTime()) / (1000 * 60 * 60 * 24)
-      )
-      if (task.recurrence_type === 'weekly_in_window' && daysSince < 7) return false
-      if (task.recurrence_type === 'once_per_window' && daysSince < 30) return false
-      if (task.recurrence_type === 'monthly_in_window' && daysSince < 28) return false
-    }
-    return true
-  }) || []
+    return careProfile?.tasks.filter((task) => {
+      const inWindow = isTaskInWindow(task.month_start, task.month_end, currentMonth)
+      if (!inWindow) return false
+
+      // Check if already done recently
+      const recentAction = taskHistory.find((h) => h.task_key === task.key)
+      if (recentAction) {
+        const daysSince = Math.floor(
+          (currentTime - new Date(recentAction.created_at).getTime()) / (1000 * 60 * 60 * 24)
+        )
+        if (task.recurrence_type === 'weekly_in_window' && daysSince < 7) return false
+        if (task.recurrence_type === 'once_per_window' && daysSince < 30) return false
+        if (task.recurrence_type === 'monthly_in_window' && daysSince < 28) return false
+      }
+      return true
+    }) || []
+  }, [careProfile?.tasks, taskHistory, currentTime])
 
   async function handleDelete() {
     if (!confirm('Are you sure you want to delete this plant? This cannot be undone.')) {
@@ -629,13 +633,13 @@ function formatTaskKey(key: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-function getTasksByMonth(tasks: any[]) {
+function getTasksByMonth(tasks: AITask[]) {
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ]
 
-  const tasksByMonth: Record<number, any[]> = {}
+  const tasksByMonth: Record<number, AITask[]> = {}
 
   tasks.forEach((task) => {
     const { month_start, month_end } = task

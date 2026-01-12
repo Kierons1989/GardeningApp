@@ -34,7 +34,7 @@ export default function SettingsPage() {
     }
 
     loadProfile()
-  }, [])
+  }, [supabase])
 
   async function handleSaveLocation(e: React.FormEvent) {
     e.preventDefault()
@@ -60,7 +60,7 @@ export default function SettingsPage() {
       const data = await response.json()
       setProfile((prev) => prev ? { ...prev, location: data.location, climate_zone: data.climate_zone } : null)
       setMessage({ type: 'success', text: 'Location updated successfully!' })
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Failed to update location. Please try again.' })
     } finally {
       setSaving(false)
@@ -129,7 +129,7 @@ export default function SettingsPage() {
         </h2>
 
         <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
-          Tell us where you're gardening to get personalized, location-specific plant care advice.
+          Tell us where you&apos;re gardening to get personalized, location-specific plant care advice.
         </p>
 
         <form onSubmit={handleSaveLocation} className="space-y-6">

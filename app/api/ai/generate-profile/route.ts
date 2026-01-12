@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getAIProvider } from '@/lib/ai'
 import { generateCacheKey, normalizePlantName, CURRENT_CACHE_VERSION } from '@/lib/cache/profile-cache'
-import type { PlantContext, CareProfileCache } from '@/types/database'
+import type { PlantContext } from '@/types/database'
 
 export async function POST(request: NextRequest) {
   try {

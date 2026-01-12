@@ -7,10 +7,10 @@ import type { Plant, TaskHistory, ChatMessage } from '@/types/database'
 
 interface PlantChatProps {
   plant: Plant
-  taskHistory: TaskHistory[]
+  taskHistory?: TaskHistory[]
 }
 
-export default function PlantChat({ plant, taskHistory }: PlantChatProps) {
+export default function PlantChat({ plant }: PlantChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)

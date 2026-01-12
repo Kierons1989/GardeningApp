@@ -34,7 +34,7 @@ export default function PlantList({ plants }: PlantListProps) {
 
   // Filter and sort plants
   const filteredAndSortedPlants = useMemo(() => {
-    let filtered = plants.filter(plant => {
+    const filtered = plants.filter(plant => {
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase()

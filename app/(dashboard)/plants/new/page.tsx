@@ -166,7 +166,7 @@ export default function NewPlantPage() {
           Add a Plant
         </h1>
         <p style={{ color: 'var(--text-secondary)' }}>
-          Tell us what you're growing and we'll create a personalised care schedule
+          Tell us what you&apos;re growing and we&apos;ll create a personalised care schedule
         </p>
       </motion.div>
 
@@ -253,7 +253,7 @@ export default function NewPlantPage() {
                   required
                 />
                 <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-                  Type the name as it appears on the label - we'll identify it for you
+                  Type the name as it appears on the label - we&apos;ll identify it for you
                 </p>
               </div>
 
@@ -399,7 +399,7 @@ export default function NewPlantPage() {
               Identifying your plant
             </h2>
             <p style={{ color: 'var(--text-secondary)' }}>
-              Analyzing "{userInput}"...
+              Analyzing &quot;{userInput}&quot;...
             </p>
           </motion.div>
         )}

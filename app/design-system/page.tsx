@@ -365,7 +365,7 @@ export default function DesignSystemPage() {
             Spacing Scale
           </h2>
           <p style={{ marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>
-            Using Tailwind's default spacing scale (4px base unit)
+            Using Tailwind&apos;s default spacing scale (4px base unit)
           </p>
           <div style={{
             display: 'grid',

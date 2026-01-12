@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getAIProvider } from '@/lib/ai'
-import type { PlantContext, PlantType, AICareProfile } from '@/types/database'
+import type { PlantContext, AICareProfile } from '@/types/database'
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if this plant type already exists with a care profile
-    const { data: existingType, error: lookupError } = await supabase
+    const { data: existingType } = await supabase
       .from('plant_types')
       .select('*')
       .eq('top_level', topLevel)
