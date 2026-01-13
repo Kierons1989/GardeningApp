@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -8,18 +8,23 @@ import type { AICareProfile, PlantIdentification, PlantType } from '@/types/data
 import { getCategoryIcon } from '@/components/ui/botanical-icons'
 import { SpinningLeafLoader, GrowingPlantLoader } from '@/components/ui/botanical-loader'
 import Icon from '@/components/ui/icon'
+import ImageUpload, { type ImageUploadRef } from '@/components/plants/image-upload'
+import { createClient } from '@/lib/supabase/client'
 
 type Step = 'input' | 'identifying' | 'confirm' | 'generating' | 'review'
 
 export default function NewPlantPage() {
   const router = useRouter()
   const [step, setStep] = useState<Step>('input')
+  const [userId, setUserId] = useState<string | null>(null)
+  const imageUploadRef = useRef<ImageUploadRef>(null)
 
   // Form state
   const [userInput, setUserInput] = useState('')
   const [area, setArea] = useState('')
   const [plantedIn, setPlantedIn] = useState<'ground' | 'pot' | 'raised_bed' | ''>('')
   const [notes, setNotes] = useState('')
+  const [pendingImage, setPendingImage] = useState<Blob | null>(null)
 
   // Plant identification state
   const [identification, setIdentification] = useState<PlantIdentification | null>(null)
@@ -37,6 +42,14 @@ export default function NewPlantPage() {
 
   // Loading state
   const [saving, setSaving] = useState(false)
+
+  // Get user ID on mount
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id)
+    })
+  }, [])
 
   async function handleIdentifyPlant(e: React.FormEvent) {
     e.preventDefault()
@@ -111,6 +124,13 @@ export default function NewPlantPage() {
       if (!plantResponse.ok) {
         const data = await plantResponse.json()
         throw new Error(data.error || 'Failed to save plant')
+      }
+
+      const plant = await plantResponse.json()
+
+      // Step 3: Upload pending image if exists
+      if (pendingImage && imageUploadRef.current) {
+        await imageUploadRef.current.uploadPendingImage(plant.id)
       }
 
       router.push('/plants')
@@ -340,6 +360,14 @@ export default function NewPlantPage() {
                   placeholder="e.g., Planted last spring"
                 />
               </div>
+
+              {userId && (
+                <ImageUpload
+                  ref={imageUploadRef}
+                  userId={userId}
+                  onPendingImageChange={setPendingImage}
+                />
+              )}
             </div>
 
             <div className="mt-8 flex justify-end">

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -14,6 +15,7 @@ import { formatPlantedIn } from '@/lib/utils/formatters'
 import { getPlantTypeIcon } from '@/components/ui/botanical-icons'
 import Icon from '@/components/ui/icon'
 import { getPlantedInIcon, getLocationIcon } from '@/components/ui/botanical-icons'
+import ImageUpload from '@/components/plants/image-upload'
 
 interface PlantDetailProps {
   plant: Plant
@@ -26,10 +28,33 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
   const [showChat, setShowChat] = useState(false)
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set())
   const [currentTime] = useState(() => Date.now())
+  const [showImageEdit, setShowImageEdit] = useState(false)
+  const [currentPhotoUrl, setCurrentPhotoUrl] = useState(plant.photo_url)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id)
+    })
+  }, [])
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
       const supabase = createClient()
+
+      // Delete storage files first if image exists
+      if (currentPhotoUrl && userId) {
+        const { data: files } = await supabase.storage
+          .from('plant-images')
+          .list(`${userId}/${plant.id}`)
+
+        if (files && files.length > 0) {
+          const paths = files.map(f => `${userId}/${plant.id}/${f.name}`)
+          await supabase.storage.from('plant-images').remove(paths)
+        }
+      }
+
       const { error } = await supabase.from('plants').delete().eq('id', plant.id)
       if (error) throw error
     },
@@ -105,13 +130,32 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
         }}
       >
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
-          {/* Plant Icon */}
-          <div
-            className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center flex-shrink-0"
+          {/* Plant Image/Icon */}
+          <button
+            type="button"
+            onClick={() => setShowImageEdit(!showImageEdit)}
+            className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex-shrink-0 overflow-hidden group"
             style={{ background: 'var(--sage-100)' }}
           >
-            {getPlantTypeIcon(plant.plant_types?.top_level || '', 'w-8 h-8 sm:w-10 sm:h-10', { color: 'var(--sage-700)' })}
-          </div>
+            {currentPhotoUrl ? (
+              <Image
+                src={currentPhotoUrl}
+                alt={plant.name}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                {getPlantTypeIcon(plant.plant_types?.top_level || '', 'w-8 h-8 sm:w-10 sm:h-10', { color: 'var(--sage-700)' })}
+              </div>
+            )}
+            <div
+              className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{ background: 'rgba(0,0,0,0.5)' }}
+            >
+              <Icon name="Camera" size={24} weight="light" style={{ color: 'white' }} ariaLabel="Edit photo" />
+            </div>
+          </button>
 
           {/* Plant Info */}
           <div className="flex-1 w-full text-center sm:text-left">
@@ -285,6 +329,43 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
             <p style={{ color: 'var(--text-secondary)' }}>{plant.notes}</p>
           </div>
         )}
+
+        {/* Image Edit Panel */}
+        <AnimatePresence>
+          {showImageEdit && userId && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-4 pt-4 border-t"
+              style={{ borderColor: 'var(--stone-200)' }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  Update Photo
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowImageEdit(false)}
+                  className="p-1 rounded"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  <Icon name="X" size={16} weight="light" ariaLabel="Close" />
+                </button>
+              </div>
+              <ImageUpload
+                plantId={plant.id}
+                userId={userId}
+                currentImageUrl={currentPhotoUrl}
+                onImageChange={(url) => {
+                  setCurrentPhotoUrl(url)
+                  queryClient.invalidateQueries({ queryKey: ['plants'] })
+                  setShowImageEdit(false)
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* Chat Panel */}
