@@ -98,27 +98,27 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl p-8 mb-6"
+        className="rounded-2xl p-5 sm:p-8 mb-6"
         style={{
           background: 'white',
           boxShadow: 'var(--shadow-md)',
         }}
       >
-        <div className="flex items-start gap-6">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
           {/* Plant Icon */}
           <div
-            className="w-20 h-20 rounded-2xl flex items-center justify-center flex-shrink-0"
+            className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center flex-shrink-0"
             style={{ background: 'var(--sage-100)' }}
           >
-            {getPlantTypeIcon(plant.plant_types?.top_level || '', 'w-10 h-10', { color: 'var(--sage-700)' })}
+            {getPlantTypeIcon(plant.plant_types?.top_level || '', 'w-8 h-8 sm:w-10 sm:h-10', { color: 'var(--sage-700)' })}
           </div>
 
           {/* Plant Info */}
-          <div className="flex-1">
-            <div className="flex items-start justify-between">
+          <div className="flex-1 w-full text-center sm:text-left">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
               <div>
                 <h1
-                  className="text-3xl font-semibold mb-1"
+                  className="text-2xl sm:text-3xl font-semibold mb-1"
                   style={{
                     fontFamily: 'var(--font-cormorant)',
                     color: 'var(--text-primary)',
@@ -138,8 +138,8 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                 )}
               </div>
 
-              {/* Actions */}
-              <div className="flex items-center gap-2">
+              {/* Actions - hidden on mobile, shown in separate row */}
+              <div className="hidden sm:flex items-center gap-2">
                 <button
                   onClick={() => setShowChat(!showChat)}
                   className="relative"
@@ -182,7 +182,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
             </div>
 
             {/* Meta Info */}
-            <div className="flex flex-wrap gap-4 mt-4">
+            <div className="flex flex-wrap justify-center sm:justify-start gap-3 sm:gap-4 mt-4">
               {plant.area && (
                 <span
                   className="inline-flex items-center gap-1.5 text-sm"
@@ -213,6 +213,49 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                   {careProfile.uk_hardiness}
                 </span>
               )}
+            </div>
+
+            {/* Mobile Actions - shown only on mobile */}
+            <div className="flex sm:hidden items-center justify-center gap-2 mt-4">
+              <button
+                onClick={() => setShowChat(!showChat)}
+                className="relative flex-1"
+                style={{
+                  background: showChat ? 'var(--sage-600)' : 'var(--sage-100)',
+                  color: showChat ? 'white' : 'var(--sage-700)',
+                  padding: '10px 16px',
+                  borderRadius: 'var(--radius-md)',
+                  fontFamily: 'var(--font-crimson)',
+                  fontWeight: '500',
+                  fontSize: '15px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  transition: 'all var(--transition-fast)',
+                  border: showChat ? 'none' : '1px solid var(--sage-200)',
+                }}
+              >
+                <Icon name="Chat" size={20} weight="light" className="w-5 h-5" ariaLabel="chat" />
+                {showChat ? 'Hide Chat' : 'Ask AI'}
+                {!showChat && (
+                  <span
+                    className="absolute -top-1 -right-1 w-3 h-3 rounded-full animate-pulse"
+                    style={{ background: 'var(--coral)' }}
+                  />
+                )}
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
+                className="p-2.5 rounded-lg transition-colors"
+                style={{
+                  color: 'var(--error)',
+                  background: 'rgba(199, 81, 70, 0.1)',
+                }}
+              >
+                <Icon name="Trash" size={20} weight="light" className="w-5 h-5" ariaLabel="delete" />
+              </button>
             </div>
           </div>
         </div>
@@ -255,13 +298,13 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
         </motion.div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
         {/* Current Tasks */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="rounded-2xl p-6"
+          className="rounded-2xl p-4 sm:p-6"
           style={{
             background: 'white',
             boxShadow: 'var(--shadow-md)',
@@ -286,11 +329,11 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
               {activeTasks.map((task) => (
                 <div
                   key={task.key}
-                  className="p-4 rounded-xl"
+                  className="p-3 sm:p-4 rounded-xl"
                   style={{ background: 'var(--stone-50)' }}
                 >
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <div>
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4 mb-2">
+                    <div className="order-2 sm:order-1">
                       <h3 className="font-medium" style={{ color: 'var(--text-primary)' }}>
                         {task.title}
                       </h3>
@@ -299,7 +342,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                       </p>
                     </div>
                     <span
-                      className="text-xs px-2 py-1 rounded-full"
+                      className="order-1 sm:order-2 text-xs px-2 py-1 rounded-full self-start flex-shrink-0"
                       style={{
                         background: getCategoryColor(task.category).bg,
                         color: getCategoryColor(task.category).text,
@@ -323,7 +366,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="rounded-2xl p-6"
+          className="rounded-2xl p-4 sm:p-6"
           style={{
             background: 'white',
             boxShadow: 'var(--shadow-md)',
@@ -387,13 +430,13 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-6 rounded-2xl p-6"
+          className="mt-4 sm:mt-6 rounded-2xl p-4 sm:p-6"
           style={{
             background: 'white',
             boxShadow: 'var(--shadow-md)',
           }}
         >
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-4 sm:mb-6">
             <Icon name="Calendar" size={20} weight="light" className="w-5 h-5" style={{ color: 'var(--sage-600)' }} ariaLabel="calendar" />
             <h2
               className="text-xl font-semibold"
@@ -406,15 +449,15 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
             </h2>
           </div>
 
-          <div className="grid gap-4">
+          <div className="grid gap-3 sm:gap-4">
             {getTasksByMonth(careProfile.tasks).map(({ month, tasks }) => (
               <div
                 key={month}
-                className="p-6 rounded-xl"
+                className="p-4 sm:p-6 rounded-xl"
                 style={{ background: 'var(--stone-50)' }}
               >
                 <h3
-                  className="font-semibold mb-4 text-lg"
+                  className="font-semibold mb-3 sm:mb-4 text-lg"
                   style={{
                     fontFamily: 'var(--font-cormorant)',
                     color: 'var(--text-primary)',
@@ -422,7 +465,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                 >
                   {month}
                 </h3>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {tasks.map((task) => {
                     const isExpanded = expandedTasks.has(task.key)
                     return (
@@ -434,10 +477,10 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                           border: '1px solid var(--stone-200)'
                         }}
                       >
-                        <div className="p-4">
-                          <div className="flex items-start gap-3 mb-2">
+                        <div className="p-3 sm:p-4">
+                          <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3 mb-2">
                             <span
-                              className="px-2.5 py-1 rounded text-xs font-medium flex-shrink-0"
+                              className="px-2.5 py-1 rounded text-xs font-medium flex-shrink-0 self-start"
                               style={{
                                 background: getCategoryColor(task.category).bg,
                                 color: getCategoryColor(task.category).text,
@@ -472,7 +515,8 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                               }}
                             >
                               <Icon name="CaretRight" size={16} weight="light" className="w-4 h-4 transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }} ariaLabel="expand" />
-                              {isExpanded ? 'Hide detailed instructions' : 'Show detailed instructions'}
+                              <span className="hidden sm:inline">{isExpanded ? 'Hide detailed instructions' : 'Show detailed instructions'}</span>
+                              <span className="sm:hidden">{isExpanded ? 'Hide instructions' : 'Show instructions'}</span>
                             </button>
                           )}
                         </div>
@@ -489,7 +533,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                                 background: 'var(--stone-50)'
                               }}
                             >
-                              <div className="p-4">
+                              <div className="p-3 sm:p-4">
                                 <h5
                                   className="font-semibold mb-3 flex items-center gap-2"
                                   style={{ color: 'var(--text-primary)' }}
@@ -525,7 +569,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="mt-6 rounded-2xl p-6"
+          className="mt-4 sm:mt-6 rounded-2xl p-4 sm:p-6"
           style={{
             background: 'white',
             boxShadow: 'var(--shadow-md)',
@@ -545,7 +589,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
           </div>
           <ul className="space-y-2">
             {careProfile.tips.map((tip, i) => (
-              <li key={i} className="flex gap-2" style={{ color: 'var(--text-secondary)' }}>
+              <li key={i} className="flex gap-2 text-sm sm:text-base" style={{ color: 'var(--text-secondary)' }}>
                 <span>•</span>
                 <span>{tip}</span>
               </li>
