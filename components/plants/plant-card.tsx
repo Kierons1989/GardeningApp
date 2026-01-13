@@ -49,7 +49,7 @@ const PlantCard = memo(function PlantCard({ plant, index }: PlantCardProps) {
         <div className="flex items-start gap-4">
           {/* Plant Icon/Image */}
           <div
-            className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+            className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"
             style={{ background: 'var(--sage-100)' }}
           >
             {plant.photo_url ? (
