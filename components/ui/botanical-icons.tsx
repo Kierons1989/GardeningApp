@@ -49,14 +49,14 @@ function resolveIcon(candidates: string[], fallback = 'SquaresFour'): IconCompon
 
 export function getCategoryIcon(category: string, className?: string, style?: React.CSSProperties, size?: number | string) {
   const map: Record<string, string[]> = {
-    pruning: ['Scissors', 'Scythe', 'Broom'],
-    feeding: ['Spoon', 'BowlFood', 'ForkKnife'],
-    pest_control: ['Bug', 'BugBeetle'],
-    planting: ['Acorn', 'Avocado', 'Cactus'],
-    watering: ['Droplet', 'Drop', 'Water', 'WaterDrop'],
-    harvesting: ['Basket', 'BowlFood'],
-    winter_care: ['Snowflake', 'SnowflakeIcon'],
-    general: ['Clipboard', 'Note', 'Article'],
+    pruning: ['Scissors'],
+    feeding: ['CookingPot', 'Bowl'],
+    pest_control: ['Bug', 'Skull'],
+    planting: ['Plant', 'Leaf'],
+    watering: ['Drop', 'Droplet'],
+    harvesting: ['Basket', 'Package'],
+    winter_care: ['Snowflake', 'ThermometerCold'],
+    general: ['ClipboardText', 'Clipboard', 'Note'],
   }
 
   const candidates = map[category] || ['SquaresFour']
@@ -67,19 +67,19 @@ export function getCategoryIcon(category: string, className?: string, style?: Re
 export function getPlantTypeIcon(plantType: string | null, className?: string, style?: React.CSSProperties, size?: number | string) {
   const type = plantType?.toLowerCase() || ''
   const map: Record<string, string[]> = {
-    rose: ['Flower', 'Bouquet', 'FlowerLotus'],
-    shrub: ['Bush', 'Cactus', 'Tree'],
+    rose: ['Flower', 'FlowerLotus'],
+    shrub: ['Tree', 'Plant'],
     perennial: ['Flower', 'Leaf', 'Plant'],
-    bulb: ['Lightbulb', 'Bulb', 'Light'],
-    vegetable: ['Carrot', 'Avocado', 'BowlFood'],
-    fruit: ['Avocado', 'AppleLogo', 'BowlFood'],
-    tree: ['Tree', 'Barn', 'Cactus'],
-    climber: ['Hook', 'Chain', 'Acorn'],
-    herb: ['Leaf', 'Herb', 'Plant'],
-    succulent: ['Cactus', 'CactusIcon', 'Leaf'],
+    bulb: ['CircleWavyWarning', 'Leaf'],
+    vegetable: ['Carrot', 'Plant'],
+    fruit: ['Orange', 'AppleLogo', 'Plant'],
+    tree: ['Tree', 'TreeEvergreen'],
+    climber: ['ArrowsOutLineVertical', 'Plant'],
+    herb: ['Leaf', 'Plant'],
+    succulent: ['Cactus', 'Leaf'],
   }
 
-  const candidates = map[type] || ['Leaf', 'SquaresFour']
+  const candidates = map[type] || ['Leaf', 'Plant']
   const Component = resolveIcon(candidates)
   return Component ? <Component weight="light" size={size} className={className} style={style} /> : null
 }
@@ -87,9 +87,9 @@ export function getPlantTypeIcon(plantType: string | null, className?: string, s
 export function getPlantedInIcon(plantedIn: string | null, className?: string, style?: React.CSSProperties, size?: number | string) {
   const key = plantedIn || ''
   const map: Record<string, string[]> = {
-    ground: ['Globe', 'GlobeSimple', 'Mountains'],
-    pot: ['FlowerPot', 'PottedPlant', 'Flower'],
-    raised_bed: ['Stack', 'Rows', 'Square'],
+    ground: ['Mountains', 'Leaf'],
+    pot: ['FlowerPot', 'Flower'],
+    raised_bed: ['Rows', 'Stack', 'Square'],
   }
   const candidates = map[key] || ['Square']
   const Component = resolveIcon(candidates)

@@ -235,12 +235,12 @@ export default function SettingsPage() {
         transition={{ delay: 0.2 }}
         className="mt-6 p-6 rounded-xl"
         style={{
-          background: 'var(--earth-50)',
-          border: '1px solid var(--earth-200)',
+          background: 'white',
+          border: '1px solid var(--stone-200)',
         }}
       >
         <div className="flex items-center gap-2 mb-3">
-          <Icon name="GlobeHemisphereWest" size={20} weight="light" className="w-5 h-5" style={{ color: 'var(--earth-600)' }} ariaLabel="about climate zones" />
+          <Icon name="Globe" size={20} weight="light" className="w-5 h-5" style={{ color: 'var(--sage-600)' }} ariaLabel="about climate zones" />
           <h3
             className="font-semibold"
             style={{
