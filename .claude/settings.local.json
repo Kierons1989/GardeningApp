@@ -17,7 +17,8 @@
       "Bash(npx supabase:*)",
       "Bash(node -e:*)",
       "Bash(ls:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(dir \"c:\\\\Users\\\\44770\\\\Coding Projects\\\\garden-brain\\\\src\\\\components\" /B /S)"
     ]
   }
 }
