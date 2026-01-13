@@ -467,7 +467,8 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                 </h3>
                 <div className="space-y-3 sm:space-y-4">
                   {tasks.map((task) => {
-                    const isExpanded = expandedTasks.has(task.key)
+                    const taskMonthKey = `${month}-${task.key}`
+                    const isExpanded = expandedTasks.has(taskMonthKey)
                     return (
                       <div
                         key={task.key}
@@ -508,7 +509,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
 
                           {task.how_to && (
                             <button
-                              onClick={() => toggleTask(task.key)}
+                              onClick={() => toggleTask(taskMonthKey)}
                               className="mt-3 flex items-center gap-2 text-sm font-medium transition-colors"
                               style={{
                                 color: 'var(--sage-600)',
