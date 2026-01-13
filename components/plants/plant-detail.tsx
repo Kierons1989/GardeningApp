@@ -4,11 +4,13 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { Plant, TaskHistory, AITask } from '@/types/database'
 import { createClient } from '@/lib/supabase/client'
 import TaskActions from '@/components/tasks/task-actions'
 import PlantChat from '@/components/chat/plant-chat'
 import { getCategoryColor } from '@/lib/utils/category-colors'
+import { formatPlantedIn } from '@/lib/utils/formatters'
 import { getPlantTypeIcon } from '@/components/ui/botanical-icons'
 import Icon from '@/components/ui/icon'
 import { getPlantedInIcon, getLocationIcon } from '@/components/ui/botanical-icons'
@@ -20,10 +22,22 @@ interface PlantDetailProps {
 
 export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [showChat, setShowChat] = useState(false)
-  const [deleting, setDeleting] = useState(false)
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set())
   const [currentTime] = useState(() => Date.now())
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const supabase = createClient()
+      const { error } = await supabase.from('plants').delete().eq('id', plant.id)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['plants'] })
+      router.push('/plants')
+    },
+  })
 
   const toggleTask = (taskKey: string) => {
     setExpandedTasks(prev => {
@@ -61,22 +75,11 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
     }) || []
   }, [careProfile?.tasks, taskHistory, currentTime])
 
-  async function handleDelete() {
+  function handleDelete() {
     if (!confirm('Are you sure you want to delete this plant? This cannot be undone.')) {
       return
     }
-
-    setDeleting(true)
-    const supabase = createClient()
-    const { error } = await supabase.from('plants').delete().eq('id', plant.id)
-
-    if (!error) {
-      router.push('/plants')
-      router.refresh()
-    } else {
-      alert('Failed to delete plant')
-      setDeleting(false)
-    }
+    deleteMutation.mutate()
   }
 
   return (
@@ -166,7 +169,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                 </button>
                 <button
                   onClick={handleDelete}
-                  disabled={deleting}
+                  disabled={deleteMutation.isPending}
                   className="p-2 rounded-lg transition-colors"
                   style={{
                     color: 'var(--error)',
@@ -560,15 +563,6 @@ function isTaskInWindow(monthStart: number, monthEnd: number, currentMonth: numb
     return currentMonth >= monthStart && currentMonth <= monthEnd
   }
   return currentMonth >= monthStart || currentMonth <= monthEnd
-}
-
-function formatPlantedIn(plantedIn: string): string {
-  const labels: Record<string, string> = {
-    ground: 'In ground',
-    pot: 'In pot',
-    raised_bed: 'Raised bed',
-  }
-  return labels[plantedIn] || plantedIn
 }
 
 function formatMonthRange(start: number, end: number): string {

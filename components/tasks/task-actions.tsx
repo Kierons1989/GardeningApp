@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '@/components/ui/toast'
+import { useTaskMutation } from '@/lib/queries/use-task-mutation'
 import Icon from '@/components/ui/icon'
 
 interface TaskActionsProps {
@@ -13,45 +13,37 @@ interface TaskActionsProps {
 }
 
 export default function TaskActions({ plantId, taskKey, onActionComplete }: TaskActionsProps) {
-  const router = useRouter()
   const { showToast } = useToast()
   const [loading, setLoading] = useState<string | null>(null)
   const [showSnoozeOptions, setShowSnoozeOptions] = useState(false)
   const [completing, setCompleting] = useState(false)
+
+  const taskMutation = useTaskMutation()
 
   async function handleAction(action: 'done' | 'skipped' | 'snoozed', snoozeUntil?: string) {
     setLoading(action)
     setShowSnoozeOptions(false)
 
     try {
-      const response = await fetch('/api/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          plantId,
-          taskKey,
-          action,
-          snoozeUntil,
-        }),
+      await taskMutation.mutateAsync({
+        plantId,
+        taskKey,
+        action,
+        snoozeUntil,
       })
 
-      if (response.ok) {
-        // Show success animation for done action
-        if (action === 'done') {
-          setCompleting(true)
-          await new Promise(resolve => setTimeout(resolve, 800)) // Wait for animation
-          showToast('Task completed! Great work!', 'success')
-        } else if (action === 'skipped') {
-          showToast('Task skipped', 'info')
-        } else if (action === 'snoozed') {
-          showToast('Task snoozed for later', 'info')
-        }
-
-        onActionComplete?.()
-        router.refresh()
-      } else {
-        showToast('Failed to save task action', 'error')
+      // Show success animation for done action
+      if (action === 'done') {
+        setCompleting(true)
+        await new Promise(resolve => setTimeout(resolve, 800))
+        showToast('Task completed! Great work!', 'success')
+      } else if (action === 'skipped') {
+        showToast('Task skipped', 'info')
+      } else if (action === 'snoozed') {
+        showToast('Task snoozed for later', 'info')
       }
+
+      onActionComplete?.()
     } catch (error) {
       console.error('Error saving task action:', error)
       showToast('Failed to save task action', 'error')

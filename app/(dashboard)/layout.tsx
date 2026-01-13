@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, memo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
-import type { Profile } from '@/types/database'
+import { QueryProvider } from '@/components/providers/query-provider'
+import { useProfile } from '@/lib/queries/use-profile'
 import { ToastProvider } from '@/components/ui/toast'
 import Icon from '@/components/ui/icon'
 
@@ -28,46 +29,58 @@ const navItems = [
   },
 ]
 
-export default function DashboardLayout({
-  children,
+const NavItem = memo(function NavItem({
+  item,
+  isActive,
+  onClick
 }: {
-  children: React.ReactNode
+  item: typeof navItems[0]
+  isActive: boolean
+  onClick?: () => void
 }) {
+  return (
+    <li className="relative">
+      <Link
+        href={item.href}
+        onClick={onClick}
+        className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
+        style={{
+          background: isActive ? 'var(--sage-50)' : 'transparent',
+          color: isActive ? 'var(--sage-700)' : 'var(--text-secondary)',
+        }}
+      >
+        <span style={{ opacity: isActive ? 1 : 0.7 }}>
+          {item.icon}
+        </span>
+        <span className="font-medium">{item.label}</span>
+        {isActive && (
+          <motion.div
+            layoutId="activeNav"
+            className="absolute left-0 w-1 h-6 rounded-r"
+            style={{ background: 'var(--sage-600)' }}
+          />
+        )}
+      </Link>
+    </li>
+  )
+})
+
+function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const [profile, setProfile] = useState<Profile | null>(null)
+  const { data: profile } = useProfile()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  useEffect(() => {
-    const supabase = createClient()
-
-    async function getProfile() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
-
-        if (data) {
-          setProfile(data)
-        }
-      }
-    }
-
-    getProfile()
-  }, [])
 
   async function handleSignOut() {
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/login')
-    router.refresh()
   }
 
+  const displayName = profile?.display_name || 'Gardener'
+  const displayInitial = displayName[0]?.toUpperCase() || 'G'
+
   return (
-    <ToastProvider>
     <div className="min-h-screen bg-botanical">
       {/* Desktop Sidebar */}
       <aside
@@ -86,6 +99,7 @@ export default function DashboardLayout({
               width={167}
               height={63}
               className="h-7 w-auto"
+              priority
             />
           </Link>
         </div>
@@ -93,33 +107,13 @@ export default function DashboardLayout({
         {/* Navigation */}
         <nav className="flex-1 p-4">
           <ul className="space-y-1">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
-                    style={{
-                      background: isActive ? 'var(--sage-50)' : 'transparent',
-                      color: isActive ? 'var(--sage-700)' : 'var(--text-secondary)',
-                    }}
-                  >
-                    <span style={{ opacity: isActive ? 1 : 0.7 }}>
-                      {item.icon}
-                    </span>
-                    <span className="font-medium">{item.label}</span>
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeNav"
-                        className="absolute left-0 w-1 h-6 rounded-r"
-                        style={{ background: 'var(--sage-600)' }}
-                      />
-                    )}
-                  </Link>
-                </li>
-              )
-            })}
+            {navItems.map((item) => (
+              <NavItem
+                key={item.href}
+                item={item}
+                isActive={pathname === item.href}
+              />
+            ))}
           </ul>
         </nav>
 
@@ -137,7 +131,7 @@ export default function DashboardLayout({
                 className="text-sm font-medium"
                 style={{ color: 'var(--sage-700)' }}
               >
-                {profile?.display_name?.[0]?.toUpperCase() || 'G'}
+                {displayInitial}
               </span>
             </div>
             <div className="flex-1 min-w-0">
@@ -145,7 +139,7 @@ export default function DashboardLayout({
                 className="text-sm font-medium truncate"
                 style={{ color: 'var(--text-primary)' }}
               >
-                {profile?.display_name || 'Gardener'}
+                {displayName}
               </p>
               <button
                 onClick={handleSignOut}
@@ -223,7 +217,7 @@ export default function DashboardLayout({
                       className="text-sm font-medium"
                       style={{ color: 'var(--sage-700)' }}
                     >
-                      {profile?.display_name?.[0]?.toUpperCase() || 'G'}
+                      {displayInitial}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -231,7 +225,7 @@ export default function DashboardLayout({
                       className="text-sm font-medium truncate"
                       style={{ color: 'var(--text-primary)' }}
                     >
-                      {profile?.display_name || 'Gardener'}
+                      {displayName}
                     </p>
                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                       View profile
@@ -296,6 +290,19 @@ export default function DashboardLayout({
         </div>
       </main>
     </div>
-    </ToastProvider>
+  )
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <QueryProvider>
+      <ToastProvider>
+        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      </ToastProvider>
+    </QueryProvider>
   )
 }

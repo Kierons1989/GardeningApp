@@ -1,17 +1,20 @@
 'use client'
 
+import { memo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import type { Plant } from '@/types/database'
 import { getPlantTypeIcon } from '@/components/ui/botanical-icons'
 import Icon from '@/components/ui/icon'
+import { formatPlantedIn } from '@/lib/utils/formatters'
 
 interface PlantCardProps {
   plant: Plant
   index: number
 }
 
-export default function PlantCard({ plant, index }: PlantCardProps) {
+const PlantCard = memo(function PlantCard({ plant, index }: PlantCardProps) {
   const careProfile = plant.plant_types?.ai_care_profile
   const taskCount = careProfile?.tasks?.length || 0
   const hasProfile = !!careProfile
@@ -20,7 +23,6 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
   const cultivarName = plant.cultivar_name
   const growthHabit = plant.plant_types?.growth_habit || []
 
-  // Determine card title and subtitle
   const cardTitle = cultivarName
     ? cultivarName
     : topLevel && middleLevel
@@ -47,14 +49,17 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
         <div className="flex items-start gap-4">
           {/* Plant Icon/Image */}
           <div
-            className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+            className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
             style={{ background: 'var(--sage-100)' }}
           >
             {plant.photo_url ? (
-              <img
+              <Image
                 src={plant.photo_url}
                 alt={plant.name}
-                className="w-full h-full object-cover rounded-xl"
+                width={56}
+                height={56}
+                className="w-full h-full object-cover"
+                loading="lazy"
               />
             ) : (
               getPlantTypeIcon(plant.plant_types?.top_level || '', 'w-7 h-7', { color: 'var(--sage-600)' })
@@ -166,13 +171,6 @@ export default function PlantCard({ plant, index }: PlantCardProps) {
       </Link>
     </motion.div>
   )
-}
+})
 
-function formatPlantedIn(plantedIn: string): string {
-  const labels: Record<string, string> = {
-    ground: 'In ground',
-    pot: 'In pot',
-    raised_bed: 'Raised bed',
-  }
-  return labels[plantedIn] || plantedIn
-}
+export default PlantCard

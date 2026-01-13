@@ -13,21 +13,38 @@
  */
 
 import * as Phosphor from '@phosphor-icons/react'
+import type { IconProps as PhosphorIconProps } from '@phosphor-icons/react'
 
-interface IconProps {
-  className?: string
-  style?: React.CSSProperties
-  size?: number | string
-}
+type IconComponent = React.ComponentType<PhosphorIconProps>
 
-type IconComponent = any
+// Cache resolved icons for performance
+const iconCache: Record<string, IconComponent | null> = {}
 
-function resolveIcon(candidates: string[], fallback = 'SquaresFour') {
-  for (const name of candidates) {
-    if ((Phosphor as any)[name]) return (Phosphor as any)[name]
-    if ((Phosphor as any)[name + 'Icon']) return (Phosphor as any)[name + 'Icon']
+function resolveIcon(candidates: string[], fallback = 'SquaresFour'): IconComponent | null {
+  const cacheKey = candidates.join(',') + '|' + fallback
+
+  if (cacheKey in iconCache) {
+    return iconCache[cacheKey]
   }
-  return (Phosphor as any)[fallback] || null
+
+  const icons = Phosphor as Record<string, unknown>
+
+  for (const name of candidates) {
+    const component = icons[name] || icons[name + 'Icon']
+    if (component && typeof component === 'function') {
+      iconCache[cacheKey] = component as IconComponent
+      return component as IconComponent
+    }
+  }
+
+  const fallbackComponent = icons[fallback]
+  if (fallbackComponent && typeof fallbackComponent === 'function') {
+    iconCache[cacheKey] = fallbackComponent as IconComponent
+    return fallbackComponent as IconComponent
+  }
+
+  iconCache[cacheKey] = null
+  return null
 }
 
 export function getCategoryIcon(category: string, className?: string, style?: React.CSSProperties, size?: number | string) {
