@@ -1,29 +1,15 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+'use client'
+
+import { usePlants } from '@/lib/queries/use-plants'
 import PlantList from '@/components/plants/plant-list'
+import PlantListSkeleton from '@/components/plants/plant-list-skeleton'
 
-export default async function PlantsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export default function PlantsPage() {
+  const { data: plants, isLoading } = usePlants()
 
-  if (!user) {
-    redirect('/login')
+  if (isLoading) {
+    return <PlantListSkeleton />
   }
-
-  const { data: plants } = await supabase
-    .from('plants')
-    .select(`
-      *,
-      plant_types (
-        id,
-        top_level,
-        middle_level,
-        growth_habit,
-        ai_care_profile
-      )
-    `)
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
 
   return <PlantList plants={plants || []} />
 }

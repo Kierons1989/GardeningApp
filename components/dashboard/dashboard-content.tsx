@@ -64,20 +64,20 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
   const thisWeekTasks = taskSuggestions.filter((t) => t.due_bucket === 'this_week')
   const upcomingTasks = taskSuggestions.filter((t) => t.due_bucket === 'next_two_weeks')
 
-  // Container animation variants
+  // Container animation variants - fast for snappy feel
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
+        staggerChildren: 0.02,
       },
     },
   }
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.15 } },
   }
 
   return (
