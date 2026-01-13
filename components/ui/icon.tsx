@@ -16,7 +16,8 @@ function getIconComponent(name: string): IconComponent | null {
   const icons = Phosphor as Record<string, unknown>
   const component = icons[name] || icons[name + 'Icon']
 
-  if (component && typeof component === 'function') {
+  // Phosphor v2 exports ForwardRef components (objects), not functions
+  if (component && (typeof component === 'function' || (typeof component === 'object' && component !== null))) {
     iconMap[name] = component as IconComponent
     return component as IconComponent
   }

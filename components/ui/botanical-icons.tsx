@@ -29,16 +29,17 @@ function resolveIcon(candidates: string[], fallback = 'SquaresFour'): IconCompon
 
   const icons = Phosphor as Record<string, unknown>
 
+  // Phosphor v2 exports ForwardRef components (objects), not functions
   for (const name of candidates) {
     const component = icons[name] || icons[name + 'Icon']
-    if (component && typeof component === 'function') {
+    if (component && (typeof component === 'function' || (typeof component === 'object' && component !== null))) {
       iconCache[cacheKey] = component as IconComponent
       return component as IconComponent
     }
   }
 
   const fallbackComponent = icons[fallback]
-  if (fallbackComponent && typeof fallbackComponent === 'function') {
+  if (fallbackComponent && (typeof fallbackComponent === 'function' || (typeof fallbackComponent === 'object' && fallbackComponent !== null))) {
     iconCache[cacheKey] = fallbackComponent as IconComponent
     return fallbackComponent as IconComponent
   }
@@ -88,7 +89,7 @@ export function getPlantedInIcon(plantedIn: string | null, className?: string, s
   const key = plantedIn || ''
   const map: Record<string, string[]> = {
     ground: ['Mountains', 'Leaf'],
-    pot: ['FlowerPot', 'Flower'],
+    pot: ['PottedPlant', 'Flower'],
     raised_bed: ['Rows', 'Stack', 'Square'],
   }
   const candidates = map[key] || ['Square']
