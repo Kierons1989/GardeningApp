@@ -144,7 +144,9 @@ export default function PlantList({ plants }: PlantListProps) {
           <div className="space-y-3">
             {/* Search Bar */}
             <div className="relative">
-              <Icon name="MagnifyingGlass" size={20} weight="light" className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2" ariaLabel="search" style={{ color: 'var(--text-muted)' }} />
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Icon name="MagnifyingGlass" size={20} weight="light" className="w-5 h-5" ariaLabel="search" style={{ color: 'var(--text-secondary)' }} />
+              </div>
               <input
                 type="text"
                 placeholder="Search plants by name..."
@@ -160,8 +162,9 @@ export default function PlantList({ plants }: PlantListProps) {
                 onClick={() => setShowFilters(!showFilters)}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
                 style={{
-                  background: showFilters || hasActiveFilters ? 'var(--sage-100)' : 'var(--stone-100)',
-                  color: showFilters || hasActiveFilters ? 'var(--sage-700)' : 'var(--text-secondary)',
+                  background: showFilters || hasActiveFilters ? 'var(--sage-100)' : 'var(--stone-200)',
+                  color: showFilters || hasActiveFilters ? 'var(--sage-700)' : 'var(--text-primary)',
+                  border: '1px solid var(--stone-300)',
                 }}
               >
                 <Icon name="Funnel" size={16} weight="light" className="w-4 h-4" ariaLabel="filters" />
@@ -177,10 +180,11 @@ export default function PlantList({ plants }: PlantListProps) {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="px-4 py-2 rounded-lg text-sm font-medium border-0 cursor-pointer transition-colors hover:bg-stone-200"
+                className="px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors"
                 style={{
-                  background: 'var(--stone-100)',
-                  color: 'var(--text-secondary)',
+                  background: 'var(--stone-200)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--stone-300)',
                 }}
               >
                 <option value="newest">Newest first</option>
@@ -191,10 +195,11 @@ export default function PlantList({ plants }: PlantListProps) {
 
               <button
                 onClick={() => setViewMode(viewMode === 'grouped' ? 'grid' : 'grouped')}
-                className="ml-auto px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-stone-200"
+                className="ml-auto px-4 py-2 rounded-lg text-sm font-medium transition-all"
                 style={{
-                  background: 'var(--stone-100)',
-                  color: 'var(--text-secondary)',
+                  background: 'var(--stone-200)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--stone-300)',
                 }}
               >
                 {viewMode === 'grouped' ? (
