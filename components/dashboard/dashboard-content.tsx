@@ -9,6 +9,7 @@ import { getCategoryColor } from '@/lib/utils/category-colors'
 import { getCategoryIcon, getPlantTypeIcon } from '@/components/ui/botanical-icons'
 import Icon from '@/components/ui/icon'
 import { EmptyGardenIllustration, NoTasksIllustration } from '@/components/ui/empty-states'
+import { LawnDashboardWidget } from '@/components/lawn'
 
 interface DashboardContentProps {
   plants: Plant[]
@@ -249,6 +250,11 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
                   </p>
                 </div>
               </Link>
+            </motion.section>
+
+            {/* Lawn Care Widget */}
+            <motion.section variants={itemVariants}>
+              <LawnDashboardWidget />
             </motion.section>
 
             {/* Recent Plants */}

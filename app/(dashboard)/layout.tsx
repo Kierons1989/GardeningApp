@@ -23,6 +23,11 @@ const navItems = [
     icon: <Icon name="Plant" size={20} weight="light" className="w-5 h-5" ariaLabel="My Plants" />,
   },
   {
+    href: '/lawn',
+    label: 'Lawn Care',
+    icon: <Icon name="Leaf" size={20} weight="light" className="w-5 h-5" ariaLabel="Lawn Care" />,
+  },
+  {
     href: '/settings',
     label: 'Settings',
     icon: <Icon name="Gear" size={20} weight="light" className="w-5 h-5" ariaLabel="Settings" />,
@@ -107,13 +112,18 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         {/* Navigation */}
         <nav className="flex-1 p-4">
           <ul className="space-y-1">
-            {navItems.map((item) => (
-              <NavItem
-                key={item.href}
-                item={item}
-                isActive={pathname === item.href}
-              />
-            ))}
+            {navItems.map((item) => {
+              const isActive = item.href === '/'
+                ? pathname === '/'
+                : pathname === item.href || pathname.startsWith(`${item.href}/`)
+              return (
+                <NavItem
+                  key={item.href}
+                  item={item}
+                  isActive={isActive}
+                />
+              )
+            })}
           </ul>
         </nav>
 
@@ -238,7 +248,9 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               <nav className="flex-1 p-4">
                 <ul className="space-y-1">
                   {navItems.map((item) => {
-                    const isActive = pathname === item.href
+                    const isActive = item.href === '/'
+                      ? pathname === '/'
+                      : pathname === item.href || pathname.startsWith(`${item.href}/`)
                     return (
                       <li key={item.href} className="relative">
                         <Link

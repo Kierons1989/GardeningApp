@@ -18,6 +18,18 @@
   --sage-800: #344338;
   --sage-900: #2d3830;
 
+  /* Lawn Colors - Fresh Grass Green */
+  --lawn-50: #f0f7f0;
+  --lawn-100: #dceddc;
+  --lawn-200: #b8dbb8;
+  --lawn-300: #8bc48b;
+  --lawn-400: #5fa85f;
+  --lawn-500: #4a9149;
+  --lawn-600: #3d7a3d;
+  --lawn-700: #336333;
+  --lawn-800: #2a4f2a;
+  --lawn-900: #234023;
+
   /* Secondary Colors - Terracotta/Earth */
   --earth-50: #fdf8f4;
   --earth-100: #f9ede3;
@@ -61,7 +73,7 @@
   --warning: #d4a47a;
   --error: #c75146;
 
-  /* Task Category Colors */
+  /* Task Category Colors - Plants */
   --category-pruning-bg: var(--sage-100);
   --category-pruning-text: var(--sage-700);
   --category-feeding-bg: var(--earth-100);
@@ -78,6 +90,22 @@
   --category-winter-care-text: var(--stone-800);
   --category-general-bg: var(--stone-100);
   --category-general-text: var(--stone-700);
+
+  /* Task Category Colors - Lawn */
+  --category-mowing-bg: var(--lawn-100);
+  --category-mowing-text: var(--lawn-700);
+  --category-aeration-bg: var(--earth-100);
+  --category-aeration-text: var(--earth-700);
+  --category-scarification-bg: var(--earth-100);
+  --category-scarification-text: var(--earth-700);
+  --category-overseeding-bg: var(--lawn-100);
+  --category-overseeding-text: var(--lawn-700);
+  --category-moss-control-bg: var(--stone-200);
+  --category-moss-control-text: var(--stone-700);
+  --category-weed-management-bg: var(--earth-50);
+  --category-weed-management-text: var(--earth-800);
+  --category-edging-bg: var(--lawn-50);
+  --category-edging-text: var(--lawn-800);
 
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(45, 59, 54, 0.05);
@@ -133,6 +161,17 @@
 
   --color-coral: var(--coral);
   --color-coral-light: var(--coral-light);
+
+  --color-lawn-50: var(--lawn-50);
+  --color-lawn-100: var(--lawn-100);
+  --color-lawn-200: var(--lawn-200);
+  --color-lawn-300: var(--lawn-300);
+  --color-lawn-400: var(--lawn-400);
+  --color-lawn-500: var(--lawn-500);
+  --color-lawn-600: var(--lawn-600);
+  --color-lawn-700: var(--lawn-700);
+  --color-lawn-800: var(--lawn-800);
+  --color-lawn-900: var(--lawn-900);
 
   --font-display: var(--font-cormorant);
   --font-body: var(--font-crimson);

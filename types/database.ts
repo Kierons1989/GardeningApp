@@ -143,3 +143,23 @@ export interface PlantIdentification {
   growth_habit: string[];
   confidence: 'high' | 'medium' | 'low';
 }
+
+// Re-export lawn types for convenience
+export type {
+  Lawn,
+  LawnCareProfile,
+  LawnTask,
+  LawnTaskHistory,
+  LawnMowingLog,
+  LawnHealthCheck,
+  LawnTaskSuggestion,
+  LawnSize,
+  LawnPrimaryUse,
+  LawnSoilType,
+  LawnCondition,
+  LawnCareGoal,
+  LawnHealthStatus,
+  LawnTaskCategory,
+  LawnTaskRecurrence,
+  MowingSchedule,
+} from './lawn';
