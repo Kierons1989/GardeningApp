@@ -585,11 +585,13 @@ export default function DesignSystemPage() {
               marginBottom: '1rem',
               color: 'var(--text-secondary)'
             }}>
-              Buttons
+              Standard Buttons
             </h3>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
               <button className="btn btn-primary">Primary Button</button>
               <button className="btn btn-secondary">Secondary Button</button>
+              <button className="btn btn-destructive">Destructive</button>
+              <button className="btn btn-ghost">Ghost</button>
               <button className="btn btn-primary" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>
                 Disabled
               </button>
@@ -601,11 +603,143 @@ export default function DesignSystemPage() {
               fontSize: '0.875rem',
               color: 'var(--text-secondary)'
             }}>
-              <p><strong>Primary:</strong> Main actions (Save, Submit, Add)</p>
-              <p><strong>Secondary:</strong> Alternative actions (Cancel, Back)</p>
+              <p><strong>Primary:</strong> Main actions (Save, Submit, Add) - sage-600 background</p>
+              <p><strong>Secondary:</strong> Alternative actions (Cancel, Back) - stone-100 background with border</p>
+              <p><strong>Destructive:</strong> Dangerous actions (Delete, Remove) - error color with subtle red background</p>
+              <p><strong>Ghost:</strong> Tertiary actions - transparent background, appears on hover</p>
               <p style={{ marginTop: '0.5rem' }}>
-                Padding: 12px 24px | Border Radius: 10px | Font: Crimson Text 500
+                Padding: 12px 24px | Border Radius: 10px (radius-md) | Font: Crimson Text 500
               </p>
+            </div>
+          </div>
+
+          {/* Icon Buttons */}
+          <div style={{ marginBottom: '3rem' }}>
+            <h3 style={{
+              fontFamily: 'var(--font-cormorant)',
+              fontSize: '1.5rem',
+              marginBottom: '1rem',
+              color: 'var(--text-secondary)'
+            }}>
+              Icon Buttons
+            </h3>
+            <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>
+              Square buttons for icon-only actions. Use for toolbars, card actions, and compact UI.
+            </p>
+
+            {/* Sizes */}
+            <h4 style={{ fontSize: '0.9375rem', marginBottom: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+              Sizes
+            </h4>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <button className="btn-icon btn-icon-sm btn-icon-primary">
+                  <Icon name="Pencil" size={16} weight="light" />
+                </button>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Small (32px)</p>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <button className="btn-icon btn-icon-primary">
+                  <Icon name="Pencil" size={20} weight="light" />
+                </button>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Default (40px)</p>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <button className="btn-icon btn-icon-lg btn-icon-primary">
+                  <Icon name="Pencil" size={24} weight="light" />
+                </button>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Large (48px)</p>
+              </div>
+            </div>
+
+            {/* Variants */}
+            <h4 style={{ fontSize: '0.9375rem', marginBottom: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+              Variants
+            </h4>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <button className="btn-icon btn-icon-primary">
+                  <Icon name="Plus" size={20} weight="light" />
+                </button>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Primary</p>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <button className="btn-icon btn-icon-secondary">
+                  <Icon name="Gear" size={20} weight="light" />
+                </button>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Secondary</p>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <button className="btn-icon btn-icon-destructive">
+                  <Icon name="Trash" size={20} weight="light" />
+                </button>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Destructive</p>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <button className="btn-icon btn-icon-ghost">
+                  <Icon name="X" size={20} weight="light" />
+                </button>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Ghost</p>
+              </div>
+            </div>
+
+            {/* Common use cases */}
+            <h4 style={{ fontSize: '0.9375rem', marginBottom: '0.75rem', color: 'var(--text-muted)', fontWeight: '600' }}>
+              Common Use Cases
+            </h4>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', marginBottom: '1.5rem' }}>
+              {/* Delete action */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '1rem',
+                background: 'white',
+                borderRadius: 'var(--radius-lg)',
+                boxShadow: 'var(--shadow-sm)',
+                border: '1px solid var(--stone-200)'
+              }}>
+                <div>
+                  <p style={{ fontWeight: '500', marginBottom: '0.25rem' }}>Tomato Plant</p>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>Garden bed</p>
+                </div>
+                <button className="btn-icon btn-icon-destructive">
+                  <Icon name="Trash" size={20} weight="light" />
+                </button>
+              </div>
+
+              {/* Action toolbar */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.5rem',
+                background: 'var(--stone-100)',
+                borderRadius: 'var(--radius-md)'
+              }}>
+                <button className="btn-icon btn-icon-sm btn-icon-ghost">
+                  <Icon name="Pencil" size={16} weight="light" />
+                </button>
+                <button className="btn-icon btn-icon-sm btn-icon-ghost">
+                  <Icon name="Copy" size={16} weight="light" />
+                </button>
+                <button className="btn-icon btn-icon-sm btn-icon-destructive">
+                  <Icon name="Trash" size={16} weight="light" />
+                </button>
+              </div>
+            </div>
+
+            <div style={{
+              padding: '1rem',
+              background: 'var(--stone-50)',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.875rem',
+              color: 'var(--text-secondary)'
+            }}>
+              <p><strong>Classes:</strong> .btn-icon + .btn-icon-[variant] + optional .btn-icon-[size]</p>
+              <p><strong>Sizes:</strong> sm (32px), default (40px), lg (48px)</p>
+              <p><strong>Variants:</strong> primary, secondary, destructive, ghost</p>
+              <p style={{ marginTop: '0.5rem' }}>Border Radius: 10px (radius-md) | Icon sizes: 16px (sm), 20px (default), 24px (lg)</p>
             </div>
           </div>
 

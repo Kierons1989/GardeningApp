@@ -214,13 +214,9 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                 <button
                   onClick={handleDelete}
                   disabled={deleteMutation.isPending}
-                  className="p-2 rounded-lg transition-colors"
-                  style={{
-                    color: 'var(--error)',
-                    background: 'rgba(199, 81, 70, 0.1)',
-                  }}
+                  className="btn-icon btn-icon-destructive"
                 >
-                  <Icon name="Trash" size={20} weight="light" className="w-5 h-5" ariaLabel="delete" />
+                  <Icon name="Trash" size={20} weight="light" ariaLabel="delete" />
                 </button>
               </div>
             </div>
@@ -292,13 +288,9 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
               <button
                 onClick={handleDelete}
                 disabled={deleteMutation.isPending}
-                className="p-2.5 rounded-lg transition-colors"
-                style={{
-                  color: 'var(--error)',
-                  background: 'rgba(199, 81, 70, 0.1)',
-                }}
+                className="btn-icon btn-icon-destructive"
               >
-                <Icon name="Trash" size={20} weight="light" className="w-5 h-5" ariaLabel="delete" />
+                <Icon name="Trash" size={20} weight="light" ariaLabel="delete" />
               </button>
             </div>
           </div>

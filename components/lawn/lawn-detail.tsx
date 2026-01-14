@@ -155,13 +155,9 @@ export default function LawnDetail({ lawn }: LawnDetailProps) {
                 <button
                   onClick={handleDelete}
                   disabled={deleteLawn.isPending}
-                  className="p-2 rounded-lg transition-colors"
-                  style={{
-                    color: 'var(--error)',
-                    background: 'rgba(199, 81, 70, 0.1)',
-                  }}
+                  className="btn-icon btn-icon-destructive"
                 >
-                  <Icon name="Trash" size={20} weight="light" className="w-5 h-5" />
+                  <Icon name="Trash" size={20} weight="light" ariaLabel="delete" />
                 </button>
               </div>
             </div>
@@ -176,13 +172,9 @@ export default function LawnDetail({ lawn }: LawnDetailProps) {
               <button
                 onClick={handleDelete}
                 disabled={deleteLawn.isPending}
-                className="p-2.5 rounded-lg transition-colors"
-                style={{
-                  color: 'var(--error)',
-                  background: 'rgba(199, 81, 70, 0.1)',
-                }}
+                className="btn-icon btn-icon-destructive"
               >
-                <Icon name="Trash" size={20} weight="light" className="w-5 h-5" />
+                <Icon name="Trash" size={20} weight="light" ariaLabel="delete" />
               </button>
             </div>
           </div>

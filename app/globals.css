@@ -420,6 +420,110 @@ h3 {
   border-color: var(--stone-300);
 }
 
+/* Destructive Button */
+.btn-destructive {
+  background: rgba(199, 81, 70, 0.1);
+  color: var(--error);
+  border: 1px solid transparent;
+}
+
+.btn-destructive:hover {
+  background: rgba(199, 81, 70, 0.18);
+  border-color: rgba(199, 81, 70, 0.2);
+}
+
+.btn-destructive:active {
+  background: rgba(199, 81, 70, 0.25);
+}
+
+/* Ghost Button */
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+}
+
+.btn-ghost:hover {
+  background: var(--stone-100);
+  color: var(--text-primary);
+}
+
+/* Icon Button Base */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  border: none;
+  flex-shrink: 0;
+}
+
+.btn-icon-sm {
+  width: 32px;
+  height: 32px;
+}
+
+.btn-icon-lg {
+  width: 48px;
+  height: 48px;
+}
+
+/* Icon Button Variants */
+.btn-icon-primary {
+  background: var(--sage-100);
+  color: var(--sage-700);
+}
+
+.btn-icon-primary:hover {
+  background: var(--sage-200);
+}
+
+.btn-icon-primary:active {
+  background: var(--sage-300);
+}
+
+.btn-icon-secondary {
+  background: var(--stone-100);
+  color: var(--text-secondary);
+}
+
+.btn-icon-secondary:hover {
+  background: var(--stone-200);
+  color: var(--text-primary);
+}
+
+.btn-icon-secondary:active {
+  background: var(--stone-300);
+}
+
+.btn-icon-destructive {
+  background: rgba(199, 81, 70, 0.1);
+  color: var(--error);
+}
+
+.btn-icon-destructive:hover {
+  background: rgba(199, 81, 70, 0.18);
+}
+
+.btn-icon-destructive:active {
+  background: rgba(199, 81, 70, 0.25);
+}
+
+.btn-icon-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.btn-icon-ghost:hover {
+  background: var(--stone-100);
+  color: var(--text-primary);
+}
+
 /* Input Base */
 .input {
   width: 100%;
