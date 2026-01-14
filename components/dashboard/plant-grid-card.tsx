@@ -13,6 +13,14 @@ interface PlantGridCardProps {
 
 export default function PlantGridCard({ plant, index }: PlantGridCardProps) {
   const hasPhoto = !!plant.photo_url
+  const topLevel = plant.plant_types?.top_level
+  const middleLevel = plant.plant_types?.middle_level
+  const cultivarName = plant.cultivar_name
+
+  // Display name: prefer top_level, then middle_level, then plant.name
+  const displayName = topLevel || middleLevel || plant.name
+  // Subtitle: show cultivar if available
+  const subtitle = cultivarName
 
   return (
     <motion.div
@@ -57,8 +65,16 @@ export default function PlantGridCard({ plant, index }: PlantGridCardProps) {
             className="font-medium text-sm leading-tight truncate"
             style={{ color: 'var(--text-primary)' }}
           >
-            {plant.name}
+            {displayName}
           </h4>
+          {subtitle && (
+            <p
+              className="text-xs leading-tight truncate mt-0.5"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              {subtitle}
+            </p>
+          )}
         </div>
       </Link>
     </motion.div>
