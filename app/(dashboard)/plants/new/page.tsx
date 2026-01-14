@@ -128,9 +128,16 @@ export default function NewPlantPage() {
 
       const plant = await plantResponse.json()
 
-      // Step 3: Upload pending image if exists
+      // Step 3: Upload pending image if exists and save URL to database
       if (pendingImage && imageUploadRef.current) {
-        await imageUploadRef.current.uploadPendingImage(plant.id)
+        const imageUrl = await imageUploadRef.current.uploadPendingImage(plant.id)
+        if (imageUrl) {
+          await fetch(`/api/plants/${plant.id}/image`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ photo_url: imageUrl }),
+          })
+        }
       }
 
       router.push('/plants')

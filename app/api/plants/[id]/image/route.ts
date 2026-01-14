@@ -153,3 +153,56 @@ function extractPathFromUrl(url: string): string | null {
     return null
   }
 }
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: plantId } = await params
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const adminClient = createAdminClient()
+    const { data: plant, error: plantError } = await adminClient
+      .from('plants')
+      .select('id, user_id')
+      .eq('id', plantId)
+      .single()
+
+    if (plantError || !plant) {
+      return NextResponse.json({ error: 'Plant not found' }, { status: 404 })
+    }
+
+    if (plant.user_id !== user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const { photo_url } = body as { photo_url: string }
+
+    if (!photo_url) {
+      return NextResponse.json({ error: 'photo_url is required' }, { status: 400 })
+    }
+
+    const { error: updateError } = await adminClient
+      .from('plants')
+      .update({ photo_url })
+      .eq('id', plantId)
+
+    if (updateError) {
+      return NextResponse.json({ error: 'Failed to update plant' }, { status: 500 })
+    }
+
+    return NextResponse.json({ photo_url })
+  } catch (err) {
+    console.error('Unexpected error:', err)
+    return NextResponse.json({
+      error: `Unexpected error: ${err instanceof Error ? err.message : 'Unknown error'}`
+    }, { status: 500 })
+  }
+}
