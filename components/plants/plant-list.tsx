@@ -152,7 +152,8 @@ export default function PlantList({ plants }: PlantListProps) {
                 placeholder="Search plants by name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="input pl-12"
+                className="input"
+                style={{ paddingLeft: '48px' }}
               />
             </div>
 
