@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '@/components/ui/toast'
 import { useTaskMutation } from '@/lib/queries/use-task-mutation'
@@ -17,8 +18,21 @@ export default function TaskActions({ plantId, taskKey, onActionComplete }: Task
   const [loading, setLoading] = useState<string | null>(null)
   const [showSnoozeOptions, setShowSnoozeOptions] = useState(false)
   const [completing, setCompleting] = useState(false)
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
+  const snoozeButtonRef = useRef<HTMLButtonElement>(null)
 
   const taskMutation = useTaskMutation()
+
+  // Update dropdown position when opened
+  useEffect(() => {
+    if (showSnoozeOptions && snoozeButtonRef.current) {
+      const rect = snoozeButtonRef.current.getBoundingClientRect()
+      setDropdownPosition({
+        top: rect.top - 8, // Position above button with small gap
+        left: rect.right - 140, // Align right edge with button
+      })
+    }
+  }, [showSnoozeOptions])
 
   async function handleAction(action: 'done' | 'skipped' | 'snoozed', snoozeUntil?: string) {
     setLoading(action)
@@ -178,69 +192,73 @@ export default function TaskActions({ plantId, taskKey, onActionComplete }: Task
       </button>
 
       {/* Snooze Button with Dropdown */}
-      <div className="relative">
-        <button
-          onClick={() => setShowSnoozeOptions(!showSnoozeOptions)}
-          disabled={loading !== null}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:bg-earth-200 active:scale-95"
-          style={{
-            background: showSnoozeOptions ? 'var(--earth-200)' : 'var(--earth-100)',
-            color: 'var(--earth-700)',
-          }}
-        >
-          {loading === 'snoozed' ? (
-            <motion.div
-              className="w-4 h-4 border-2 border-orange-300 border-t-orange-600 rounded-full"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            />
-          ) : (
-            <Icon name="Clock" size={16} weight="light" ariaLabel="snooze" />
-          )}
-          Snooze
-          <Icon name="CaretDown" size={12} weight="light" ariaLabel="expand" />
-        </button>
+      <button
+        ref={snoozeButtonRef}
+        onClick={() => setShowSnoozeOptions(!showSnoozeOptions)}
+        disabled={loading !== null}
+        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:bg-earth-200 active:scale-95"
+        style={{
+          background: showSnoozeOptions ? 'var(--earth-200)' : 'var(--earth-100)',
+          color: 'var(--earth-700)',
+        }}
+      >
+        {loading === 'snoozed' ? (
+          <motion.div
+            className="w-4 h-4 border-2 border-orange-300 border-t-orange-600 rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          />
+        ) : (
+          <Icon name="Clock" size={16} weight="light" ariaLabel="snooze" />
+        )}
+        Snooze
+        <Icon name="CaretDown" size={12} weight="light" ariaLabel="expand" />
+      </button>
 
-        {/* Snooze Options Dropdown */}
+      {/* Snooze Options Dropdown - rendered via portal to avoid clipping */}
+      {typeof window !== 'undefined' && createPortal(
         <AnimatePresence>
           {showSnoozeOptions && (
-            <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
-              className="absolute right-0 top-full mt-2 z-20 rounded-xl overflow-hidden"
-              style={{
-                background: 'white',
-                boxShadow: 'var(--shadow-lg)',
-                minWidth: '140px',
-              }}
-            >
-              {[
-                { days: 7, label: '1 week' },
-                { days: 14, label: '2 weeks' },
-                { days: 30, label: '1 month' },
-              ].map((option) => (
-                <button
-                  key={option.days}
-                  onClick={() => handleAction('snoozed', getSnoozeDate(option.days))}
-                  className="w-full px-4 py-3 text-left text-sm hover:bg-stone-50 transition-colors"
-                  style={{ color: 'var(--text-primary)' }}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </motion.div>
+            <>
+              {/* Backdrop to close on click outside */}
+              <div
+                className="fixed inset-0 z-[999]"
+                onClick={() => setShowSnoozeOptions(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="fixed z-[1000] rounded-xl overflow-hidden"
+                style={{
+                  top: dropdownPosition.top,
+                  left: dropdownPosition.left,
+                  transform: 'translateY(-100%)',
+                  background: 'white',
+                  boxShadow: 'var(--shadow-lg)',
+                  minWidth: '140px',
+                }}
+              >
+                {[
+                  { days: 7, label: '1 week' },
+                  { days: 14, label: '2 weeks' },
+                  { days: 30, label: '1 month' },
+                ].map((option) => (
+                  <button
+                    key={option.days}
+                    onClick={() => handleAction('snoozed', getSnoozeDate(option.days))}
+                    className="w-full px-4 py-3 text-left text-sm hover:bg-stone-50 transition-colors"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </motion.div>
+            </>
           )}
-        </AnimatePresence>
-      </div>
-
-      {/* Click outside to close snooze dropdown */}
-      {showSnoozeOptions && (
-        <div
-          className="fixed inset-0 z-10"
-          onClick={() => setShowSnoozeOptions(false)}
-        />
+        </AnimatePresence>,
+        document.body
       )}
     </div>
   )
