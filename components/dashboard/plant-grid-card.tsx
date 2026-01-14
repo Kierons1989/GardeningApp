@@ -104,6 +104,7 @@ export function AddPlantCard({ index }: AddPlantCardProps) {
         <div className="aspect-square" />
         <div className="px-2 py-1.5">
           <p className="text-sm leading-tight">&nbsp;</p>
+          <p className="text-xs leading-tight mt-0.5">&nbsp;</p>
         </div>
 
         {/* Centered content overlay */}
