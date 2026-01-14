@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useImperativeHandle, forwardRef } from '
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import Icon from '@/components/ui/icon'
-import { resizeImage, validateImageFile } from '@/lib/utils/image-resize'
+import { resizeImage, validateImageType, validateImageSize } from '@/lib/utils/image-resize'
 import { createClient } from '@/lib/supabase/client'
 
 interface ImageUploadProps {
@@ -79,9 +79,9 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
   const handleFile = useCallback(async (file: File) => {
     setError(null)
 
-    const validation = validateImageFile(file)
-    if (!validation.valid) {
-      setError(validation.error || 'Invalid file')
+    const typeCheck = validateImageType(file)
+    if (!typeCheck.valid) {
+      setError(typeCheck.error || 'Invalid file type')
       return
     }
 
@@ -92,6 +92,13 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
 
       const resizedBlob = await resizeImage(file)
       setProgress(30)
+
+      const sizeCheck = validateImageSize(resizedBlob)
+      if (!sizeCheck.valid) {
+        setError(sizeCheck.error || 'Image too large')
+        setPreview(null)
+        return
+      }
 
       if (plantId) {
         // Edit mode: upload immediately
