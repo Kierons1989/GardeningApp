@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     const careProfile: LawnCareProfile = JSON.parse(jsonStr)
 
-    return NextResponse.json(careProfile)
+    return NextResponse.json({ profile: careProfile })
   } catch (error) {
     console.error('Error generating lawn care profile:', error)
 

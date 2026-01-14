@@ -54,7 +54,7 @@ export default function PlantGridCard({ plant, index }: PlantGridCardProps) {
         {/* Content */}
         <div className="px-2 py-1.5">
           <h4
-            className="font-medium text-[13px] leading-tight truncate"
+            className="font-medium text-sm leading-tight truncate"
             style={{ color: 'var(--text-primary)' }}
           >
             {plant.name}
@@ -87,7 +87,7 @@ export function AddPlantCard({ index }: AddPlantCardProps) {
         {/* Match the plant card structure exactly */}
         <div className="aspect-square" />
         <div className="px-2 py-1.5">
-          <p className="text-[13px] leading-tight">&nbsp;</p>
+          <p className="text-sm leading-tight">&nbsp;</p>
         </div>
 
         {/* Centered content overlay */}
@@ -113,7 +113,7 @@ export function AddPlantCard({ index }: AddPlantCardProps) {
               </svg>
             </div>
             <span
-              className="text-[13px] font-medium"
+              className="text-sm font-medium"
               style={{ color: 'var(--sage-600)' }}
             >
               Add plant

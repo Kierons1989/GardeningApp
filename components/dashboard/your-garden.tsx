@@ -9,7 +9,7 @@ interface YourGardenProps {
   plants: Plant[]
 }
 
-const MAX_DISPLAY = 7 // 7 plants + 1 add card = 8 total for even grid
+const MAX_DISPLAY = 7
 
 export default function YourGarden({ plants }: YourGardenProps) {
   const displayPlants = plants.slice(0, MAX_DISPLAY)
@@ -32,22 +32,48 @@ export default function YourGarden({ plants }: YourGardenProps) {
         >
           Your Garden
         </h2>
-        {hasMore && (
+        <div className="flex items-center gap-3">
+          {/* Mobile add button */}
           <Link
-            href="/plants"
-            className="text-sm font-medium hover:underline"
+            href="/plants/new"
+            className="md:hidden flex items-center gap-1.5 text-sm font-medium transition-colors hover:opacity-80"
             style={{ color: 'var(--sage-600)' }}
           >
-            View all {plants.length}
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Add
           </Link>
-        )}
+          {hasMore && (
+            <Link
+              href="/plants"
+              className="text-sm font-medium hover:underline"
+              style={{ color: 'var(--sage-600)' }}
+            >
+              View all {plants.length}
+            </Link>
+          )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2.5">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2.5">
         {displayPlants.map((plant, index) => (
           <PlantGridCard key={plant.id} plant={plant} index={index} />
         ))}
-        <AddPlantCard index={displayPlants.length} />
+        {/* Hide add card on mobile, show on md+ */}
+        <div className="hidden md:block">
+          <AddPlantCard index={displayPlants.length} />
+        </div>
       </div>
     </motion.section>
   )
