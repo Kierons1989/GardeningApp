@@ -85,6 +85,22 @@ export default function PlantList({ plants }: PlantListProps) {
     return groupPlantsByType(filteredAndSortedPlants)
   }, [filteredAndSortedPlants])
 
+  // Group plant type cards by top_level category (e.g., "Rose", "Tomato")
+  const categorizedGroups = useMemo(() => {
+    const categories = new Map<string, typeof plantTypeGroups>()
+
+    for (const group of plantTypeGroups) {
+      const category = group.plantType.top_level || 'Other'
+      if (!categories.has(category)) {
+        categories.set(category, [])
+      }
+      categories.get(category)!.push(group)
+    }
+
+    // Sort categories alphabetically
+    return Array.from(categories.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+  }, [plantTypeGroups])
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -365,16 +381,37 @@ export default function PlantList({ plants }: PlantListProps) {
         </motion.div>
       )}
 
-      {/* By Type View - grouped by plant type with expandable cards */}
+      {/* By Type View - grouped by top-level category with section headers */}
       {filteredAndSortedPlants.length > 0 && viewMode === 'byType' && (
-        <motion.div variants={itemVariants} className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-          {plantTypeGroups.map((group, index) => (
-            <PlantTypeCard
-              key={group.plantType.id}
-              group={group}
-              index={index}
-              defaultExpanded={plantTypeGroups.length === 1}
-            />
+        <motion.div variants={itemVariants} className="space-y-6 md:space-y-8">
+          {categorizedGroups.map(([category, groups], categoryIndex) => (
+            <section key={category}>
+              <h2
+                className="text-lg md:text-xl font-semibold mb-3 md:mb-4 flex items-center gap-2"
+                style={{
+                  fontFamily: 'var(--font-cormorant)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {category}
+                <span
+                  className="text-xs md:text-sm font-normal px-2 py-0.5 rounded-full"
+                  style={{ background: 'var(--stone-100)', color: 'var(--text-muted)' }}
+                >
+                  {groups.reduce((acc, g) => acc + g.cultivars.length, 0)}
+                </span>
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                {groups.map((group, index) => (
+                  <PlantTypeCard
+                    key={group.plantType.id}
+                    group={group}
+                    index={categoryIndex * 10 + index}
+                    defaultExpanded={plantTypeGroups.length === 1}
+                  />
+                ))}
+              </div>
+            </section>
           ))}
         </motion.div>
       )}

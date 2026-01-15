@@ -201,7 +201,8 @@ export default function NewPlantPage() {
         }
       }
 
-      router.push('/plants')
+      // Navigate with success param to trigger toast on plants page
+      router.push('/plants?added=' + encodeURIComponent(cultivarName || middleLevel || userInput))
       router.refresh()
     } catch (err) {
       console.error('Save error:', err)

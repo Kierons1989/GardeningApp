@@ -48,7 +48,7 @@ const PlantTypeCard = memo(function PlantTypeCard({
         {/* Header - always visible */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full p-6 text-left transition-colors"
+          className="w-full p-4 md:p-6 text-left transition-colors"
           style={{ background: 'transparent' }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'var(--stone-50)'
@@ -57,13 +57,13 @@ const PlantTypeCard = memo(function PlantTypeCard({
             e.currentTarget.style.background = 'transparent'
           }}
         >
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-3 md:gap-4">
             {/* Plant Type Icon */}
             <div
-              className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0"
+              className="w-11 h-11 md:w-14 md:h-14 rounded-full flex items-center justify-center flex-shrink-0"
               style={{ background: 'var(--sage-100)' }}
             >
-              {getPlantTypeIcon(plantType.top_level, 'w-7 h-7', {
+              {getPlantTypeIcon(plantType.top_level, 'w-6 h-6 md:w-7 md:h-7', {
                 color: 'var(--sage-600)',
               })}
             </div>
@@ -71,7 +71,7 @@ const PlantTypeCard = memo(function PlantTypeCard({
             {/* Plant Type Info */}
             <div className="flex-1 min-w-0">
               <h3
-                className="font-medium text-lg truncate mb-1"
+                className="font-medium text-base md:text-lg truncate mb-0.5 md:mb-1"
                 style={{
                   fontFamily: 'var(--font-cormorant)',
                   color: 'var(--text-primary)',
@@ -82,7 +82,7 @@ const PlantTypeCard = memo(function PlantTypeCard({
 
               {subtitle && (
                 <p
-                  className="text-sm truncate mb-2"
+                  className="text-xs md:text-sm truncate mb-1.5 md:mb-2"
                   style={{ color: 'var(--text-muted)' }}
                 >
                   {subtitle}
@@ -113,9 +113,9 @@ const PlantTypeCard = memo(function PlantTypeCard({
             </div>
 
             {/* Expand indicator */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                {cultivarCount} {cultivarCount === 1 ? 'variety' : 'varieties'}
+            <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
+              <span className="text-xs md:text-sm" style={{ color: 'var(--text-muted)' }}>
+                {cultivarCount} <span className="hidden sm:inline">{cultivarCount === 1 ? 'variety' : 'varieties'}</span>
               </span>
               <motion.div
                 animate={{ rotate: isExpanded ? 180 : 0 }}
@@ -144,7 +144,7 @@ const PlantTypeCard = memo(function PlantTypeCard({
               className="overflow-hidden"
             >
               <div
-                className="px-6 pb-4 pt-2 border-t"
+                className="px-4 md:px-6 pb-3 md:pb-4 pt-2 border-t"
                 style={{ borderColor: 'var(--stone-100)' }}
               >
                 <div className="space-y-1">
