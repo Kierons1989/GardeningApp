@@ -8,7 +8,7 @@ import { getPlantTypeIcon } from '@/components/ui/botanical-icons'
 import type { PlantSearchResult } from '@/types/database'
 
 interface PlantSearchInputProps {
-  onSelect: (plant: PlantSearchResult) => void
+  onSelect: (plant: PlantSearchResult, searchQuery: string) => void
   onCustomEntry: (query: string) => void
   placeholder?: string
   initialValue?: string
@@ -145,9 +145,10 @@ export default function PlantSearchInput({
   }
 
   const handleSelect = (plant: PlantSearchResult) => {
+    const searchQuery = query // Capture current query before updating
     setQuery(plant.common_name)
     setIsOpen(false)
-    onSelect(plant)
+    onSelect(plant, searchQuery)
   }
 
   const handleCustomEntry = () => {

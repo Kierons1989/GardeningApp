@@ -72,15 +72,78 @@ export default function NewPlantPage() {
     }
   }
 
+  // Extract potential cultivar name from search query
+  // e.g., "Graham Thomas hybrid tea rose" with middle_level "Hybrid Tea Rose" -> "Graham Thomas"
+  function extractCultivarFromQuery(searchQuery: string, plant: PlantSearchResult): string {
+    const query = searchQuery.trim()
+    const commonName = plant.common_name.toLowerCase()
+    const middleLevel = plant.middle_level.toLowerCase()
+    const topLevel = plant.top_level.toLowerCase()
+
+    // Normalize the query for comparison
+    const queryLower = query.toLowerCase()
+
+    // If query exactly matches common_name or middle_level, no cultivar
+    if (queryLower === commonName || queryLower === middleLevel) {
+      return ''
+    }
+
+    // Try to find where the plant type name appears in the query
+    // and extract what comes before it as the cultivar
+    const patterns = [
+      middleLevel,
+      commonName,
+      topLevel,
+      // Also try without common suffixes
+      middleLevel.replace(/ rose$/, ''),
+      middleLevel.replace(/ tree$/, ''),
+      middleLevel.replace(/ plant$/, ''),
+    ].filter(p => p.length > 2)
+
+    for (const pattern of patterns) {
+      const index = queryLower.indexOf(pattern)
+      if (index > 0) {
+        // Extract what comes before the pattern
+        const potential = query.substring(0, index).trim()
+        // Clean up common connecting words
+        const cleaned = potential
+          .replace(/\s+(rose|tree|plant|flower|shrub)$/i, '')
+          .replace(/\s*[-,]\s*$/, '')
+          .trim()
+        if (cleaned.length > 1) {
+          return cleaned
+        }
+      }
+    }
+
+    // If no pattern match, check if query is longer and starts differently
+    // This handles cases like "Graham Thomas" when common_name is "Hybrid Tea Rose"
+    if (query.length > commonName.length && !queryLower.startsWith(commonName)) {
+      // The query might be entirely the cultivar name if it doesn't match plant type at all
+      const hasPlantTypeWord = [topLevel, middleLevel, commonName].some(
+        name => queryLower.includes(name.split(' ')[0])
+      )
+      if (!hasPlantTypeWord) {
+        // Query doesn't contain any plant type words, likely a cultivar name
+        return query
+      }
+    }
+
+    return ''
+  }
+
   // Handle selection from plant search
-  async function handlePlantSelect(plant: PlantSearchResult) {
+  async function handlePlantSelect(plant: PlantSearchResult, searchQuery: string) {
     setSelectedPlant(plant)
     setUserInput(plant.common_name)
     setTopLevel(plant.top_level)
     setMiddleLevel(plant.middle_level)
     setGrowthHabit(plant.growth_habit)
-    setCultivarName('') // User can add cultivar in details step
     setUseExistingTypeId(null)
+
+    // Try to extract cultivar name from the original search query
+    const extractedCultivar = extractCultivarFromQuery(searchQuery, plant)
+    setCultivarName(extractedCultivar)
 
     // Check for existing plants of this type
     const existing = await checkExistingType(plant.top_level, plant.middle_level)
@@ -322,7 +385,7 @@ export default function NewPlantPage() {
                   What are you growing? *
                 </label>
                 <PlantSearchInput
-                  onSelect={handlePlantSelect}
+                  onSelect={(plant, searchQuery) => handlePlantSelect(plant, searchQuery)}
                   onCustomEntry={handleCustomEntry}
                   placeholder="Search for a plant, e.g., Climbing Rose, Lavender, Tomato..."
                 />
