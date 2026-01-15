@@ -18,7 +18,8 @@
       "Bash(node -e:*)",
       "Bash(ls:*)",
       "Bash(cd:*)",
-      "Bash(dir \"c:\\\\Users\\\\44770\\\\Coding Projects\\\\garden-brain\\\\src\\\\components\" /B /S)"
+      "Bash(dir \"c:\\\\Users\\\\44770\\\\Coding Projects\\\\garden-brain\\\\src\\\\components\" /B /S)",
+      "Bash(Remove-Item .gitindex -Force -ErrorAction SilentlyContinue)"
     ]
   }
 }
