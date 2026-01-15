@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { usePlants } from '@/lib/queries/use-plants'
 import PlantList from '@/components/plants/plant-list'
 import PlantListSkeleton from '@/components/plants/plant-list-skeleton'
 import { useToast } from '@/components/ui/toast'
 
-export default function PlantsPage() {
+function PlantsPageContent() {
   const { data: plants, isLoading } = usePlants()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -28,4 +28,12 @@ export default function PlantsPage() {
   }
 
   return <PlantList plants={plants || []} />
+}
+
+export default function PlantsPage() {
+  return (
+    <Suspense fallback={<PlantListSkeleton />}>
+      <PlantsPageContent />
+    </Suspense>
+  )
 }
