@@ -5,22 +5,24 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Plant } from '@/types/database'
 import PlantCard from './plant-card'
+import PlantTypeCard from './plant-type-card'
 import { EmptyGardenIllustration, NoResultsIllustration } from '@/components/ui/empty-states'
 import Icon from '@/components/ui/icon'
+import { groupPlantsByType } from '@/lib/utils/group-plants'
 
 interface PlantListProps {
   plants: Plant[]
 }
 
 type SortOption = 'newest' | 'oldest' | 'name-asc' | 'name-desc'
-type ViewMode = 'grouped' | 'grid'
+type ViewMode = 'byType' | 'individual'
 
 export default function PlantList({ plants }: PlantListProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedArea, setSelectedArea] = useState<string>('')
   const [selectedType, setSelectedType] = useState<string>('')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
-  const [viewMode, setViewMode] = useState<ViewMode>('grouped')
+  const [viewMode, setViewMode] = useState<ViewMode>('byType')
   const [showFilters, setShowFilters] = useState(false)
   // Extract unique areas and types for filters
   const uniqueAreas = useMemo(() => {
@@ -36,13 +38,15 @@ export default function PlantList({ plants }: PlantListProps) {
   // Filter and sort plants
   const filteredAndSortedPlants = useMemo(() => {
     const filtered = plants.filter(plant => {
-      // Search filter
+      // Search filter (includes cultivar_name)
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
         const matchesName = plant.name?.toLowerCase().includes(query)
         const matchesCommon = plant.common_name?.toLowerCase().includes(query)
         const matchesSpecies = plant.species?.toLowerCase().includes(query)
-        if (!matchesName && !matchesCommon && !matchesSpecies) return false
+        const matchesCultivar = plant.cultivar_name?.toLowerCase().includes(query)
+        const matchesMiddleLevel = plant.plant_types?.middle_level?.toLowerCase().includes(query)
+        if (!matchesName && !matchesCommon && !matchesSpecies && !matchesCultivar && !matchesMiddleLevel) return false
       }
 
       // Area filter
@@ -76,21 +80,10 @@ export default function PlantList({ plants }: PlantListProps) {
     return filtered
   }, [plants, searchQuery, selectedArea, selectedType, sortBy])
 
-  // Group plants by top level (plant type group)
-  const plantsByTopLevel = useMemo(() => {
-    return filteredAndSortedPlants.reduce<Record<string, Plant[]>>((acc, plant) => {
-      const topLevel = plant.plant_types?.top_level || 'Other Plants'
-      if (!acc[topLevel]) acc[topLevel] = []
-      acc[topLevel].push(plant)
-      return acc
-    }, {})
+  // Group plants by plant_type_id (for byType view)
+  const plantTypeGroups = useMemo(() => {
+    return groupPlantsByType(filteredAndSortedPlants)
   }, [filteredAndSortedPlants])
-
-  const topLevels = Object.keys(plantsByTopLevel).sort((a, b) => {
-    if (a === 'Other Plants') return 1
-    if (b === 'Other Plants') return -1
-    return a.localeCompare(b)
-  })
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -195,18 +188,24 @@ export default function PlantList({ plants }: PlantListProps) {
               </select>
 
               <button
-                onClick={() => setViewMode(viewMode === 'grouped' ? 'grid' : 'grouped')}
-                className="ml-auto px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                onClick={() => setViewMode(viewMode === 'byType' ? 'individual' : 'byType')}
+                className="ml-auto flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
                 style={{
                   background: 'var(--stone-200)',
                   color: 'var(--text-primary)',
                   border: '1px solid var(--stone-300)',
                 }}
               >
-                {viewMode === 'grouped' ? (
-                  <Icon name="SquaresFour" size={16} weight="light" className="w-4 h-4" ariaLabel="grid view" />
+                {viewMode === 'byType' ? (
+                  <>
+                    <Icon name="SquaresFour" size={16} weight="light" ariaLabel="individual view" />
+                    <span className="hidden sm:inline">Individual</span>
+                  </>
                 ) : (
-                  <Icon name="List" size={16} weight="light" className="w-4 h-4" ariaLabel="list view" />
+                  <>
+                    <Icon name="Stack" size={16} weight="light" ariaLabel="by type view" />
+                    <span className="hidden sm:inline">By Type</span>
+                  </>
                 )}
               </button>
             </div>
@@ -357,8 +356,8 @@ export default function PlantList({ plants }: PlantListProps) {
         </motion.div>
       )}
 
-      {/* Plants Grid */}
-      {filteredAndSortedPlants.length > 0 && viewMode === 'grid' && (
+      {/* Individual View - each cultivar as separate card */}
+      {filteredAndSortedPlants.length > 0 && viewMode === 'individual' && (
         <motion.div variants={itemVariants} className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredAndSortedPlants.map((plant, index) => (
             <PlantCard key={plant.id} plant={plant} index={index} />
@@ -366,40 +365,18 @@ export default function PlantList({ plants }: PlantListProps) {
         </motion.div>
       )}
 
-      {/* Plants Grid by Top Level (Grouped) */}
-      {filteredAndSortedPlants.length > 0 && viewMode === 'grouped' && (
-        <div className="space-y-10">
-          {topLevels.map((topLevel) => (
-            <motion.section key={topLevel} variants={itemVariants}>
-              <div className="flex items-center gap-3 mb-4">
-                <h2
-                  className="text-xl font-semibold"
-                  style={{
-                    fontFamily: 'var(--font-cormorant)',
-                    color: 'var(--text-primary)',
-                  }}
-                >
-                  {topLevel}
-                </h2>
-                <span
-                  className="text-sm px-2.5 py-1 rounded-full"
-                  style={{
-                    background: 'var(--stone-100)',
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  {plantsByTopLevel[topLevel].length}
-                </span>
-              </div>
-
-              <div className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {plantsByTopLevel[topLevel].map((plant, index) => (
-                  <PlantCard key={plant.id} plant={plant} index={index} />
-                ))}
-              </div>
-            </motion.section>
+      {/* By Type View - grouped by plant type with expandable cards */}
+      {filteredAndSortedPlants.length > 0 && viewMode === 'byType' && (
+        <motion.div variants={itemVariants} className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+          {plantTypeGroups.map((group, index) => (
+            <PlantTypeCard
+              key={group.plantType.id}
+              group={group}
+              index={index}
+              defaultExpanded={plantTypeGroups.length === 1}
+            />
           ))}
-        </div>
+        </motion.div>
       )}
     </motion.div>
   )

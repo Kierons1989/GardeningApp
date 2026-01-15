@@ -1,8 +1,10 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { Plant, TaskHistory } from '@/types/database'
+import type { Plant, TaskHistory, PlantTypeGroup } from '@/types/database'
+import { groupPlantsByType } from '@/lib/utils/group-plants'
 
 export function usePlants() {
   return useQuery({
@@ -52,4 +54,19 @@ export function useTaskHistory() {
       return data || []
     },
   })
+}
+
+export function usePlantTypeGroups(): {
+  data: PlantTypeGroup[]
+  isLoading: boolean
+  error: Error | null
+} {
+  const { data: plants, isLoading, error } = usePlants()
+
+  const groups = useMemo(() => {
+    if (!plants) return []
+    return groupPlantsByType(plants)
+  }, [plants])
+
+  return { data: groups, isLoading, error }
 }

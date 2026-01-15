@@ -144,6 +144,11 @@ export interface PlantIdentification {
   confidence: 'high' | 'medium' | 'low';
 }
 
+export interface PlantTypeGroup {
+  plantType: PlantType;
+  cultivars: Plant[];
+}
+
 // Plant search result from Perenual API or AI fallback
 export interface PlantSearchResult {
   id: number;                      // Perenual ID (or -1 for AI results)

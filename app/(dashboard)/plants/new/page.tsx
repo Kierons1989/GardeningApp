@@ -10,9 +10,16 @@ import { SpinningLeafLoader, GrowingPlantLoader } from '@/components/ui/botanica
 import Icon from '@/components/ui/icon'
 import ImageUpload, { type ImageUploadRef } from '@/components/plants/image-upload'
 import PlantSearchInput from '@/components/plants/plant-search-input'
+import MergePrompt from '@/components/plants/merge-prompt'
 import { createClient } from '@/lib/supabase/client'
 
-type Step = 'search' | 'identifying' | 'details' | 'generating' | 'review'
+type Step = 'search' | 'identifying' | 'merge' | 'details' | 'generating' | 'review'
+
+interface ExistingTypeInfo {
+  exists: boolean
+  plantTypeId?: string
+  existingCultivars?: string[]
+}
 
 export default function NewPlantPage() {
   const router = useRouter()
@@ -39,6 +46,10 @@ export default function NewPlantPage() {
   // Error state
   const [aiError, setAiError] = useState<string | null>(null)
 
+  // Merge flow state
+  const [existingTypeInfo, setExistingTypeInfo] = useState<ExistingTypeInfo | null>(null)
+  const [useExistingTypeId, setUseExistingTypeId] = useState<string | null>(null)
+
   // Get user ID on mount
   useEffect(() => {
     const supabase = createClient()
@@ -47,15 +58,38 @@ export default function NewPlantPage() {
     })
   }, [])
 
+  // Check if user already has plants of this type
+  async function checkExistingType(top: string, middle: string): Promise<ExistingTypeInfo | null> {
+    try {
+      const res = await fetch(
+        `/api/plants/check-type?topLevel=${encodeURIComponent(top)}&middleLevel=${encodeURIComponent(middle)}`
+      )
+      if (!res.ok) return null
+      const data = await res.json()
+      return data
+    } catch {
+      return null
+    }
+  }
+
   // Handle selection from plant search
-  function handlePlantSelect(plant: PlantSearchResult) {
+  async function handlePlantSelect(plant: PlantSearchResult) {
     setSelectedPlant(plant)
     setUserInput(plant.common_name)
     setTopLevel(plant.top_level)
     setMiddleLevel(plant.middle_level)
     setGrowthHabit(plant.growth_habit)
     setCultivarName('') // User can add cultivar in details step
-    setStep('details')
+    setUseExistingTypeId(null)
+
+    // Check for existing plants of this type
+    const existing = await checkExistingType(plant.top_level, plant.middle_level)
+    if (existing?.exists) {
+      setExistingTypeInfo(existing)
+      setStep('merge')
+    } else {
+      setStep('details')
+    }
   }
 
   // Handle custom entry (plant not found in search)
@@ -64,6 +98,7 @@ export default function NewPlantPage() {
     setSelectedPlant(null)
     setStep('identifying')
     setAiError(null)
+    setUseExistingTypeId(null)
 
     try {
       const response = await fetch('/api/ai/identify-plant', {
@@ -81,7 +116,15 @@ export default function NewPlantPage() {
       setMiddleLevel(data.middle_level)
       setCultivarName(data.cultivar_name || '')
       setGrowthHabit(data.growth_habit)
-      setStep('details')
+
+      // Check for existing plants of this type
+      const existing = await checkExistingType(data.top_level, data.middle_level)
+      if (existing?.exists) {
+        setExistingTypeInfo(existing)
+        setStep('merge')
+      } else {
+        setStep('details')
+      }
     } catch {
       setAiError('Failed to identify plant. Please try again.')
       setStep('search')
@@ -93,35 +136,45 @@ export default function NewPlantPage() {
     setAiError(null)
 
     try {
-      // Step 1: Generate the care profile for this plant type
-      const typeResponse = await fetch('/api/ai/generate-type-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          topLevel,
-          middleLevel,
-          growthHabit,
-          area: area || undefined,
-          planted_in: plantedIn || undefined,
-        }),
-      })
+      let plantTypeId = useExistingTypeId
+      let careProfileCommonName: string | undefined
+      let careProfileSpecies: string | undefined
 
-      if (!typeResponse.ok) {
-        const data = await typeResponse.json()
-        throw new Error(data.error || 'Failed to generate care profile')
+      // Only generate care profile if we don't have an existing type to use
+      if (!plantTypeId) {
+        // Step 1: Generate the care profile for this plant type
+        const typeResponse = await fetch('/api/ai/generate-type-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            topLevel,
+            middleLevel,
+            growthHabit,
+            area: area || undefined,
+            planted_in: plantedIn || undefined,
+          }),
+        })
+
+        if (!typeResponse.ok) {
+          const data = await typeResponse.json()
+          throw new Error(data.error || 'Failed to generate care profile')
+        }
+
+        const { plantType: generatedType, careProfile: generatedProfile } = await typeResponse.json()
+        plantTypeId = generatedType?.id
+        careProfileCommonName = generatedProfile?.common_name
+        careProfileSpecies = generatedProfile?.species
       }
-
-      const { plantType: generatedType, careProfile: generatedProfile } = await typeResponse.json()
 
       // Step 2: Create the plant record linked to this plant type
       const plantResponse = await fetch('/api/plants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: generatedProfile?.common_name || middleLevel || userInput,
-          common_name: generatedProfile?.common_name,
-          species: generatedProfile?.species,
-          plant_type_id: generatedType?.id,
+          name: careProfileCommonName || middleLevel || userInput,
+          common_name: careProfileCommonName,
+          species: careProfileSpecies,
+          plant_type_id: plantTypeId,
           cultivar_name: cultivarName || undefined,
           area: area || undefined,
           planted_in: plantedIn || undefined,
@@ -198,7 +251,7 @@ export default function NewPlantPage() {
           { key: 'details', label: 'Details' },
           { key: 'generating', label: 'Create' },
         ].map((s, i) => {
-          const stepOrder = ['search', 'identifying', 'details', 'generating', 'review']
+          const stepOrder = ['search', 'identifying', 'merge', 'details', 'generating', 'review']
           const currentIndex = stepOrder.indexOf(step)
           const stepIndex = stepOrder.indexOf(s.key)
           const isActive = currentIndex >= stepIndex
@@ -314,6 +367,29 @@ export default function NewPlantPage() {
             <p style={{ color: 'var(--text-secondary)' }}>
               Analyzing &quot;{userInput}&quot;...
             </p>
+          </motion.div>
+        )}
+
+        {/* Step 2.5: Merge Prompt */}
+        {step === 'merge' && existingTypeInfo && (
+          <motion.div
+            key="merge"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+          >
+            <MergePrompt
+              plantTypeName={middleLevel || topLevel}
+              existingCultivars={existingTypeInfo.existingCultivars || []}
+              onAddToExisting={() => {
+                setUseExistingTypeId(existingTypeInfo.plantTypeId || null)
+                setStep('details')
+              }}
+              onCreateSeparate={() => {
+                setUseExistingTypeId(null)
+                setStep('details')
+              }}
+            />
           </motion.div>
         )}
 
