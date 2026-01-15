@@ -144,6 +144,21 @@ export interface PlantIdentification {
   confidence: 'high' | 'medium' | 'low';
 }
 
+// Plant search result from Perenual API or AI fallback
+export interface PlantSearchResult {
+  id: number;                      // Perenual ID (or -1 for AI results)
+  common_name: string;             // Display name e.g. "Climbing Rose"
+  scientific_name: string | null;  // Latin name e.g. "Rosa"
+  image_url: string | null;        // Thumbnail image URL
+  top_level: string;               // Derived category e.g. "Rose"
+  middle_level: string;            // Specific type e.g. "Climbing Rose"
+  cycle: string;                   // "Perennial", "Annual", etc.
+  watering: string;                // "Average", "Frequent", "Minimum"
+  sunlight: string[];              // ["Full sun", "Part shade"]
+  growth_habit: string[];          // ["Climber", "Perennial"]
+  source: 'perenual' | 'ai';       // Track data origin
+}
+
 // Re-export lawn types for convenience
 export type {
   Lawn,
