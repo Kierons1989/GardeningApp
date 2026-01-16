@@ -73,7 +73,11 @@ export default function NewPlantPage() {
   }
 
   // Extract potential cultivar name from search query
-  // e.g., "Graham Thomas hybrid tea rose" with middle_level "Hybrid Tea Rose" -> "Graham Thomas"
+  // Handles various input patterns:
+  // - "Mister Lincoln hybrid tea rose" -> "Mister Lincoln"
+  // - "hybrid tea rose Mister Lincoln" -> "Mister Lincoln" (reversed)
+  // - "Mister Lincoln" (just cultivar) -> "Mister Lincoln"
+  // - "Graham Thomas rose" -> "Graham Thomas"
   function extractCultivarFromQuery(searchQuery: string, plant: PlantSearchResult): string {
     const query = searchQuery.trim()
     const queryLower = query.toLowerCase()
@@ -83,85 +87,126 @@ export default function NewPlantPage() {
     const topLevel = plant.top_level.toLowerCase()
 
     // If query exactly matches common_name or middle_level, no cultivar
-    if (queryLower === commonName || queryLower === middleLevel) {
+    if (queryLower === commonName || queryLower === middleLevel || queryLower === topLevel) {
       return ''
     }
 
-    // Build patterns to search for in the query (all lowercase for matching)
-    // Include variations with and without common suffixes
-    const suffixes = ['rose', 'tree', 'plant', 'flower', 'shrub', 'bush', 'vine']
-    const basePatterns = [middleLevel, commonName, topLevel]
-    const patterns: string[] = []
+    // Common plant type suffixes that shouldn't be part of cultivar names
+    const plantSuffixes = ['rose', 'roses', 'tree', 'trees', 'plant', 'plants', 'flower', 'flowers',
+                          'shrub', 'shrubs', 'bush', 'bushes', 'vine', 'vines', 'herb', 'herbs',
+                          'fern', 'ferns', 'palm', 'palms', 'grass', 'grasses', 'bulb', 'bulbs']
 
-    for (const base of basePatterns) {
-      patterns.push(base)
-      // Add versions without suffixes
-      for (const suffix of suffixes) {
-        const withoutSuffix = base.replace(new RegExp(`\\s+${suffix}$`, 'i'), '').trim()
-        if (withoutSuffix !== base && withoutSuffix.length > 2) {
-          patterns.push(withoutSuffix)
+    // Build word-boundary-aware patterns from plant names
+    // These are the plant type identifiers we want to separate from the cultivar
+    const plantTypePatterns: string[] = []
+
+    // Add full phrases first (more specific matches take priority)
+    const baseNames = [middleLevel, commonName, topLevel]
+    for (const name of baseNames) {
+      if (name.length >= 3) {
+        plantTypePatterns.push(name)
+      }
+      // Add version without trailing suffix
+      for (const suffix of plantSuffixes) {
+        const withoutSuffix = name.replace(new RegExp(`\\s+${suffix}s?$`, 'i'), '').trim()
+        if (withoutSuffix !== name && withoutSuffix.length >= 3) {
+          plantTypePatterns.push(withoutSuffix)
         }
       }
     }
 
-    // Also add individual significant words from the plant names (2+ chars)
-    const significantWords = new Set<string>()
+    // Add individual significant words (3+ chars, not common suffixes)
+    const significantWords: string[] = []
     for (const name of [middleLevel, commonName]) {
       for (const word of name.split(/\s+/)) {
-        if (word.length > 2 && !suffixes.includes(word)) {
-          significantWords.add(word)
+        if (word.length >= 3 && !plantSuffixes.includes(word.toLowerCase())) {
+          significantWords.push(word.toLowerCase())
         }
       }
     }
 
-    // Try to find where any pattern appears in the query
-    // and extract what comes before it as the cultivar
-    for (const pattern of patterns) {
-      if (pattern.length < 3) continue
-      const index = queryLower.indexOf(pattern)
+    // Helper: Find pattern at word boundary (not inside another word)
+    function findAtWordBoundary(text: string, pattern: string): number {
+      const regex = new RegExp(`(?:^|\\s)(${pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?:\\s|$)`, 'i')
+      const match = text.match(regex)
+      if (match && match.index !== undefined) {
+        // Return the start of the actual pattern (after any leading space)
+        return match[0].startsWith(' ') ? match.index + 1 : match.index
+      }
+      return -1
+    }
+
+    // Helper: Clean extracted cultivar text
+    function cleanCultivar(text: string): string {
+      return text
+        .replace(/^[\s,\-]+|[\s,\-]+$/g, '') // Trim punctuation and whitespace
+        .replace(new RegExp(`\\s+(${plantSuffixes.join('|')})s?$`, 'i'), '') // Remove trailing plant words
+        .trim()
+    }
+
+    // Strategy 1: Find plant type pattern and extract what's BEFORE it (cultivar first)
+    // e.g., "Mister Lincoln hybrid tea rose" -> find "hybrid tea rose", extract "Mister Lincoln"
+    for (const pattern of plantTypePatterns) {
+      const index = findAtWordBoundary(queryLower, pattern.toLowerCase())
       if (index > 0) {
-        // Extract what comes before the pattern
-        const potential = query.substring(0, index).trim()
-        // Clean up common connecting words and trailing punctuation
-        const cleaned = potential
-          .replace(/\s+(rose|tree|plant|flower|shrub|bush|vine)$/i, '')
-          .replace(/\s*[-,]\s*$/, '')
-          .trim()
-        if (cleaned.length > 1) {
+        const beforePattern = query.substring(0, index)
+        const cleaned = cleanCultivar(beforePattern)
+        if (cleaned.length >= 2) {
           return cleaned
         }
       }
     }
 
-    // Try matching individual significant words (e.g., "hybrid" in "hybrid tea")
+    // Strategy 2: Find plant type pattern and extract what's AFTER it (type first)
+    // e.g., "hybrid tea rose Mister Lincoln" -> find "hybrid tea rose", extract "Mister Lincoln"
+    for (const pattern of plantTypePatterns) {
+      const index = findAtWordBoundary(queryLower, pattern.toLowerCase())
+      if (index >= 0) {
+        const afterPattern = query.substring(index + pattern.length)
+        const cleaned = cleanCultivar(afterPattern)
+        if (cleaned.length >= 2) {
+          return cleaned
+        }
+      }
+    }
+
+    // Strategy 3: Try matching individual significant words at word boundaries
+    // e.g., query has "climbing" from "Climbing Rose"
     for (const word of significantWords) {
-      const index = queryLower.indexOf(word)
+      const index = findAtWordBoundary(queryLower, word)
       if (index > 0) {
-        const potential = query.substring(0, index).trim()
-        const cleaned = potential
-          .replace(/\s+(rose|tree|plant|flower|shrub|bush|vine)$/i, '')
-          .replace(/\s*[-,]\s*$/, '')
-          .trim()
-        if (cleaned.length > 1) {
+        // Check if there's meaningful text before this word
+        const beforeWord = query.substring(0, index)
+        const cleaned = cleanCultivar(beforeWord)
+        if (cleaned.length >= 2) {
+          return cleaned
+        }
+      }
+      if (index >= 0) {
+        // Check if there's meaningful text after this word
+        const afterWord = query.substring(index + word.length)
+        const cleaned = cleanCultivar(afterWord)
+        if (cleaned.length >= 2) {
           return cleaned
         }
       }
     }
 
-    // If no pattern match, check if query is longer and starts differently
-    // This handles cases like "Graham Thomas" when common_name is "Hybrid Tea Rose"
-    if (query.length > commonName.length && !queryLower.startsWith(commonName.split(' ')[0])) {
-      // The query might be entirely the cultivar name if it doesn't match plant type at all
-      const hasPlantTypeWord = [topLevel, middleLevel, commonName].some(
-        name => {
-          const firstWord = name.split(' ')[0]
-          return firstWord.length > 2 && queryLower.includes(firstWord)
-        }
-      )
-      if (!hasPlantTypeWord) {
-        // Query doesn't contain any plant type words, likely a cultivar name
-        return query
-      }
+    // Strategy 4: If query doesn't contain any plant type words at all,
+    // it might be entirely a cultivar name (e.g., user searched just "Mister Lincoln")
+    const allPlantWords = [...new Set([
+      ...plantTypePatterns.flatMap(p => p.toLowerCase().split(/\s+/)),
+      ...plantSuffixes
+    ])]
+
+    const queryWords = queryLower.split(/\s+/)
+    const hasAnyPlantWord = queryWords.some(qWord =>
+      allPlantWords.some(pWord => pWord.length >= 3 && qWord === pWord)
+    )
+
+    if (!hasAnyPlantWord && query.length >= 2) {
+      // Query contains no plant type words - it's likely just the cultivar name
+      return query
     }
 
     return ''
