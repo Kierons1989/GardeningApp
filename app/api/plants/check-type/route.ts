@@ -42,12 +42,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ exists: false })
     }
 
+    // Check if user already has a generic entry (no cultivar_name) for this type
+    const hasGenericEntry = existingPlants.some(
+      (p) => !p.cultivar_name || p.cultivar_name.trim() === ''
+    )
+
     return NextResponse.json({
       exists: true,
       plantTypeId: plantType.id,
       existingCultivars: existingPlants
         .map((p) => p.cultivar_name)
         .filter(Boolean) as string[],
+      hasGenericEntry,
     })
   } catch (err) {
     console.error('Check type error:', err)

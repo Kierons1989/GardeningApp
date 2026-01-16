@@ -74,6 +74,25 @@ export async function POST(request: NextRequest) {
       console.log('Profile created successfully')
     }
 
+    // Check for duplicate generic entry (one generic per type per user)
+    const isGenericEntry = !cultivar_name || cultivar_name.trim() === ''
+    if (isGenericEntry && plant_type_id) {
+      const { data: existingGeneric } = await adminClient
+        .from('plants')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('plant_type_id', plant_type_id)
+        .or('cultivar_name.is.null,cultivar_name.eq.')
+        .limit(1)
+
+      if (existingGeneric && existingGeneric.length > 0) {
+        return NextResponse.json(
+          { error: 'You already have a generic entry for this plant type. Please add a cultivar name to distinguish this plant.' },
+          { status: 400 }
+        )
+      }
+    }
+
     // Now insert the plant using admin client to ensure it works
     console.log('Inserting plant for user:', user.id)
     const { data: plant, error } = await adminClient.from('plants').insert({

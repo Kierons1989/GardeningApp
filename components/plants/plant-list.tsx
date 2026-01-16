@@ -22,7 +22,7 @@ export default function PlantList({ plants }: PlantListProps) {
   const [selectedArea, setSelectedArea] = useState<string>('')
   const [selectedType, setSelectedType] = useState<string>('')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
-  const [viewMode, setViewMode] = useState<ViewMode>('byType')
+  const [viewMode, setViewMode] = useState<ViewMode>('individual')
   const [showFilters, setShowFilters] = useState(false)
   // Extract unique areas and types for filters
   const uniqueAreas = useMemo(() => {
@@ -212,15 +212,15 @@ export default function PlantList({ plants }: PlantListProps) {
                   border: '1px solid var(--stone-300)',
                 }}
               >
-                {viewMode === 'byType' ? (
+                {viewMode === 'individual' ? (
                   <>
-                    <Icon name="SquaresFour" size={16} weight="light" ariaLabel="individual view" />
-                    <span className="hidden sm:inline">Individual</span>
+                    <Icon name="Stack" size={16} weight="light" ariaLabel="grouped view" />
+                    <span className="hidden sm:inline">Grouped</span>
                   </>
                 ) : (
                   <>
-                    <Icon name="Stack" size={16} weight="light" ariaLabel="by type view" />
-                    <span className="hidden sm:inline">By Type</span>
+                    <Icon name="SquaresFour" size={16} weight="light" ariaLabel="individual view" />
+                    <span className="hidden sm:inline">By Cultivar</span>
                   </>
                 )}
               </button>

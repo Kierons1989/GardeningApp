@@ -19,6 +19,7 @@ interface ExistingTypeInfo {
   exists: boolean
   plantTypeId?: string
   existingCultivars?: string[]
+  hasGenericEntry?: boolean
 }
 
 export default function NewPlantPage() {
@@ -525,6 +526,8 @@ export default function NewPlantPage() {
             <MergePrompt
               plantTypeName={middleLevel || topLevel}
               existingCultivars={existingTypeInfo.existingCultivars || []}
+              hasGenericEntry={existingTypeInfo.hasGenericEntry || false}
+              currentCultivarName={cultivarName}
               onAddToExisting={() => {
                 setUseExistingTypeId(existingTypeInfo.plantTypeId || null)
                 setStep('details')

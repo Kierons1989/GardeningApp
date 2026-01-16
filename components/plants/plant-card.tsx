@@ -23,13 +23,19 @@ const PlantCard = memo(function PlantCard({ plant, index }: PlantCardProps) {
   const cultivarName = plant.cultivar_name
   const growthHabit = plant.plant_types?.growth_habit || []
 
-  const cardTitle = cultivarName
-    ? cultivarName
-    : topLevel && middleLevel
-      ? `${topLevel} - ${middleLevel}`
-      : plant.name
+  // Determine if this is a generic entry (no cultivar specified)
+  const isGeneric = !cultivarName || cultivarName.trim() === ''
 
-  const cardSubtitle = cultivarName && middleLevel ? middleLevel : null
+  // Cultivar-prominent display:
+  // - If has cultivar: show cultivar name large, type as subtitle
+  // - If generic: show middle_level large, top_level as subtitle, with badge
+  const cardTitle = isGeneric
+    ? (middleLevel || topLevel || plant.name)
+    : cultivarName
+
+  const cardSubtitle = isGeneric
+    ? (topLevel && topLevel !== middleLevel ? topLevel : null)
+    : middleLevel
 
   return (
     <motion.div
@@ -68,15 +74,28 @@ const PlantCard = memo(function PlantCard({ plant, index }: PlantCardProps) {
 
           {/* Plant Info */}
           <div className="flex-1 min-w-0">
-            <h3
-              className="font-medium text-lg truncate mb-1"
-              style={{
-                fontFamily: 'var(--font-cormorant)',
-                color: 'var(--text-primary)',
-              }}
-            >
-              {cardTitle}
-            </h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3
+                className="font-medium text-lg truncate"
+                style={{
+                  fontFamily: 'var(--font-cormorant)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {cardTitle}
+              </h3>
+              {isGeneric && (
+                <span
+                  className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
+                  style={{
+                    background: 'var(--stone-100)',
+                    color: 'var(--text-muted)',
+                  }}
+                >
+                  Generic
+                </span>
+              )}
+            </div>
 
             {cardSubtitle && (
               <p
