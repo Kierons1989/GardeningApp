@@ -40,24 +40,48 @@ export default function PlantSearchInput({
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const requestIdRef = useRef(0)
 
-  // Search function with debouncing
+  // Search function with debouncing and request cancellation
   const performSearch = useCallback(async (searchQuery: string) => {
     if (searchQuery.length < 2) {
       setSearchState({ results: [], isLoading: false, error: null, source: null })
       return
     }
 
+    // Abort any previous in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    // Create new abort controller and increment request ID
+    abortControllerRef.current = new AbortController()
+    const currentRequestId = ++requestIdRef.current
+
     setSearchState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
-      const response = await fetch(`/api/plants/search?q=${encodeURIComponent(searchQuery)}`)
+      const response = await fetch(`/api/plants/search?q=${encodeURIComponent(searchQuery)}`, {
+        signal: abortControllerRef.current.signal,
+      })
+
+      // Ignore response if a newer request has been made
+      if (currentRequestId !== requestIdRef.current) {
+        return
+      }
 
       if (!response.ok) {
         throw new Error('Search failed')
       }
 
       const data = await response.json()
+
+      // Double-check we're still the current request before updating state
+      if (currentRequestId !== requestIdRef.current) {
+        return
+      }
+
       setSearchState({
         results: data.results || [],
         isLoading: false,
@@ -66,7 +90,17 @@ export default function PlantSearchInput({
       })
       setIsOpen(true)
       setFocusedIndex(-1)
-    } catch {
+    } catch (error) {
+      // Ignore abort errors - they're expected when cancelling requests
+      if (error instanceof Error && error.name === 'AbortError') {
+        return
+      }
+
+      // Only update error state if this is still the current request
+      if (currentRequestId !== requestIdRef.current) {
+        return
+      }
+
       setSearchState({
         results: [],
         isLoading: false,
