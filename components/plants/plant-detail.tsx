@@ -168,11 +168,11 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                     color: 'var(--text-primary)',
                   }}
                 >
-                  {plant.name}
+                  {plant.cultivar_name || plant.name}
                 </h1>
-                {plant.common_name && plant.common_name !== plant.name && (
+                {plant.cultivar_name && (
                   <p style={{ color: 'var(--text-secondary)' }}>
-                    {plant.common_name}
+                    {plant.name}
                   </p>
                 )}
                 {plant.species && (

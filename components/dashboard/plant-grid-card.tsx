@@ -19,8 +19,8 @@ export default function PlantGridCard({ plant, index }: PlantGridCardProps) {
 
   // Display name: prefer top_level, then middle_level, then plant.name
   const displayName = topLevel || middleLevel || plant.name
-  // Subtitle: show cultivar if available
-  const subtitle = cultivarName
+  // Subtitle: show cultivar if available, otherwise show middle_level if different from display
+  const subtitle = cultivarName || (middleLevel && middleLevel !== displayName ? middleLevel : null)
 
   return (
     <motion.div
