@@ -143,6 +143,7 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
                 alt={plant.name}
                 fill
                 className="object-cover"
+                unoptimized={currentPhotoUrl.includes('perenual.com')}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">

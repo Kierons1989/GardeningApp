@@ -66,6 +66,7 @@ const PlantCard = memo(function PlantCard({ plant, index }: PlantCardProps) {
                 height={56}
                 className="w-full h-full object-cover"
                 loading="lazy"
+                unoptimized={plant.photo_url.includes('perenual.com')}
               />
             ) : (
               getPlantTypeIcon(plant.plant_types?.top_level || '', 'w-7 h-7', { color: 'var(--sage-600)' })
