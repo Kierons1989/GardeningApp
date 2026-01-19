@@ -42,6 +42,7 @@ export default function NewPlantPage() {
   const [topLevel, setTopLevel] = useState('')
   const [middleLevel, setMiddleLevel] = useState('')
   const [cultivarName, setCultivarName] = useState('')
+  const [cultivarFromSearch, setCultivarFromSearch] = useState(false) // Track if cultivar was pre-filled from search
   const [growthHabit, setGrowthHabit] = useState<string[]>([])
 
   // Error state
@@ -222,9 +223,16 @@ export default function NewPlantPage() {
     setGrowthHabit(plant.growth_habit)
     setUseExistingTypeId(null)
 
-    // Try to extract cultivar name from the original search query
-    const extractedCultivar = extractCultivarFromQuery(searchQuery, plant)
-    setCultivarName(extractedCultivar)
+    // Use cultivar from search result if available, otherwise try to extract from query
+    if (plant.cultivar_name) {
+      setCultivarName(plant.cultivar_name)
+      setCultivarFromSearch(true) // Mark as pre-filled from search
+    } else {
+      // Fallback: try to extract cultivar name from the original search query
+      const extractedCultivar = extractCultivarFromQuery(searchQuery, plant)
+      setCultivarName(extractedCultivar)
+      setCultivarFromSearch(!!extractedCultivar) // Mark as pre-filled if extracted
+    }
 
     // Check for existing plants of this type
     const existing = await checkExistingType(plant.top_level, plant.middle_level)
@@ -243,6 +251,7 @@ export default function NewPlantPage() {
     setStep('identifying')
     setAiError(null)
     setUseExistingTypeId(null)
+    setCultivarFromSearch(false)
 
     try {
       const response = await fetch('/api/ai/identify-plant', {
@@ -586,7 +595,7 @@ export default function NewPlantPage() {
                         color: 'var(--text-primary)',
                       }}
                     >
-                      {middleLevel || userInput}
+                      {cultivarName || middleLevel || userInput}
                     </h2>
                     {selectedPlant?.source === 'ai' && (
                       <span
@@ -597,7 +606,14 @@ export default function NewPlantPage() {
                       </span>
                     )}
                   </div>
-                  {topLevel && topLevel !== middleLevel && (
+                  {/* Show plant type as subtitle when we have a cultivar */}
+                  {cultivarName && middleLevel && (
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                      {middleLevel}
+                    </p>
+                  )}
+                  {/* Show top level only when no cultivar and top_level differs from middle_level */}
+                  {!cultivarName && topLevel && topLevel !== middleLevel && (
                     <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                       {topLevel}
                     </p>
@@ -621,6 +637,7 @@ export default function NewPlantPage() {
                   type="button"
                   onClick={() => {
                     setSelectedPlant(null)
+                    setCultivarFromSearch(false)
                     setStep('search')
                   }}
                   className="btn-icon btn-icon-secondary btn-icon-sm"
@@ -650,22 +667,47 @@ export default function NewPlantPage() {
               </h3>
 
               <div className="space-y-6">
-                <div>
-                  <label htmlFor="cultivarName" className="label">
-                    Variety/Cultivar name (optional)
-                  </label>
-                  <input
-                    id="cultivarName"
-                    type="text"
-                    value={cultivarName}
-                    onChange={(e) => setCultivarName(e.target.value)}
-                    className="input"
-                    placeholder="e.g., Iceberg, Graham Thomas, Sungold"
-                  />
-                  <p className="mt-1.5 text-sm" style={{ color: 'var(--text-muted)' }}>
-                    The specific variety name if you know it
-                  </p>
-                </div>
+                {cultivarFromSearch && cultivarName ? (
+                  <div>
+                    <label className="label">
+                      Variety/Cultivar
+                    </label>
+                    <div
+                      className="px-4 py-3 rounded-lg"
+                      style={{
+                        background: 'var(--sage-50)',
+                        border: '1px solid var(--sage-200)',
+                      }}
+                    >
+                      <span
+                        className="font-medium"
+                        style={{ color: 'var(--sage-700)' }}
+                      >
+                        {cultivarName}
+                      </span>
+                    </div>
+                    <p className="mt-1.5 text-sm" style={{ color: 'var(--text-muted)' }}>
+                      Cultivar identified from your search
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <label htmlFor="cultivarName" className="label">
+                      Variety/Cultivar name (optional)
+                    </label>
+                    <input
+                      id="cultivarName"
+                      type="text"
+                      value={cultivarName}
+                      onChange={(e) => setCultivarName(e.target.value)}
+                      className="input"
+                      placeholder="e.g., Iceberg, Graham Thomas, Sungold"
+                    />
+                    <p className="mt-1.5 text-sm" style={{ color: 'var(--text-muted)' }}>
+                      The specific variety name if you know it
+                    </p>
+                  </div>
+                )}
 
                 <div>
                   <label htmlFor="area" className="label">
@@ -745,6 +787,7 @@ export default function NewPlantPage() {
                   type="button"
                   onClick={() => {
                     setSelectedPlant(null)
+                    setCultivarFromSearch(false)
                     setStep('search')
                   }}
                   className="btn btn-secondary flex-1"

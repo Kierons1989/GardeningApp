@@ -40,11 +40,77 @@ interface PerenualSearchResponse {
   total: number
 }
 
+// Well-known rose cultivars mapped to their types
+const KNOWN_ROSE_CULTIVARS: Record<string, string> = {
+  'iceberg': 'Floribunda Rose',
+  'peace': 'Hybrid Tea Rose',
+  'mister lincoln': 'Hybrid Tea Rose',
+  'double delight': 'Hybrid Tea Rose',
+  'queen elizabeth': 'Grandiflora Rose',
+  'graham thomas': 'English Rose',
+  'gertrude jekyll': 'English Rose',
+  'lady of shalott': 'English Rose',
+  'munstead wood': 'English Rose',
+  'boscobel': 'English Rose',
+  'olivia rose austin': 'English Rose',
+  'darcey bussell': 'English Rose',
+  'eden': 'Climbing Rose',
+  'pierre de ronsard': 'Climbing Rose',
+  'new dawn': 'Climbing Rose',
+  'albertine': 'Rambling Rose',
+  'cecile brunner': 'Polyantha Rose',
+  'the fairy': 'Polyantha Rose',
+  'knock out': 'Shrub Rose',
+  'flower carpet': 'Ground Cover Rose',
+}
+
+/**
+ * Extracts cultivar name from a plant's common name
+ * Returns { cultivar, plantType } where plantType is a more accurate type if known
+ */
+function extractCultivarFromName(commonName: string, topLevel: string): { cultivar: string | null; plantType: string | null } {
+  const nameLower = commonName.toLowerCase()
+
+  // For roses, check if this is a known cultivar
+  if (topLevel === 'Rose') {
+    // Check for known cultivars
+    for (const [cultivar, roseType] of Object.entries(KNOWN_ROSE_CULTIVARS)) {
+      if (nameLower.includes(cultivar)) {
+        // Capitalize the cultivar name properly
+        const capitalizedCultivar = cultivar
+          .split(' ')
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' ')
+        return { cultivar: capitalizedCultivar, plantType: roseType }
+      }
+    }
+
+    // Try to extract cultivar from patterns like "Name Rose" or "Name + type"
+    // Look for pattern where a proper name precedes rose type keywords
+    const roseTypeKeywords = ['rose', 'climbing rose', 'shrub rose', 'floribunda', 'hybrid tea', 'grandiflora', 'rambling', 'polyantha', 'english rose', 'ground cover']
+
+    for (const keyword of roseTypeKeywords) {
+      const keywordIndex = nameLower.indexOf(keyword)
+      if (keywordIndex > 0) {
+        const potentialCultivar = commonName.substring(0, keywordIndex).trim()
+        // Only accept if it looks like a name (not just "climbing" or similar)
+        if (potentialCultivar.length >= 2 && !roseTypeKeywords.some(k => potentialCultivar.toLowerCase().includes(k))) {
+          return { cultivar: potentialCultivar, plantType: null }
+        }
+      }
+    }
+  }
+
+  // For other plants, try to extract cultivar from scientific name patterns
+  // e.g., "Rosa 'Iceberg'" -> cultivar is "Iceberg"
+  return { cultivar: null, plantType: null }
+}
+
 /**
  * Derives top_level and middle_level from Perenual plant data
  * Maps common plant names to our taxonomy structure
  */
-function deriveTaxonomy(plant: PerenualPlant): { top_level: string; middle_level: string } {
+function deriveTaxonomy(plant: PerenualPlant): { top_level: string; middle_level: string; cultivar_name: string | null } {
   const commonName = plant.common_name.toLowerCase()
   const scientificName = plant.scientific_name[0]?.toLowerCase() || ''
 
@@ -127,13 +193,26 @@ function deriveTaxonomy(plant: PerenualPlant): { top_level: string; middle_level
     }
   }
 
-  // Use the common name as middle_level, properly capitalized
-  const middle_level = plant.common_name
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ')
+  // Try to extract cultivar name and get a more accurate plant type
+  const { cultivar, plantType } = extractCultivarFromName(plant.common_name, top_level)
 
-  return { top_level, middle_level }
+  // Use the extracted plant type if available, otherwise use common name
+  let middle_level: string
+  if (plantType) {
+    middle_level = plantType
+  } else if (cultivar) {
+    // If we extracted a cultivar but don't know the exact type,
+    // use the top_level as the middle_level (e.g., "Rose" -> "Rose")
+    middle_level = top_level
+  } else {
+    // No cultivar found - use the common name as middle_level, properly capitalized
+    middle_level = plant.common_name
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ')
+  }
+
+  return { top_level, middle_level, cultivar_name: cultivar }
 }
 
 /**
@@ -171,7 +250,7 @@ function deriveGrowthHabit(plant: PerenualPlant): string[] {
  * Transform Perenual API response to our PlantSearchResult format
  */
 function transformToSearchResult(plant: PerenualPlant): PlantSearchResult {
-  const { top_level, middle_level } = deriveTaxonomy(plant)
+  const { top_level, middle_level, cultivar_name } = deriveTaxonomy(plant)
 
   return {
     id: plant.id,
@@ -180,6 +259,7 @@ function transformToSearchResult(plant: PerenualPlant): PlantSearchResult {
     image_url: plant.default_image?.thumbnail || plant.default_image?.small_url || null,
     top_level,
     middle_level,
+    cultivar_name,
     cycle: plant.cycle || 'Unknown',
     watering: plant.watering || 'Average',
     sunlight: plant.sunlight || [],

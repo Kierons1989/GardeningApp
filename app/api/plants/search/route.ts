@@ -12,10 +12,11 @@ Suggest up to 5 plants that match this search query. Focus on plants commonly gr
 Return a JSON array of plant objects with this structure:
 [
   {
-    "common_name": "Full common name (e.g., Climbing Rose)",
+    "common_name": "Full display name (e.g., Iceberg Rose)",
     "scientific_name": "Latin name or null",
     "top_level": "Plant family/group (e.g., Rose, Hydrangea)",
-    "middle_level": "Specific type (e.g., Climbing Rose, Mophead Hydrangea)",
+    "middle_level": "Specific plant type WITHOUT cultivar name (e.g., Floribunda Rose, Climbing Rose, Mophead Hydrangea)",
+    "cultivar_name": "The specific cultivar/variety name if known (e.g., Iceberg, Graham Thomas), or null if generic",
     "cycle": "Perennial|Annual|Biennial",
     "watering": "Average|Frequent|Minimum",
     "sunlight": ["Full sun", "Part shade"],
@@ -26,6 +27,10 @@ Return a JSON array of plant objects with this structure:
 Guidelines:
 - Match the search query as closely as possible
 - Prioritize common UK garden plants
+- IMPORTANT: If the query contains a cultivar name (like "Iceberg", "Graham Thomas", "Mister Lincoln"), extract it to cultivar_name and put the plant TYPE in middle_level
+  - Example: Query "Iceberg rose" -> middle_level: "Floribunda Rose", cultivar_name: "Iceberg"
+  - Example: Query "Graham Thomas" -> middle_level: "English Rose", cultivar_name: "Graham Thomas"
+- If the query is just a plant type (like "climbing rose"), set cultivar_name to null
 - Include different types/varieties if the query is general (e.g., "rose" should return Climbing Rose, Shrub Rose, etc.)
 - Return an empty array [] if the query doesn't match any known plants
 - Return ONLY valid JSON, no other text`
@@ -74,6 +79,7 @@ export async function GET(request: NextRequest) {
             image_url: null, // AI results don't have images
             top_level: plant.top_level || 'Plant',
             middle_level: plant.middle_level || plant.common_name || trimmedQuery,
+            cultivar_name: plant.cultivar_name || null,
             cycle: plant.cycle || 'Perennial',
             watering: plant.watering || 'Average',
             sunlight: plant.sunlight || ['Full sun'],
