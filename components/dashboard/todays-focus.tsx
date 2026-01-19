@@ -31,10 +31,11 @@ export default function TodaysFocus({ featuredTask }: TodaysFocusProps) {
         <FeaturedTaskCard suggestion={featuredTask} />
       ) : (
         <div
-          className="rounded-2xl p-8 text-center"
+          className="rounded-2xl p-8 text-center flex flex-col items-center justify-center"
           style={{
             background: 'white',
             border: '1px solid var(--stone-200)',
+            minHeight: '200px',
           }}
         >
           <NoTasksIllustration className="w-24 h-24 mx-auto mb-4" />

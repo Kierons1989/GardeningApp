@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, common_name, species, plant_type_id, cultivar_name, area, planted_in, notes } = body as {
+    const { name, common_name, species, plant_type_id, cultivar_name, area, planted_in, notes, image_url } = body as {
       name: string
       common_name?: string
       species?: string
@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
       area?: string
       planted_in?: 'ground' | 'pot' | 'raised_bed'
       notes?: string
+      image_url?: string
     }
 
     if (!name) {
@@ -105,6 +106,7 @@ export async function POST(request: NextRequest) {
       area: area || null,
       planted_in: planted_in || null,
       notes: notes || null,
+      photo_url: image_url || null,
     }).select().single()
 
     if (error) {

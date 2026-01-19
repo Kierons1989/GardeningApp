@@ -332,6 +332,7 @@ export default function NewPlantPage() {
           area: area || undefined,
           planted_in: plantedIn || undefined,
           notes: notes || undefined,
+          image_url: selectedPlant?.image_url || undefined,
         }),
       })
 
