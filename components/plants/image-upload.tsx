@@ -16,7 +16,7 @@ interface ImageUploadProps {
 }
 
 export interface ImageUploadRef {
-  uploadPendingImage: (plantId: string) => Promise<string | null>
+  uploadPendingImage: (plantId: string, pendingBlob?: Blob | null) => Promise<string | null>
 }
 
 const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageUpload(
@@ -55,14 +55,16 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
   }, [])
 
   useImperativeHandle(ref, () => ({
-    uploadPendingImage: async (targetPlantId: string): Promise<string | null> => {
-      if (!pendingBlobRef.current) return null
+    uploadPendingImage: async (targetPlantId: string, pendingBlob?: Blob | null): Promise<string | null> => {
+      // Use provided blob (from parent state) or fall back to ref (if component stayed mounted)
+      const blobToUpload = pendingBlob || pendingBlobRef.current
+      if (!blobToUpload) return null
 
       setUploading(true)
       setProgress(50)
 
       try {
-        const url = await uploadToStorage(pendingBlobRef.current, userId, targetPlantId)
+        const url = await uploadToStorage(blobToUpload, userId, targetPlantId)
         setProgress(100)
         pendingBlobRef.current = null
         return url
@@ -101,12 +103,25 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
       }
 
       if (plantId) {
-        // Edit mode: upload immediately
+        // Edit mode: upload immediately and save to database
         setUploading(true)
         setProgress(50)
 
         try {
           const url = await uploadToStorage(resizedBlob, userId, plantId)
+          setProgress(75)
+
+          // Save the URL to the database
+          const patchResponse = await fetch(`/api/plants/${plantId}/image`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ photo_url: url }),
+          })
+
+          if (!patchResponse.ok) {
+            throw new Error('Failed to save image URL')
+          }
+
           setProgress(100)
           onImageChange?.(url)
         } catch (err) {

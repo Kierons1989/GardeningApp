@@ -60,6 +60,35 @@ export default function NewPlantPage() {
     })
   }, [])
 
+  // Fallback function to upload image directly if ImageUpload component is unmounted
+  async function uploadImageDirectly(blob: Blob, targetUserId: string, plantId: string): Promise<string | null> {
+    try {
+      const supabase = createClient()
+      const timestamp = Date.now()
+      const random = Math.random().toString(36).substring(2, 8)
+      const extension = blob.type === 'image/webp' ? 'webp' : 'jpg'
+      const filePath = `${targetUserId}/${plantId}/${timestamp}-${random}.${extension}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('plant-images')
+        .upload(filePath, blob, {
+          contentType: blob.type,
+          upsert: false,
+        })
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('plant-images')
+        .getPublicUrl(filePath)
+
+      return publicUrl
+    } catch (err) {
+      console.error('Direct upload error:', err)
+      return null
+    }
+  }
+
   // Check if user already has plants of this type
   async function checkExistingType(top: string, middle: string): Promise<ExistingTypeInfo | null> {
     try {
@@ -344,14 +373,28 @@ export default function NewPlantPage() {
       const plant = await plantResponse.json()
 
       // Step 3: Upload pending image if exists and save URL to database
-      if (pendingImage && imageUploadRef.current) {
-        const imageUrl = await imageUploadRef.current.uploadPendingImage(plant.id)
-        if (imageUrl) {
-          await fetch(`/api/plants/${plant.id}/image`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ photo_url: imageUrl }),
-          })
+      if (pendingImage) {
+        try {
+          // Upload image to storage - pass the blob directly since component may have unmounted
+          const imageUrl = imageUploadRef.current
+            ? await imageUploadRef.current.uploadPendingImage(plant.id, pendingImage)
+            : await uploadImageDirectly(pendingImage, userId!, plant.id)
+
+          if (imageUrl) {
+            const patchResponse = await fetch(`/api/plants/${plant.id}/image`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ photo_url: imageUrl }),
+            })
+
+            if (!patchResponse.ok) {
+              console.error('Failed to save image URL to database')
+              // Don't throw - plant was created successfully, just image didn't save
+            }
+          }
+        } catch (imageErr) {
+          console.error('Image upload error:', imageErr)
+          // Don't throw - plant was created successfully, just image didn't upload
         }
       }
 
