@@ -378,7 +378,8 @@ export default function PlantList({ plants }: PlantListProps) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.15 }}
-          className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          className="grid gap-4"
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}
         >
           {filteredAndSortedPlants.map((plant, index) => (
             <PlantCard key={plant.id} plant={plant} index={index} />
@@ -415,7 +416,7 @@ export default function PlantList({ plants }: PlantListProps) {
                     {allCultivars.length}
                   </span>
                 </h2>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
                   {allCultivars.map((plant, index) => (
                     <PlantCard key={plant.id} plant={plant} index={index} />
                   ))}
