@@ -249,20 +249,35 @@ function deriveGrowthHabit(plant: PerenualPlant): string[] {
 /**
  * Transform Perenual API response to our PlantSearchResult format
  */
+/**
+ * Check if a value is a Perenual premium paywall string
+ */
+function isPremiumPaywall(value: string | null | undefined): boolean {
+  if (!value) return false
+  return value.toLowerCase().includes('upgrade') && value.toLowerCase().includes('perenual.com')
+}
+
 function transformToSearchResult(plant: PerenualPlant): PlantSearchResult {
   const { top_level, middle_level, cultivar_name } = deriveTaxonomy(plant)
+
+  // Filter out premium paywall strings from sunlight array
+  const filteredSunlight = (plant.sunlight || []).filter(s => !isPremiumPaywall(s))
+
+  // Check if watering/cycle contain paywall strings
+  const watering = isPremiumPaywall(plant.watering) ? 'Average' : (plant.watering || 'Average')
+  const cycle = isPremiumPaywall(plant.cycle) ? 'Unknown' : (plant.cycle || 'Unknown')
 
   return {
     id: plant.id,
     common_name: plant.common_name,
     scientific_name: plant.scientific_name[0] || null,
-    image_url: plant.default_image?.thumbnail || plant.default_image?.small_url || null,
+    image_url: null, // Perenual free tier returns placeholder images, use icons instead
     top_level,
     middle_level,
     cultivar_name,
-    cycle: plant.cycle || 'Unknown',
-    watering: plant.watering || 'Average',
-    sunlight: plant.sunlight || [],
+    cycle,
+    watering,
+    sunlight: filteredSunlight,
     growth_habit: deriveGrowthHabit(plant),
     source: 'perenual',
   }
