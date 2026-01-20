@@ -62,7 +62,7 @@ Return a JSON object with this structure:
     "common_name": "Full display name (e.g., Percy Wiseman Rhododendron)",
     "scientific_name": "Botanical name (e.g., Rhododendron 'Percy Wiseman')",
     "top_level": "Plant genus/family (e.g., Rhododendron, Rose, Hydrangea)",
-    "middle_level": "Specific type (e.g., Yakushimanum Hybrid, English Rose, Mophead Hydrangea)",
+    "middle_level": "Specific type within the genus (see rules below)",
     "cultivar_name": "The cultivar name if applicable (e.g., Percy Wiseman), or null",
     "cycle": "Perennial | Annual | Biennial",
     "watering": "Average | Frequent | Minimum",
@@ -71,6 +71,12 @@ Return a JSON object with this structure:
   },
   "reason": "Brief explanation of identification (optional)"
 }
+
+MIDDLE_LEVEL RULES - FOLLOW EXACTLY:
+- For specific cultivars/types: Use the specific type (e.g., "Yakushimanum Hybrid", "English Rose", "Mophead Hydrangea")
+- For generic genus searches (e.g., "Jasmine", "Lavender", "Fuchsia"): Set middle_level to match top_level (e.g., top_level: "Jasmine", middle_level: "Jasmine")
+- NEVER use generic growth habits as middle_level. These are WRONG: "Flowering Shrub", "Herbaceous Perennial", "Evergreen Tree", "Deciduous Shrub", "Climbing Plant", "Ground Cover Plant"
+- The middle_level must always be plant-specific, never a generic botanical category
 
 CONFIDENCE LEVELS:
 - "verified": You have SPECIFIC, DETAILED knowledge of this exact plant from your training data
@@ -96,6 +102,12 @@ Response: {"identified": false, "confidence": "unknown", "reason": "Name appears
 
 Query: "climbing rose"
 Response: {"identified": true, "confidence": "verified", "plant": {"common_name": "Climbing Rose", "scientific_name": "Rosa (Climbing Group)", "top_level": "Rose", "middle_level": "Climbing Rose", "cultivar_name": null, "cycle": "Perennial", "watering": "Average", "sunlight": ["Full sun"], "growth_habit": ["Climber", "Deciduous", "Repeat-flowering"]}}
+
+Query: "Jasmine"
+Response: {"identified": true, "confidence": "verified", "plant": {"common_name": "Jasmine", "scientific_name": "Jasminum", "top_level": "Jasmine", "middle_level": "Jasmine", "cultivar_name": null, "cycle": "Perennial", "watering": "Average", "sunlight": ["Full sun", "Part shade"], "growth_habit": ["Shrub", "Climber"]}, "reason": "Generic jasmine - middle_level matches top_level for genus-level searches"}
+
+Query: "Lavender"
+Response: {"identified": true, "confidence": "verified", "plant": {"common_name": "Lavender", "scientific_name": "Lavandula", "top_level": "Lavender", "middle_level": "Lavender", "cultivar_name": null, "cycle": "Perennial", "watering": "Minimum", "sunlight": ["Full sun"], "growth_habit": ["Shrub", "Evergreen"]}, "reason": "Generic lavender - middle_level matches top_level for genus-level searches"}
 
 Query: "Wiseman Dahlia"
 Response: {"identified": false, "confidence": "unknown", "reason": "No known dahlia cultivar with this name - do not invent plants"}
@@ -146,9 +158,15 @@ WHAT TO EXTRACT (if found):
 - Common name (as listed on the authoritative source)
 - Scientific/botanical name
 - Plant family/genus (top_level)
-- Specific type (middle_level)
+- Specific type (middle_level) - see rules below
 - Cultivar name if applicable
 - Basic care requirements (cycle, watering, sunlight, growth habit)
+
+MIDDLE_LEVEL RULES:
+- For specific cultivars/types: Use the specific type (e.g., "Hybrid Tea", "Yakushimanum Hybrid")
+- For generic genus searches (e.g., "Jasmine", "Lavender"): Set middle_level to match top_level
+- NEVER use generic growth habits as middle_level (e.g., "Flowering Shrub", "Herbaceous Perennial", "Evergreen Tree")
+- The middle_level must always be plant-specific, never a generic botanical category
 
 Return a JSON object with this structure:
 
@@ -160,7 +178,7 @@ IF PLANT FOUND ON AUTHORITATIVE SOURCE:
     "common_name": "Full display name from source",
     "scientific_name": "Botanical name from source",
     "top_level": "Plant genus/family (e.g., Rose, Rhododendron)",
-    "middle_level": "Specific type (e.g., Hybrid Tea, Yakushimanum Hybrid)",
+    "middle_level": "Specific type OR same as top_level for generic searches (NEVER a generic growth habit)",
     "cultivar_name": "Cultivar name if applicable, or null",
     "cycle": "Perennial | Annual | Biennial",
     "watering": "Average | Frequent | Minimum",
