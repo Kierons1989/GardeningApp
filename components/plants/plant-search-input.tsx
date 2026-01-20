@@ -281,11 +281,12 @@ export default function PlantSearchInput({
           onFocus={() => query.length >= 2 && setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="input pl-12 pr-4"
+          className="input pr-4"
           style={{
             fontSize: '16px',
             paddingTop: '14px',
             paddingBottom: '14px',
+            paddingLeft: '48px',
           }}
           autoComplete="off"
           spellCheck="false"
