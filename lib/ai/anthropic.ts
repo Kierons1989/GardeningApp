@@ -4,6 +4,7 @@ import type { AICareProfile, PlantContext, ChatMessage, ChatContext } from '@/ty
 import { buildCareProfilePrompt } from './prompts/care-profile'
 import { buildPlantChatPrompt } from './prompts/plant-chat'
 import { plantVerificationPrompt, webSearchVerificationPrompt, webSearchDiscoveryPrompt, spellingSuggestionPrompt, type PlantVerificationResponse, type SpellingSuggestion } from './prompts/plant-verification'
+import { plantIdentificationCache } from '@/lib/cache/plant-identification-cache'
 
 export class AnthropicProvider implements AIProvider {
   private client: Anthropic
@@ -113,6 +114,12 @@ export class AnthropicProvider implements AIProvider {
   }
 
   async identifyPlant(query: string): Promise<PlantVerificationResponse> {
+    // Check cache first
+    const cached = plantIdentificationCache.get(query)
+    if (cached) {
+      return cached
+    }
+
     const prompt = plantVerificationPrompt(query)
 
     const response = await this.client.messages.create({
@@ -147,9 +154,13 @@ export class AnthropicProvider implements AIProvider {
 
     try {
       const parsed = JSON.parse(jsonStr) as PlantVerificationResponse
+
+      // Cache successful identifications (both found and not found)
+      plantIdentificationCache.set(query, parsed)
+
       return parsed
     } catch {
-      // If parsing fails, return unknown
+      // If parsing fails, return unknown (don't cache failures)
       return {
         identified: false,
         confidence: 'unknown',
@@ -223,6 +234,13 @@ export class AnthropicProvider implements AIProvider {
   }
 
   async discoverPlantFromWeb(query: string): Promise<PlantVerificationResponse> {
+    // Check cache first (web discovery results are cached with 'web:' prefix)
+    const cacheKey = `web:${query}`
+    const cached = plantIdentificationCache.get(cacheKey)
+    if (cached) {
+      return cached
+    }
+
     const prompt = webSearchDiscoveryPrompt(query)
 
     try {
@@ -277,6 +295,9 @@ export class AnthropicProvider implements AIProvider {
             }
           }
         }
+
+        // Cache web discovery results
+        plantIdentificationCache.set(cacheKey, parsed)
 
         return parsed
       } catch {
