@@ -18,8 +18,12 @@ interface SearchState {
   results: PlantSearchResult[]
   isLoading: boolean
   error: string | null
-  source: 'perenual' | 'ai' | 'ai_verified' | null
+  source: 'perenual' | 'ai' | 'ai_verified' | 'web_discovery' | null
   message?: string
+  suggestion?: {
+    original: string
+    corrected: string
+  }
 }
 
 function VerificationBadge({ plant }: { plant: PlantSearchResult }) {
@@ -142,6 +146,7 @@ export default function PlantSearchInput({
         error: null,
         source: data.source,
         message: data.message,
+        suggestion: data.suggestion,
       })
       setIsOpen(true)
       setFocusedIndex(-1)
@@ -439,6 +444,25 @@ export default function PlantSearchInput({
             {/* Empty state with prominent custom entry */}
             {showEmptyState && (
               <div className="p-4">
+                {/* Spelling suggestion */}
+                {searchState.suggestion && (
+                  <button
+                    type="button"
+                    onClick={() => setQuery(searchState.suggestion!.corrected)}
+                    className="w-full mb-3 p-3 rounded-lg text-left transition-colors hover:opacity-90"
+                    style={{ background: 'var(--sage-50)', border: '1px solid var(--sage-200)' }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon name="Lightbulb" size={18} weight="fill" style={{ color: 'var(--sage-600)' }} />
+                      <span style={{ color: 'var(--text-muted)' }}>Did you mean </span>
+                      <span style={{ color: 'var(--sage-700)', fontWeight: 600 }}>
+                        {searchState.suggestion.corrected}
+                      </span>
+                      <span style={{ color: 'var(--text-muted)' }}>?</span>
+                    </div>
+                  </button>
+                )}
+
                 <div
                   className="rounded-lg p-4 mb-3"
                   style={{ background: 'var(--stone-50)', border: '1px dashed var(--stone-200)' }}

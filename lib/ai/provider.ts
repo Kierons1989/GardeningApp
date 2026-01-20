@@ -1,5 +1,5 @@
 import type { AICareProfile, PlantContext, ChatMessage, ChatContext } from '@/types/database'
-import type { PlantVerificationResponse } from './prompts/plant-verification'
+import type { PlantVerificationResponse, SpellingSuggestion } from './prompts/plant-verification'
 
 export interface PlantWebVerificationResult {
   verified: boolean;
@@ -18,6 +18,8 @@ export interface AIProvider {
   generateText(prompt: string): Promise<string>
   identifyPlant(query: string): Promise<PlantVerificationResponse>
   verifyPlantWithWebSearch(query: string, initialIdentification: string): Promise<PlantWebVerificationResult>
+  discoverPlantFromWeb(query: string): Promise<PlantVerificationResponse>
+  suggestSpellingCorrection(query: string): Promise<SpellingSuggestion>
 }
 
 export interface AIResponse<T> {

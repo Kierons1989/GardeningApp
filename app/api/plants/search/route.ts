@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { searchPlants } from '@/lib/perenual/client'
 import { getAIProvider } from '@/lib/ai'
 import type { PlantSearchResult, PlantVerification } from '@/types/database'
+import type { PlantVerificationResponse } from '@/lib/ai/prompts/plant-verification'
 
 export async function GET(request: NextRequest) {
   try {
@@ -54,9 +55,59 @@ export async function GET(request: NextRequest) {
       const aiProvider = getAIProvider()
       const identification = await aiProvider.identifyPlant(trimmedQuery)
 
-      // If AI couldn't identify the plant, return empty results
+      // If AI couldn't identify the plant, try web search discovery
       if (!identification.identified || identification.confidence === 'unknown') {
-        console.log(`AI could not identify plant: "${trimmedQuery}" - ${identification.reason || 'unknown'}`)
+        console.log(`AI could not identify plant: "${trimmedQuery}" - trying web search discovery`)
+
+        const webDiscovery = await aiProvider.discoverPlantFromWeb(trimmedQuery)
+
+        if (webDiscovery.identified && webDiscovery.plant) {
+          // Web search found the plant
+          const plant = webDiscovery.plant
+          const result: PlantSearchResult = {
+            id: -1,
+            common_name: plant.common_name,
+            scientific_name: plant.scientific_name,
+            image_url: null,
+            top_level: plant.top_level,
+            middle_level: plant.middle_level,
+            cultivar_name: plant.cultivar_name,
+            cycle: plant.cycle,
+            watering: plant.watering,
+            sunlight: plant.sunlight,
+            growth_habit: plant.growth_habit,
+            source: 'ai_verified',
+            verification: {
+              status: 'web_verified',
+              confidence: 'high',
+              source_url: (webDiscovery as PlantVerificationResponse & { source_url?: string }).source_url,
+            },
+          }
+
+          return NextResponse.json({
+            results: [result],
+            query: trimmedQuery,
+            source: 'web_discovery',
+          })
+        }
+
+        // Web search also failed - try to get a spelling suggestion
+        console.log(`Web discovery failed for "${trimmedQuery}": ${webDiscovery.reason}`)
+        const spellingSuggestion = await aiProvider.suggestSpellingCorrection(trimmedQuery)
+
+        if (spellingSuggestion.hasSuggestion && spellingSuggestion.suggestion) {
+          return NextResponse.json({
+            results: [],
+            query: trimmedQuery,
+            source: null,
+            message: 'Could not find a matching plant.',
+            suggestion: {
+              original: trimmedQuery,
+              corrected: spellingSuggestion.suggestion,
+            },
+          })
+        }
+
         return NextResponse.json({
           results: [],
           query: trimmedQuery,

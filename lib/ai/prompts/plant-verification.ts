@@ -108,6 +108,113 @@ Response: {"identified": false, "confidence": "unknown", "reason": "Cannot verif
 
 Return ONLY valid JSON, no additional text.`;
 
+export interface SpellingSuggestion {
+  hasSuggestion: boolean;
+  suggestion?: string;
+  reason?: string;
+}
+
+export const webSearchDiscoveryPrompt = (query: string) => `You are a botanical research assistant. Your task is to SEARCH THE WEB to find and identify a plant that could not be recognized from AI training data alone.
+
+Search query from user: "${query}"
+
+IMPORTANT: The AI could not identify this plant from its training data. You MUST use web search to find authoritative sources.
+
+SEARCH STRATEGY:
+1. Search for the exact query on authoritative UK gardening sites first:
+   - RHS (rhs.org.uk) - Royal Horticultural Society
+   - BBC Gardeners' World (gardenersworld.com)
+   - Wikipedia plant articles
+
+2. If not found, try UK nursery sites:
+   - Crocus (crocus.co.uk)
+   - Thompson & Morgan (thompson-morgan.com)
+   - David Austin Roses (davidaustinroses.co.uk) for roses
+
+3. Search variations:
+   - Try with and without quotes
+   - If it looks like a cultivar name, search "[query] plant" or "[query] cultivar"
+
+CRITICAL RULES:
+1. ONLY return plant information if you find it on an authoritative source
+2. If no authoritative source confirms this plant exists, return identified: false
+3. Do NOT invent or guess plant information - it must come from web search results
+4. Do NOT combine the user's query with random plant types
+5. If you find conflicting information, prefer RHS over other sources
+
+WHAT TO EXTRACT (if found):
+- Common name (as listed on the authoritative source)
+- Scientific/botanical name
+- Plant family/genus (top_level)
+- Specific type (middle_level)
+- Cultivar name if applicable
+- Basic care requirements (cycle, watering, sunlight, growth habit)
+
+Return a JSON object with this structure:
+
+IF PLANT FOUND ON AUTHORITATIVE SOURCE:
+{
+  "identified": true,
+  "confidence": "verified",
+  "plant": {
+    "common_name": "Full display name from source",
+    "scientific_name": "Botanical name from source",
+    "top_level": "Plant genus/family (e.g., Rose, Rhododendron)",
+    "middle_level": "Specific type (e.g., Hybrid Tea, Yakushimanum Hybrid)",
+    "cultivar_name": "Cultivar name if applicable, or null",
+    "cycle": "Perennial | Annual | Biennial",
+    "watering": "Average | Frequent | Minimum",
+    "sunlight": ["Full sun", "Part shade", "Full shade"],
+    "growth_habit": ["Shrub", "Climber", "Evergreen", etc.]
+  },
+  "source_url": "URL of the authoritative source",
+  "reason": "Found on [source name] with full botanical information"
+}
+
+IF PLANT NOT FOUND OR CANNOT BE VERIFIED:
+{
+  "identified": false,
+  "confidence": "unknown",
+  "reason": "Detailed explanation of what was searched and why plant could not be identified"
+}
+
+Return ONLY valid JSON, no additional text.`;
+
+export const spellingSuggestionPrompt = (query: string) => `You are a botanical assistant helping users find plants. The user searched for "${query}" but no plant was found.
+
+Your task is to search authoritative plant sources and determine if the user may have misspelled a common plant name.
+
+SEARCH STRATEGY:
+1. Search for "${query}" and similar spellings on:
+   - RHS (rhs.org.uk)
+   - Wikipedia
+   - UK nursery sites
+
+2. Look for plants with names that sound similar or have common misspellings
+
+CRITICAL RULES:
+1. Only suggest a correction if you find a real plant with a similar name
+2. The suggestion must be a real, verified plant from an authoritative source
+3. Do NOT guess or invent plant names
+4. Only suggest if the spelling is clearly close (1-2 character differences, transposed letters, etc.)
+
+Return a JSON object:
+
+IF SIMILAR PLANT FOUND:
+{
+  "hasSuggestion": true,
+  "suggestion": "Correctly spelled plant name",
+  "reason": "Found [plant name] on RHS - likely misspelling of user query"
+}
+
+IF NO SIMILAR PLANT FOUND:
+{
+  "hasSuggestion": false,
+  "reason": "No similar plant names found on authoritative sources"
+}
+
+Return ONLY valid JSON, no additional text.`;
+
 export const webSearchVerificationPrompt = (query: string, initialIdentification: string) => `You need to verify if a plant exists by searching authoritative sources.
 
 Plant to verify: "${query}"
