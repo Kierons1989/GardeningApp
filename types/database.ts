@@ -149,6 +149,13 @@ export interface PlantTypeGroup {
   cultivars: Plant[];
 }
 
+// Verification status for AI-identified plants
+export interface PlantVerification {
+  status: 'database' | 'ai_identified' | 'web_verified';
+  confidence: 'high' | 'medium' | 'low';
+  source_url?: string;  // URL to authoritative source (e.g., RHS)
+}
+
 // Plant search result from Perenual API or AI fallback
 export interface PlantSearchResult {
   id: number;                      // Perenual ID (or -1 for AI results)
@@ -162,7 +169,8 @@ export interface PlantSearchResult {
   watering: string;                // "Average", "Frequent", "Minimum"
   sunlight: string[];              // ["Full sun", "Part shade"]
   growth_habit: string[];          // ["Climber", "Perennial"]
-  source: 'perenual' | 'ai';       // Track data origin
+  source: 'perenual' | 'ai' | 'ai_verified';  // Track data origin
+  verification?: PlantVerification;  // Verification details for AI results
 }
 
 // Re-export lawn types for convenience

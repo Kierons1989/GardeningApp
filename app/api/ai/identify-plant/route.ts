@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getAIProvider } from '@/lib/ai'
-import { plantIdentificationPrompt } from '@/lib/ai/prompts/plant-identification'
 import type { PlantIdentification } from '@/types/database'
 
 export async function POST(request: NextRequest) {
@@ -27,26 +26,29 @@ export async function POST(request: NextRequest) {
     }
 
     const aiProvider = getAIProvider()
-    const prompt = plantIdentificationPrompt(userInput.trim())
 
-    const result = await aiProvider.generateText(prompt)
+    // Use the same identifyPlant method as the search API
+    const result = await aiProvider.identifyPlant(userInput.trim())
 
-    let identification: PlantIdentification
-    try {
-      identification = JSON.parse(result)
-    } catch {
-      console.error('Failed to parse AI response:', result)
+    // If plant wasn't identified or confidence is unknown, return error
+    if (!result.identified || result.confidence === 'unknown') {
       return NextResponse.json(
-        { error: 'Failed to parse plant identification', details: result },
-        { status: 500 }
+        {
+          error: 'Could not identify this plant. Please try a different name or add it as a generic plant type (e.g., "rose", "dahlia").',
+          reason: result.reason
+        },
+        { status: 400 }
       )
     }
 
-    if (!identification.top_level || !identification.middle_level) {
-      return NextResponse.json(
-        { error: 'Could not identify plant from input', identification },
-        { status: 400 }
-      )
+    // Transform the verification response to PlantIdentification format
+    const plant = result.plant!
+    const identification: PlantIdentification = {
+      top_level: plant.top_level,
+      middle_level: plant.middle_level,
+      cultivar_name: plant.cultivar_name,
+      growth_habit: plant.growth_habit,
+      confidence: result.confidence === 'verified' ? 'high' : 'medium'
     }
 
     return NextResponse.json(identification)

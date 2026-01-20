@@ -27,16 +27,56 @@ Gardening App (branding to be decided) is a UK-focused personal garden companion
 
 ## Architecture Notes
 
+### Plant Identification System (CRITICAL - READ BEFORE MODIFYING)
 
+The plant identification system is designed to NEVER hallucinate or invent fake plants. This is a core requirement. The system uses a single source of truth for plant verification.
 
+**Single Prompt Rule:** All plant identification flows through ONE prompt in `lib/ai/prompts/plant-verification.ts`. This prompt has strict anti-hallucination rules. NEVER create a second identification prompt or bypass this system.
+
+**How it works:**
+
+1. User searches for a plant → `/api/plants/search` is called
+2. First, we check Perenual API (external plant database)
+3. If no Perenual results, AI identification kicks in via `aiProvider.identifyPlant()`
+4. The AI uses `plantVerificationPrompt` which enforces strict rules:
+   - Only identify plants the AI is 100% certain exist
+   - NEVER combine user input with random plant types (e.g., "Wiseman" + "Dahlia" = NO)
+   - Misspellings must return "unknown" - no guessing
+   - Default to "unknown" when in doubt
+5. "likely" confidence results get web-search verification before being shown
+6. "unknown" results return empty - user sees "no match found"
+
+**Custom plant flow:** When user clicks "Add as custom plant", it calls `/api/ai/identify-plant` which uses the SAME `identifyPlant()` method. This ensures consistent behavior.
+
+**Key files:**
+- `lib/ai/prompts/plant-verification.ts` - THE source of truth for plant identification logic
+- `lib/ai/anthropic.ts` - `identifyPlant()` method uses the verification prompt
+- `app/api/plants/search/route.ts` - Search endpoint with Perenual → AI fallback
+- `app/api/ai/identify-plant/route.ts` - Custom plant identification endpoint
+
+**NEVER DO THIS:**
+- Create a separate identification prompt that doesn't have anti-hallucination rules
+- Allow AI to "suggest" plants when it doesn't recognize the input
+- Show results with "unknown" confidence to users
+- Bypass the verification system for "convenience"
+
+**If hallucination issues occur:**
+1. Check that ALL code paths go through `aiProvider.identifyPlant()`
+2. Review the prompt in `plant-verification.ts` for any weakening of rules
+3. Ensure "unknown" confidence results are rejected/filtered out
+4. Add explicit negative examples to the prompt for the problematic case
 
 ## Important Files
 
--
+- `lib/ai/prompts/plant-verification.ts` - Plant identification prompt (CRITICAL - anti-hallucination rules)
+- `lib/ai/anthropic.ts` - AI provider implementation
+- `app/api/plants/search/route.ts` - Plant search API
+- `lib/perenual/client.ts` - External plant database client
 
 ## Commands
 
--
+- `npm run lint` - Run ESLint
+- `npx tsc --noEmit` - Type check without emitting
 
 # Design System Page Generator
 

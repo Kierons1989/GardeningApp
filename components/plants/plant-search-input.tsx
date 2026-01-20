@@ -18,7 +18,61 @@ interface SearchState {
   results: PlantSearchResult[]
   isLoading: boolean
   error: string | null
-  source: 'perenual' | 'ai' | null
+  source: 'perenual' | 'ai' | 'ai_verified' | null
+  message?: string
+}
+
+function VerificationBadge({ plant }: { plant: PlantSearchResult }) {
+  if (!plant.verification) return null
+
+  const { status, confidence, source_url } = plant.verification
+
+  if (status === 'database') {
+    return (
+      <span
+        className="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded"
+        style={{ background: 'var(--sage-100)', color: 'var(--sage-700)' }}
+        title="Found in plant database"
+      >
+        <Icon name="Database" size={10} weight="fill" />
+      </span>
+    )
+  }
+
+  if (status === 'web_verified') {
+    return (
+      <a
+        href={source_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded transition-colors hover:opacity-80"
+        style={{ background: 'var(--sage-100)', color: 'var(--sage-700)' }}
+        title={source_url ? `Verified via ${new URL(source_url).hostname}` : 'Web verified'}
+      >
+        <Icon name="CheckCircle" size={10} weight="fill" />
+        <span>Verified</span>
+      </a>
+    )
+  }
+
+  if (status === 'ai_identified') {
+    return (
+      <span
+        className="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded"
+        style={{
+          background: confidence === 'high' ? 'var(--sage-100)' : 'var(--earth-100)',
+          color: confidence === 'high' ? 'var(--sage-700)' : 'var(--earth-700)',
+        }}
+        title={confidence === 'high' ? 'AI identified with high confidence' : 'AI identified'}
+      >
+        <Icon name="Sparkle" size={10} weight="fill" />
+        <span>{confidence === 'high' ? 'Identified' : 'Likely'}</span>
+      </span>
+    )
+  }
+
+  return null
 }
 
 export default function PlantSearchInput({
@@ -87,6 +141,7 @@ export default function PlantSearchInput({
         isLoading: false,
         error: null,
         source: data.source,
+        message: data.message,
       })
       setIsOpen(true)
       setFocusedIndex(-1)
@@ -192,6 +247,7 @@ export default function PlantSearchInput({
 
   const showCustomEntry = query.length >= 2 && !searchState.isLoading
   const hasResults = searchState.results.length > 0
+  const showEmptyState = !hasResults && showCustomEntry && !searchState.error
 
   return (
     <div ref={containerRef} className="relative">
@@ -275,14 +331,14 @@ export default function PlantSearchInput({
             {/* Results list */}
             {hasResults && (
               <div className="py-2">
-                {/* Source indicator */}
-                {searchState.source === 'ai' && (
+                {/* Source indicator for AI results */}
+                {(searchState.source === 'ai' || searchState.source === 'ai_verified') && (
                   <div
                     className="px-4 py-2 text-xs flex items-center gap-2"
                     style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--stone-100)' }}
                   >
                     <Icon name="Sparkle" size={12} weight="fill" style={{ color: 'var(--sage-500)' }} />
-                    AI-suggested results
+                    {searchState.source === 'ai_verified' ? 'Verified match' : 'AI-identified result'}
                   </div>
                 )}
 
@@ -318,7 +374,7 @@ export default function PlantSearchInput({
 
                     {/* Plant info */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span
                           className="font-medium truncate"
                           style={{
@@ -340,6 +396,7 @@ export default function PlantSearchInput({
                             {plant.top_level}
                           </span>
                         )}
+                        <VerificationBadge plant={plant} />
                       </div>
                       {plant.scientific_name && (
                         <p
@@ -379,8 +436,78 @@ export default function PlantSearchInput({
               </div>
             )}
 
-            {/* Custom entry option */}
-            {showCustomEntry && (
+            {/* Empty state with prominent custom entry */}
+            {showEmptyState && (
+              <div className="p-4">
+                <div
+                  className="rounded-lg p-4 mb-3"
+                  style={{ background: 'var(--stone-50)', border: '1px dashed var(--stone-200)' }}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ background: 'var(--stone-100)' }}
+                    >
+                      <Icon name="MagnifyingGlass" size={20} weight="light" style={{ color: 'var(--text-muted)' }} />
+                    </div>
+                    <div>
+                      <p className="font-medium" style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+                        No exact match found
+                      </p>
+                      <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                        We couldn&apos;t find &quot;{query}&quot; in our database. You can add it as a custom plant and we&apos;ll identify it for you.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Custom entry button - more prominent */}
+                <button
+                  type="button"
+                  onClick={handleCustomEntry}
+                  onMouseEnter={() => setFocusedIndex(searchState.results.length)}
+                  className="w-full px-4 py-4 flex items-center gap-4 text-left transition-all rounded-lg"
+                  style={{
+                    background: focusedIndex === searchState.results.length ? 'var(--sage-100)' : 'var(--sage-50)',
+                    border: '1px solid var(--sage-200)',
+                  }}
+                >
+                  <div
+                    className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'var(--sage-200)' }}
+                  >
+                    <Icon name="Plus" size={24} weight="bold" style={{ color: 'var(--sage-700)' }} />
+                  </div>
+                  <div className="flex-1">
+                    <span
+                      className="font-medium"
+                      style={{
+                        fontFamily: 'var(--font-cormorant)',
+                        color: 'var(--sage-800)',
+                        fontSize: '17px',
+                      }}
+                    >
+                      Add &quot;{query}&quot; as custom plant
+                    </span>
+                    <p className="text-sm mt-0.5" style={{ color: 'var(--sage-600)' }}>
+                      We&apos;ll identify it and create a care profile for you
+                    </p>
+                  </div>
+                  <div
+                    className="flex-shrink-0 transition-transform"
+                    style={{
+                      color: 'var(--sage-600)',
+                      transform: focusedIndex === searchState.results.length ? 'translateX(2px)' : 'translateX(0)',
+                    }}
+                  >
+                    <Icon name="ArrowRight" size={20} weight="bold" />
+                  </div>
+                </button>
+              </div>
+            )}
+
+            {/* Custom entry option when there ARE results */}
+            {hasResults && showCustomEntry && (
               <button
                 type="button"
                 onClick={handleCustomEntry}
@@ -388,7 +515,7 @@ export default function PlantSearchInput({
                 className="w-full px-4 py-3 flex items-center gap-4 text-left transition-colors"
                 style={{
                   background: focusedIndex === searchState.results.length ? 'var(--earth-50)' : 'transparent',
-                  borderTop: hasResults ? '1px solid var(--stone-100)' : 'none',
+                  borderTop: '1px solid var(--stone-100)',
                 }}
               >
                 <div
@@ -409,7 +536,7 @@ export default function PlantSearchInput({
                     Add &quot;{query}&quot; as custom plant
                   </span>
                   <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                    Can&apos;t find what you&apos;re looking for? We&apos;ll identify it for you.
+                    Not what you&apos;re looking for? We&apos;ll identify it for you.
                   </p>
                 </div>
                 <div
@@ -419,22 +546,6 @@ export default function PlantSearchInput({
                   <Icon name="ArrowRight" size={18} weight="regular" />
                 </div>
               </button>
-            )}
-
-            {/* No results message (only shown when not loading and no results) */}
-            {!hasResults && !showCustomEntry && !searchState.isLoading && !searchState.error && query.length >= 2 && (
-              <div className="p-6 text-center">
-                <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3"
-                  style={{ background: 'var(--stone-100)' }}
-                >
-                  <Icon name="MagnifyingGlass" size={28} weight="light" style={{ color: 'var(--text-muted)' }} />
-                </div>
-                <p style={{ color: 'var(--text-secondary)' }}>No plants found</p>
-                <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-                  Try a different search term
-                </p>
-              </div>
             )}
           </motion.div>
         )}
