@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Plant } from '@/types/database'
 import PlantCard from './plant-card'
-import PlantTypeCard from './plant-type-card'
 import { EmptyGardenIllustration, NoResultsIllustration } from '@/components/ui/empty-states'
 import Icon from '@/components/ui/icon'
 import { groupPlantsByType } from '@/lib/utils/group-plants'
@@ -374,7 +373,13 @@ export default function PlantList({ plants }: PlantListProps) {
 
       {/* Individual View - each cultivar as separate card */}
       {filteredAndSortedPlants.length > 0 && viewMode === 'individual' && (
-        <motion.div variants={itemVariants} className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <motion.div
+          key="individual-view"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.15 }}
+          className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4"
+        >
           {filteredAndSortedPlants.map((plant, index) => (
             <PlantCard key={plant.id} plant={plant} index={index} />
           ))}
@@ -383,36 +388,41 @@ export default function PlantList({ plants }: PlantListProps) {
 
       {/* By Type View - grouped by top-level category with section headers */}
       {filteredAndSortedPlants.length > 0 && viewMode === 'byType' && (
-        <motion.div variants={itemVariants} className="space-y-6 md:space-y-8">
-          {categorizedGroups.map(([category, groups], categoryIndex) => (
-            <section key={category}>
-              <h2
-                className="text-lg md:text-xl font-semibold mb-3 md:mb-4 flex items-center gap-2"
-                style={{
-                  fontFamily: 'var(--font-cormorant)',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {category}
-                <span
-                  className="text-xs md:text-sm font-normal px-2 py-0.5 rounded-full"
-                  style={{ background: 'var(--stone-100)', color: 'var(--text-muted)' }}
+        <motion.div
+          key="byType-view"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.15 }}
+          className="space-y-8"
+        >
+          {categorizedGroups.map(([category, groups]) => {
+            // Flatten all cultivars from all groups in this category
+            const allCultivars = groups.flatMap(g => g.cultivars)
+            return (
+              <section key={category}>
+                <h2
+                  className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2"
+                  style={{
+                    fontFamily: 'var(--font-cormorant)',
+                    color: 'var(--text-primary)',
+                  }}
                 >
-                  {groups.reduce((acc, g) => acc + g.cultivars.length, 0)}
-                </span>
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                {groups.map((group, index) => (
-                  <PlantTypeCard
-                    key={group.plantType.id}
-                    group={group}
-                    index={categoryIndex * 10 + index}
-                    defaultExpanded={plantTypeGroups.length === 1}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
+                  {category}
+                  <span
+                    className="text-xs md:text-sm font-normal px-2 py-0.5 rounded-full"
+                    style={{ background: 'var(--stone-100)', color: 'var(--text-muted)' }}
+                  >
+                    {allCultivars.length}
+                  </span>
+                </h2>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {allCultivars.map((plant, index) => (
+                    <PlantCard key={plant.id} plant={plant} index={index} />
+                  ))}
+                </div>
+              </section>
+            )
+          })}
         </motion.div>
       )}
     </motion.div>

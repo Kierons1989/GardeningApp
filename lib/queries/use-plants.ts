@@ -9,6 +9,7 @@ import { groupPlantsByType } from '@/lib/utils/group-plants'
 export function usePlants() {
   return useQuery({
     queryKey: ['plants'],
+    placeholderData: (previousData) => previousData,
     queryFn: async (): Promise<Plant[]> => {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
