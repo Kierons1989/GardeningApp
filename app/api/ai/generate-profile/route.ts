@@ -48,13 +48,10 @@ export async function POST(request: NextRequest) {
         .update({ hits: cached.hits + 1 })
         .eq('id', cached.id)
 
-      console.log(`Cache HIT for "${normalizedName}" (${plantedIn || 'unspecified'})`)
       return NextResponse.json(cached.care_profile)
     }
 
     // Cache miss - generate with AI
-    console.log(`Cache MISS for "${normalizedName}" (${plantedIn || 'unspecified'}) - generating...`)
-
     const context: PlantContext = {
       area: area || null,
       plantedIn: plantedIn || null,
@@ -80,8 +77,6 @@ export async function POST(request: NextRequest) {
     if (insertError) {
       // Cache insert failed, but that's okay - we still have the profile
       console.warn('Failed to cache profile:', insertError.message)
-    } else {
-      console.log(`Cached new profile for "${normalizedName}"`)
     }
 
     return NextResponse.json(careProfile)

@@ -57,7 +57,6 @@ export async function GET(request: NextRequest) {
 
       // If AI couldn't identify the plant, try web search discovery
       if (!identification.identified || identification.confidence === 'unknown') {
-        console.log(`AI could not identify plant: "${trimmedQuery}" - trying web search discovery`)
 
         const webDiscovery = await aiProvider.discoverPlantFromWeb(trimmedQuery)
 
@@ -92,7 +91,6 @@ export async function GET(request: NextRequest) {
         }
 
         // Web search also failed - try to get a spelling suggestion
-        console.log(`Web discovery failed for "${trimmedQuery}": ${webDiscovery.reason}`)
         const spellingSuggestion = await aiProvider.suggestSpellingCorrection(trimmedQuery)
 
         if (spellingSuggestion.hasSuggestion && spellingSuggestion.suggestion) {
@@ -153,7 +151,6 @@ export async function GET(request: NextRequest) {
         } else {
           // Web search couldn't verify - return empty results
           // We don't show unverified "likely" plants to avoid showing fake plants
-          console.log(`Web verification failed for "${trimmedQuery}": ${webVerification.reason}`)
           return NextResponse.json({
             results: [],
             query: trimmedQuery,

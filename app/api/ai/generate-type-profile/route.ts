@@ -34,7 +34,6 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (existingType && existingType.ai_care_profile) {
-      console.log(`Plant type "${middleLevel}" already has care profile`)
       return NextResponse.json({
         plantType: existingType,
         careProfile: existingType.ai_care_profile
@@ -49,8 +48,6 @@ export async function POST(request: NextRequest) {
       .single()
 
     // Generate care profile for this plant type
-    console.log(`Generating care profile for "${middleLevel}" (${topLevel})`)
-
     const context: PlantContext = {
       area: area || null,
       plantedIn: plantedIn || null,

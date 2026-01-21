@@ -62,7 +62,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (!existingProfile) {
-      console.log('Creating profile for user:', user.id)
       const { error: profileError } = await adminClient.from('profiles').insert({
         id: user.id,
         display_name: user.user_metadata?.display_name || null,
@@ -72,7 +71,6 @@ export async function POST(request: NextRequest) {
         console.error('Profile creation error:', profileError)
         return NextResponse.json({ error: `Failed to create profile: ${profileError.message}` }, { status: 500 })
       }
-      console.log('Profile created successfully')
     }
 
     // Check for duplicate generic entry (one generic per type per user)
@@ -95,7 +93,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Now insert the plant using admin client to ensure it works
-    console.log('Inserting plant for user:', user.id)
     const { data: plant, error } = await adminClient.from('plants').insert({
       user_id: user.id,
       name,
@@ -114,7 +111,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Failed to save plant: ${error.message}` }, { status: 500 })
     }
 
-    console.log('Plant saved successfully:', plant.id)
     return NextResponse.json(plant)
   } catch (err) {
     console.error('Unexpected error:', err)
