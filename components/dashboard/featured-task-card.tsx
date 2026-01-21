@@ -18,13 +18,6 @@ export default function FeaturedTaskCard({ suggestion }: FeaturedTaskCardProps) 
   const [showInstructions, setShowInstructions] = useState(false)
   const colors = getCategoryColor(suggestion.task.category)
 
-  const effortColors = {
-    high: { border: 'var(--coral)', bg: 'rgba(224, 122, 95, 0.08)', accent: 'var(--coral)' },
-    medium: { border: 'var(--earth-400)', bg: 'rgba(212, 164, 122, 0.08)', accent: 'var(--earth-500)' },
-    low: { border: 'var(--sage-400)', bg: 'rgba(163, 189, 169, 0.08)', accent: 'var(--sage-500)' },
-  }
-  const effortColor = effortColors[suggestion.task.effort_level] || effortColors.medium
-
   const hasPhoto = !!suggestion.plant.photo_url
 
   return (
@@ -37,7 +30,7 @@ export default function FeaturedTaskCard({ suggestion }: FeaturedTaskCardProps) 
         background: 'white',
         boxShadow: 'var(--shadow-md)',
         border: '1px solid var(--stone-200)',
-        borderLeft: `5px solid ${effortColor.border}`,
+        borderLeft: `5px solid ${colors.border}`,
       }}
     >
       <div className="flex flex-col md:flex-row gap-6">
@@ -76,9 +69,9 @@ export default function FeaturedTaskCard({ suggestion }: FeaturedTaskCardProps) 
             <div className="flex items-center gap-3">
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ background: colors.bg }}
+                style={{ background: 'var(--stone-100)' }}
               >
-                {getCategoryIcon(suggestion.task.category, 'w-5 h-5', { color: colors.text })}
+                {getCategoryIcon(suggestion.task.category, 'w-5 h-5', { color: 'var(--stone-600)' })}
               </div>
               <div>
                 <h3
@@ -100,23 +93,12 @@ export default function FeaturedTaskCard({ suggestion }: FeaturedTaskCardProps) 
               </div>
             </div>
 
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span
-                className="text-xs px-2.5 py-1 rounded-full font-medium"
-                style={{ background: colors.bg, color: colors.text }}
-              >
-                {formatCategory(suggestion.task.category)}
-              </span>
-              <span
-                className="text-xs font-medium px-2.5 py-1 rounded-full"
-                style={{
-                  background: effortColor.accent,
-                  color: 'white',
-                }}
-              >
-                {suggestion.task.effort_level}
-              </span>
-            </div>
+            <span
+              className="text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0"
+              style={{ background: colors.bg, color: colors.text }}
+            >
+              {formatCategory(suggestion.task.category)}
+            </span>
           </div>
 
           {/* Why this matters */}

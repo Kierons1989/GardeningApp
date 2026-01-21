@@ -10,6 +10,7 @@ import Icon from '@/components/ui/icon'
 import TaskActions from '@/components/tasks/task-actions'
 import { getCategoryColor } from '@/lib/utils/category-colors'
 import { getCategoryIcon } from '@/components/ui/botanical-icons'
+import MonthlyRoutineTips from './monthly-routine-tips'
 
 interface MonthlyCalendarProps {
   plants: Plant[]
@@ -218,6 +219,9 @@ export default function MonthlyCalendar({ plants, taskHistory }: MonthlyCalendar
           )}
         </div>
 
+        {/* Routine care tips */}
+        <MonthlyRoutineTips plants={plants} viewingMonth={viewingMonth} />
+
         {/* Task list */}
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
@@ -242,9 +246,6 @@ export default function MonthlyCalendar({ plants, taskHistory }: MonthlyCalendar
                   className="mx-auto mb-3 opacity-40"
                 />
                 <p className="text-sm">No seasonal tasks this month</p>
-                <p className="text-xs mt-1 opacity-70">
-                  Routine care like watering is shown above
-                </p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -273,13 +274,6 @@ function CalendarTaskCard({ calendarTask, index }: CalendarTaskCardProps) {
   const { task, plant } = calendarTask
   const colors = getCategoryColor(task.category)
 
-  const effortColors = {
-    high: { border: 'var(--coral)' },
-    medium: { border: 'var(--earth-400)' },
-    low: { border: 'var(--sage-300)' },
-  }
-  const effortColor = effortColors[task.effort_level] || effortColors.medium
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -287,18 +281,18 @@ function CalendarTaskCard({ calendarTask, index }: CalendarTaskCardProps) {
       transition={{ delay: index * 0.03, duration: 0.2 }}
       className="rounded-xl p-4"
       style={{
-        background: 'var(--stone-50)',
+        background: 'white',
         border: '1px solid var(--stone-200)',
-        borderLeft: `4px solid ${effortColor.border}`,
+        borderLeft: `4px solid ${colors.border}`,
       }}
     >
       {/* Header with icon and title */}
       <div className="flex items-start gap-3 mb-2">
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: colors.bg }}
+          style={{ background: 'var(--stone-100)' }}
         >
-          {getCategoryIcon(task.category, 'w-4 h-4', { color: colors.text })}
+          {getCategoryIcon(task.category, 'w-4 h-4', { color: 'var(--stone-600)' })}
         </div>
 
         <div className="flex-1 min-w-0">

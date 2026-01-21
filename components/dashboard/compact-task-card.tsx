@@ -15,13 +15,6 @@ interface CompactTaskCardProps {
 export default function CompactTaskCard({ suggestion, index }: CompactTaskCardProps) {
   const colors = getCategoryColor(suggestion.task.category)
 
-  const effortColors = {
-    high: { bg: 'rgba(224, 122, 95, 0.06)', border: 'var(--coral)' },
-    medium: { bg: 'rgba(212, 164, 122, 0.06)', border: 'var(--earth-400)' },
-    low: { bg: 'rgba(163, 189, 169, 0.06)', border: 'var(--sage-300)' },
-  }
-  const effortColor = effortColors[suggestion.task.effort_level] || effortColors.medium
-
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -31,7 +24,7 @@ export default function CompactTaskCard({ suggestion, index }: CompactTaskCardPr
       style={{
         background: 'white',
         border: '1px solid var(--stone-200)',
-        borderLeft: `4px solid ${effortColor.border}`,
+        borderLeft: `4px solid ${colors.border}`,
         boxShadow: 'var(--shadow-sm)',
       }}
     >
@@ -39,9 +32,9 @@ export default function CompactTaskCard({ suggestion, index }: CompactTaskCardPr
       <div className="flex items-start gap-3 mb-3">
         <div
           className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: colors.bg }}
+          style={{ background: 'var(--stone-100)' }}
         >
-          {getCategoryIcon(suggestion.task.category, 'w-4 h-4', { color: colors.text })}
+          {getCategoryIcon(suggestion.task.category, 'w-4 h-4', { color: 'var(--stone-600)' })}
         </div>
         <div className="flex-1 min-w-0">
           <h4

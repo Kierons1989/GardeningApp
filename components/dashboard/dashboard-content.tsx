@@ -8,7 +8,6 @@ import Icon from '@/components/ui/icon'
 import { EmptyGardenIllustration } from '@/components/ui/empty-states'
 import { LawnDashboardWidget } from '@/components/lawn'
 import { MonthlyCalendar } from '@/components/calendar'
-import { RoutinesWidget } from '@/components/routines'
 import JournalHero from './journal-hero'
 import TodaysFocus from './todays-focus'
 import YourGarden from './your-garden'
@@ -133,9 +132,6 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
         <div className="space-y-8">
           {/* Today's Focus - Featured Task */}
           <TodaysFocus featuredTask={featuredTask} />
-
-          {/* Regular Care Routines */}
-          <RoutinesWidget plants={plants} />
 
           {/* Monthly Calendar */}
           <MonthlyCalendar plants={plants} taskHistory={taskHistory} />
