@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { PlantIdentification, PlantSearchResult } from '@/types/database'
+import type { PlantIdentification, PlantSearchResult, LocationType, LocationProtection } from '@/types/database'
 import { SpinningLeafLoader, GrowingPlantLoader } from '@/components/ui/botanical-loader'
 import Icon from '@/components/ui/icon'
 import ImageUpload, { type ImageUploadRef } from '@/components/plants/image-upload'
@@ -30,7 +30,9 @@ export default function NewPlantPage() {
 
   // Form state
   const [userInput, setUserInput] = useState('')
-  const [area, setArea] = useState('')
+  const [locationType, setLocationType] = useState<LocationType | null>(null)
+  const [locationCustom, setLocationCustom] = useState('')
+  const [locationProtection, setLocationProtection] = useState<LocationProtection | null>(null)
   const [plantedIn, setPlantedIn] = useState<'ground' | 'pot' | 'raised_bed' | ''>('')
   const [notes, setNotes] = useState('')
   const [pendingImage, setPendingImage] = useState<Blob | null>(null)
@@ -324,6 +326,18 @@ export default function NewPlantPage() {
 
       // Only generate care profile if we don't have an existing type to use
       if (!plantTypeId) {
+        // Build area string for care profile context
+        const locationLabels: Record<string, string> = {
+          front_garden: 'Front garden',
+          back_garden: 'Back garden',
+          patio: 'Patio',
+        }
+        const areaForContext = locationType
+          ? locationType === 'other'
+            ? locationCustom || undefined
+            : locationLabels[locationType]
+          : undefined
+
         // Step 1: Generate the care profile for this plant type
         const typeResponse = await fetch('/api/ai/generate-type-profile', {
           method: 'POST',
@@ -332,7 +346,7 @@ export default function NewPlantPage() {
             topLevel,
             middleLevel,
             growthHabit,
-            area: area || undefined,
+            area: areaForContext,
             planted_in: plantedIn || undefined,
           }),
         })
@@ -358,7 +372,9 @@ export default function NewPlantPage() {
           species: careProfileSpecies,
           plant_type_id: plantTypeId,
           cultivar_name: cultivarName || undefined,
-          area: area || undefined,
+          location_type: locationType || undefined,
+          location_custom: locationType === 'other' ? locationCustom || undefined : undefined,
+          location_protection: locationProtection || undefined,
           planted_in: plantedIn || undefined,
           notes: notes || undefined,
           image_url: selectedPlant?.image_url || undefined,
@@ -754,17 +770,87 @@ export default function NewPlantPage() {
                 )}
 
                 <div>
-                  <label htmlFor="area" className="label">
+                  <label className="label">
                     Where is it? (optional)
                   </label>
-                  <input
-                    id="area"
-                    type="text"
-                    value={area}
-                    onChange={(e) => setArea(e.target.value)}
-                    className="input"
-                    placeholder="e.g., Front garden, Back border, Patio"
-                  />
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[
+                      { value: 'front_garden', label: 'Front garden', iconName: 'House' },
+                      { value: 'back_garden', label: 'Back garden', iconName: 'Tree' },
+                      { value: 'patio', label: 'Patio', iconName: 'GridFour' },
+                      { value: 'other', label: 'Other', iconName: 'DotsThree' },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setLocationType(locationType === option.value ? null : option.value as LocationType)}
+                        className="p-4 rounded-xl border-2 transition-all text-center"
+                        style={{
+                          borderColor: locationType === option.value ? 'var(--sage-500)' : 'var(--stone-200)',
+                          background: locationType === option.value ? 'var(--sage-50)' : 'white',
+                          color: locationType === option.value ? 'var(--sage-700)' : 'var(--text-secondary)',
+                        }}
+                      >
+                        <div className="mb-2 flex justify-center">
+                          <Icon
+                            name={option.iconName}
+                            size={24}
+                            weight="light"
+                            style={{ color: locationType === option.value ? 'var(--sage-600)' : 'var(--text-muted)' }}
+                          />
+                        </div>
+                        <span className="text-sm font-medium">
+                          {option.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  {locationType === 'other' && (
+                    <input
+                      type="text"
+                      value={locationCustom}
+                      onChange={(e) => setLocationCustom(e.target.value)}
+                      className="input mt-3"
+                      placeholder="Enter custom location..."
+                    />
+                  )}
+                </div>
+
+                <div>
+                  <label className="label">
+                    Protected? (optional)
+                  </label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { value: 'greenhouse', label: 'Greenhouse', iconName: 'Warehouse' },
+                      { value: 'polytunnel', label: 'Polytunnel', iconName: 'Tent' },
+                      { value: 'cold_frame', label: 'Cold frame', iconName: 'Package' },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setLocationProtection(locationProtection === option.value ? null : option.value as LocationProtection)}
+                        className="p-3 rounded-xl border-2 transition-all text-center"
+                        style={{
+                          borderColor: locationProtection === option.value ? 'var(--sage-500)' : 'var(--stone-200)',
+                          background: locationProtection === option.value ? 'var(--sage-50)' : 'white',
+                          color: locationProtection === option.value ? 'var(--sage-700)' : 'var(--text-secondary)',
+                        }}
+                      >
+                        <div className="mb-1.5 flex justify-center">
+                          <Icon
+                            name={option.iconName}
+                            size={20}
+                            weight="light"
+                            style={{ color: locationProtection === option.value ? 'var(--sage-600)' : 'var(--text-muted)' }}
+                          />
+                        </div>
+                        <span className="text-xs font-medium">
+                          {option.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div>

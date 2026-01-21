@@ -27,7 +27,10 @@ export interface Plant {
   plant_type_id: string | null;
   plant_types?: PlantType | null; // Joined relation
   cultivar_name: string | null;
-  area: string | null;
+  area: string | null; // DEPRECATED: Use location_type, location_custom, location_protection
+  location_type: LocationType | null;
+  location_custom: string | null;
+  location_protection: LocationProtection | null;
   planted_in: 'ground' | 'pot' | 'raised_bed' | null;
   notes: string | null;
   photo_url: string | null;
@@ -74,6 +77,9 @@ export type RecurrenceType =
   | 'monthly_in_window';
 
 export type EffortLevel = 'low' | 'medium' | 'high';
+
+export type LocationType = 'front_garden' | 'back_garden' | 'patio' | 'other';
+export type LocationProtection = 'greenhouse' | 'polytunnel' | 'cold_frame';
 
 export interface TaskHistory {
   id: string;

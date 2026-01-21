@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import type { Plant } from '@/types/database'
 import { getPlantTypeIcon } from '@/components/ui/botanical-icons'
+import { formatFullLocation } from '@/lib/utils/formatters'
 
 interface CultivarRowProps {
   plant: Plant
@@ -50,12 +51,12 @@ export default function CultivarRow({ plant, topLevel }: CultivarRowProps) {
         >
           {displayName}
         </p>
-        {plant.area && (
+        {(plant.location_type || plant.area) && (
           <p
             className="text-xs truncate"
             style={{ color: 'var(--text-muted)' }}
           >
-            {plant.area}
+            {formatFullLocation(plant.location_type, plant.location_custom, plant.location_protection, plant.area)}
           </p>
         )}
       </div>

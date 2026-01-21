@@ -8,6 +8,7 @@ import PlantCard from './plant-card'
 import { EmptyGardenIllustration, NoResultsIllustration } from '@/components/ui/empty-states'
 import Icon from '@/components/ui/icon'
 import { groupPlantsByType } from '@/lib/utils/group-plants'
+import { formatFullLocation } from '@/lib/utils/formatters'
 
 interface PlantListProps {
   plants: Plant[]
@@ -25,7 +26,9 @@ export default function PlantList({ plants }: PlantListProps) {
   const [showFilters, setShowFilters] = useState(false)
   // Extract unique areas and types for filters
   const uniqueAreas = useMemo(() => {
-    const areas = plants.map(p => p.area).filter(Boolean) as string[]
+    const areas = plants.map(p => {
+      return formatFullLocation(p.location_type, p.location_custom, p.location_protection, p.area)
+    }).filter(Boolean)
     return Array.from(new Set(areas)).sort()
   }, [plants])
 
@@ -49,7 +52,10 @@ export default function PlantList({ plants }: PlantListProps) {
       }
 
       // Area filter
-      if (selectedArea && plant.area !== selectedArea) return false
+      if (selectedArea) {
+        const plantLocation = formatFullLocation(plant.location_type, plant.location_custom, plant.location_protection, plant.area)
+        if (plantLocation !== selectedArea) return false
+      }
 
       // Type filter
       if (selectedType) {

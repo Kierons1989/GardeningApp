@@ -11,7 +11,7 @@ import { createClient } from '@/lib/supabase/client'
 import TaskActions from '@/components/tasks/task-actions'
 import PlantChat from '@/components/chat/plant-chat'
 import { getCategoryColor } from '@/lib/utils/category-colors'
-import { formatPlantedIn } from '@/lib/utils/formatters'
+import { formatPlantedIn, formatFullLocation } from '@/lib/utils/formatters'
 import { getPlantTypeIcon } from '@/components/ui/botanical-icons'
 import Icon from '@/components/ui/icon'
 import { getPlantedInIcon, getLocationIcon } from '@/components/ui/botanical-icons'
@@ -224,13 +224,13 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
 
             {/* Meta Info */}
             <div className="flex flex-wrap justify-center sm:justify-start gap-3 sm:gap-4 mt-4">
-              {plant.area && (
+              {(plant.location_type || plant.area) && (
                 <span
                   className="inline-flex items-center gap-1.5 text-sm"
                   style={{ color: 'var(--text-secondary)' }}
                 >
                   {getLocationIcon('w-4 h-4', { color: 'var(--text-secondary)' }, 16)}
-                  {plant.area}
+                  {formatFullLocation(plant.location_type, plant.location_custom, plant.location_protection, plant.area)}
                 </span>
               )}
               {plant.planted_in && (

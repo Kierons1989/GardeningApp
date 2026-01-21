@@ -17,13 +17,27 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, common_name, species, plant_type_id, cultivar_name, area, planted_in, notes, image_url } = body as {
+    const {
+      name,
+      common_name,
+      species,
+      plant_type_id,
+      cultivar_name,
+      location_type,
+      location_custom,
+      location_protection,
+      planted_in,
+      notes,
+      image_url
+    } = body as {
       name: string
       common_name?: string
       species?: string
       plant_type_id?: string
       cultivar_name?: string
-      area?: string
+      location_type?: 'front_garden' | 'back_garden' | 'patio' | 'other'
+      location_custom?: string
+      location_protection?: 'greenhouse' | 'polytunnel' | 'cold_frame'
       planted_in?: 'ground' | 'pot' | 'raised_bed'
       notes?: string
       image_url?: string
@@ -100,7 +114,9 @@ export async function POST(request: NextRequest) {
       species: species || null,
       plant_type_id: plant_type_id || null,
       cultivar_name: cultivar_name || null,
-      area: area || null,
+      location_type: location_type || null,
+      location_custom: location_custom || null,
+      location_protection: location_protection || null,
       planted_in: planted_in || null,
       notes: notes || null,
       photo_url: image_url || null,
