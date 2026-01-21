@@ -39,20 +39,21 @@ const PlantCard = memo(function PlantCard({ plant, index }: PlantCardProps) {
 
   return (
     <motion.div
+      className="h-full"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.02, duration: 0.15 }}
     >
       <Link
         href={`/plants/${plant.id}`}
-        className="group block rounded-xl p-6 card-hover"
+        className="group block h-full rounded-xl p-6 card-hover flex flex-col"
         style={{
           background: 'white',
           boxShadow: 'var(--shadow-sm)',
           border: '1px solid var(--stone-100)',
         }}
       >
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-4 flex-1">
           {/* Plant Icon/Image */}
           <div
             className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden"

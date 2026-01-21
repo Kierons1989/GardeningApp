@@ -24,13 +24,14 @@ export default function PlantGridCard({ plant, index }: PlantGridCardProps) {
 
   return (
     <motion.div
+      className="h-full"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 + index * 0.04, duration: 0.25 }}
     >
       <Link
         href={`/plants/${plant.id}`}
-        className="block rounded-lg overflow-hidden transition-all hover:shadow-md group"
+        className="block h-full rounded-lg overflow-hidden transition-all hover:shadow-md group"
         style={{
           background: 'white',
           border: '1px solid var(--stone-200)',
@@ -67,14 +68,12 @@ export default function PlantGridCard({ plant, index }: PlantGridCardProps) {
           >
             {displayName}
           </h4>
-          {subtitle && (
-            <p
-              className="text-xs leading-tight truncate mt-0.5"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              {subtitle}
-            </p>
-          )}
+          <p
+            className="text-xs leading-tight truncate mt-0.5"
+            style={{ color: subtitle ? 'var(--text-muted)' : 'transparent' }}
+          >
+            {subtitle || '\u00A0'}
+          </p>
         </div>
       </Link>
     </motion.div>
