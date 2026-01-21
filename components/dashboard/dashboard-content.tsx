@@ -7,9 +7,10 @@ import type { Plant, TaskHistory, TaskSuggestion, AITask } from '@/types/databas
 import Icon from '@/components/ui/icon'
 import { EmptyGardenIllustration } from '@/components/ui/empty-states'
 import { LawnDashboardWidget } from '@/components/lawn'
+import { MonthlyCalendar } from '@/components/calendar'
+import { RoutinesWidget } from '@/components/routines'
 import JournalHero from './journal-hero'
 import TodaysFocus from './todays-focus'
-import ThisWeekTasks from './this-week-tasks'
 import YourGarden from './your-garden'
 
 interface DashboardContentProps {
@@ -65,11 +66,6 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
 
   const thisWeekTasks = taskSuggestions.filter((t) => t.due_bucket === 'this_week')
   const featuredTask = thisWeekTasks[0] || null
-  const remainingThisWeekTasks = thisWeekTasks.slice(1)
-  const upcomingTasks = taskSuggestions.filter((t) => t.due_bucket === 'next_two_weeks')
-
-  // Combine remaining this week + upcoming for horizontal scroll
-  const horizontalTasks = [...remainingThisWeekTasks, ...upcomingTasks]
 
   const allCaughtUp = thisWeekTasks.length === 0 && plants.length > 0
 
@@ -138,8 +134,11 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
           {/* Today's Focus - Featured Task */}
           <TodaysFocus featuredTask={featuredTask} />
 
-          {/* This Week - Horizontal Scroll */}
-          <ThisWeekTasks tasks={horizontalTasks} />
+          {/* Regular Care Routines */}
+          <RoutinesWidget plants={plants} />
+
+          {/* Monthly Calendar */}
+          <MonthlyCalendar plants={plants} taskHistory={taskHistory} />
 
           {/* Your Garden - Full Width */}
           <YourGarden plants={plants} />

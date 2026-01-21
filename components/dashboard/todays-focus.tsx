@@ -15,7 +15,7 @@ export default function TodaysFocus({ featuredTask }: TodaysFocusProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.1 }}
-      className="mb-8"
+      className="mb-8 max-w-3xl"
     >
       <h2
         className="text-lg font-semibold mb-4"
