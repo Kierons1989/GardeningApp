@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect } from 'react'
+import { Suspense, useEffect, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { usePlants } from '@/lib/queries/use-plants'
 import PlantList from '@/components/plants/plant-list'
@@ -12,11 +12,13 @@ function PlantsPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { showToast } = useToast()
+  const toastShownRef = useRef<string | null>(null)
 
   // Show success toast when plant was just added
   useEffect(() => {
     const addedPlant = searchParams.get('added')
-    if (addedPlant) {
+    if (addedPlant && toastShownRef.current !== addedPlant) {
+      toastShownRef.current = addedPlant
       showToast(`${addedPlant} added to your garden!`, 'success')
       // Clean up the URL without triggering a re-render
       router.replace('/plants', { scroll: false })

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -24,6 +25,7 @@ interface ExistingTypeInfo {
 
 export default function NewPlantPage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [step, setStep] = useState<Step>('search')
   const [userId, setUserId] = useState<string | null>(null)
   const imageUploadRef = useRef<ImageUploadRef>(null)
@@ -414,9 +416,11 @@ export default function NewPlantPage() {
         }
       }
 
+      // Invalidate the plants query so the list refreshes with the new plant
+      await queryClient.invalidateQueries({ queryKey: ['plants'] })
+
       // Navigate with success param to trigger toast on plants page
       router.push('/plants?added=' + encodeURIComponent(cultivarName || middleLevel || userInput))
-      router.refresh()
     } catch (err) {
       console.error('Save error:', err)
       setAiError(err instanceof Error ? err.message : 'Failed to save plant. Please try again.')
