@@ -77,7 +77,8 @@ export async function POST(request: NextRequest) {
       role: msg.role,
       content: msg.content,
       timestamp: msg.timestamp,
-      hasImage: !!msg.image, // Keep a flag that an image was attached
+      hasImage: !!msg.image || (msg.images && msg.images.length > 0), // Keep a flag that image(s) were attached
+      imageCount: msg.images?.length || (msg.image ? 1 : 0), // Track how many images were attached
     }))
 
     const updatedMessages: ChatMessage[] = [

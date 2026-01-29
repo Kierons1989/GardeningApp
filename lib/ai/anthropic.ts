@@ -66,24 +66,29 @@ export class AnthropicProvider implements AIProvider {
       messages[messages.length - 1]?.content || ''
     )
 
-    // Check if any message contains an image
-    const hasImages = messages.some((msg) => msg.image)
+    // Check if any message contains images (single or multiple)
+    const hasImages = messages.some((msg) => msg.image || (msg.images && msg.images.length > 0))
 
     // Convert messages to Anthropic format, handling images
     const anthropicMessages = messages.map((msg) => {
-      if (msg.image) {
-        // Message with image: use content blocks array
+      // Collect all images (support both single image and multiple images)
+      const allImages = msg.images || (msg.image ? [msg.image] : [])
+
+      if (allImages.length > 0) {
+        // Message with image(s): use content blocks array
+        const imageBlocks = allImages.map((img) => ({
+          type: 'image' as const,
+          source: {
+            type: 'base64' as const,
+            media_type: img.mediaType,
+            data: img.base64,
+          },
+        }))
+
         return {
           role: msg.role as 'user' | 'assistant',
           content: [
-            {
-              type: 'image' as const,
-              source: {
-                type: 'base64' as const,
-                media_type: msg.image.mediaType,
-                data: msg.image.base64,
-              },
-            },
+            ...imageBlocks,
             {
               type: 'text' as const,
               text: msg.content,

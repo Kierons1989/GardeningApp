@@ -116,6 +116,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   image?: ChatMessageImage;
+  images?: ChatMessageImage[];  // Support for multiple images (up to 3)
   timestamp?: string;
 }
 
