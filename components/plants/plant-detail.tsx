@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { Plant, TaskHistory, AITask } from '@/types/database'
+import type { Plant, TaskHistory } from '@/types/database'
 import { createClient } from '@/lib/supabase/client'
 import TaskActions from '@/components/tasks/task-actions'
 import PlantChat from '@/components/chat/plant-chat'
@@ -16,6 +16,7 @@ import { getPlantTypeIcon } from '@/components/ui/botanical-icons'
 import Icon from '@/components/ui/icon'
 import { getPlantedInIcon, getLocationIcon } from '@/components/ui/botanical-icons'
 import ImageUpload from '@/components/plants/image-upload'
+import SeasonalCareCalendar from '@/components/plants/seasonal-care-calendar'
 
 interface PlantDetailProps {
   plant: Plant
@@ -26,7 +27,6 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [showChat, setShowChat] = useState(false)
-  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set())
   const [currentTime] = useState(() => Date.now())
   const [showImageEdit, setShowImageEdit] = useState(false)
   const [currentPhotoUrl, setCurrentPhotoUrl] = useState(plant.photo_url)
@@ -63,18 +63,6 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
       router.push('/plants')
     },
   })
-
-  const toggleTask = (taskKey: string) => {
-    setExpandedTasks(prev => {
-      const next = new Set(prev)
-      if (next.has(taskKey)) {
-        next.delete(taskKey)
-      } else {
-        next.add(taskKey)
-      }
-      return next
-    })
-  }
 
   // Get care profile from plant_types relation
   const careProfile = plant.plant_types?.ai_care_profile
@@ -498,144 +486,9 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
         </motion.div>
       </div>
 
-      {/* Full Care Calendar */}
+      {/* Seasonal Care Calendar */}
       {careProfile?.tasks && careProfile.tasks.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-4 sm:mt-6 rounded-2xl p-4 sm:p-6"
-          style={{
-            background: 'white',
-            boxShadow: 'var(--shadow-md)',
-          }}
-        >
-          <div className="flex items-center gap-2 mb-4 sm:mb-6">
-            <Icon name="Calendar" size={20} weight="light" className="w-5 h-5" style={{ color: 'var(--sage-600)' }} ariaLabel="calendar" />
-            <h2
-              className="text-xl font-semibold"
-              style={{
-                fontFamily: 'var(--font-cormorant)',
-                color: 'var(--text-primary)',
-              }}
-            >
-              Full Care Calendar
-            </h2>
-          </div>
-
-          <div className="grid gap-3 sm:gap-4">
-            {getTasksByMonth(careProfile.tasks).map(({ month, tasks }) => (
-              <div
-                key={month}
-                className="p-4 sm:p-6 rounded-xl"
-                style={{ background: 'var(--stone-50)' }}
-              >
-                <h3
-                  className="font-semibold mb-3 sm:mb-4 text-lg"
-                  style={{
-                    fontFamily: 'var(--font-cormorant)',
-                    color: 'var(--text-primary)',
-                  }}
-                >
-                  {month}
-                </h3>
-                <div className="space-y-3 sm:space-y-4">
-                  {tasks.map((task) => {
-                    const taskMonthKey = `${month}-${task.key}`
-                    const isExpanded = expandedTasks.has(taskMonthKey)
-                    return (
-                      <div
-                        key={task.key}
-                        className="rounded-lg overflow-hidden"
-                        style={{
-                          background: 'white',
-                          border: '1px solid var(--stone-200)'
-                        }}
-                      >
-                        <div className="p-3 sm:p-4">
-                          <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3 mb-2">
-                            <span
-                              className="px-2.5 py-1 rounded text-xs font-medium flex-shrink-0 self-start"
-                              style={{
-                                background: getCategoryColor(task.category).bg,
-                                color: getCategoryColor(task.category).text,
-                              }}
-                            >
-                              {task.category.replace(/_/g, ' ')}
-                            </span>
-                            <div className="flex-1">
-                              <h4
-                                className="font-semibold mb-1"
-                                style={{ color: 'var(--text-primary)' }}
-                              >
-                                {task.title}
-                              </h4>
-                              {task.why_this_matters && (
-                                <p
-                                  className="text-sm leading-relaxed"
-                                  style={{ color: 'var(--text-secondary)' }}
-                                >
-                                  {task.why_this_matters}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          {task.how_to && (
-                            <button
-                              onClick={() => toggleTask(taskMonthKey)}
-                              className="mt-3 flex items-center gap-2 text-sm font-medium transition-colors"
-                              style={{
-                                color: 'var(--sage-600)',
-                              }}
-                            >
-                              <Icon name="CaretRight" size={16} weight="light" className="w-4 h-4 transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }} ariaLabel="expand" />
-                              <span className="hidden sm:inline">{isExpanded ? 'Hide detailed instructions' : 'Show detailed instructions'}</span>
-                              <span className="sm:hidden">{isExpanded ? 'Hide instructions' : 'Show instructions'}</span>
-                            </button>
-                          )}
-                        </div>
-
-                        <AnimatePresence>
-                          {isExpanded && task.how_to && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.2 }}
-                              style={{
-                                borderTop: '1px solid var(--stone-200)',
-                                background: 'var(--stone-50)'
-                              }}
-                            >
-                              <div className="p-3 sm:p-4">
-                                <h5
-                                  className="font-semibold mb-3 flex items-center gap-2"
-                                  style={{ color: 'var(--text-primary)' }}
-                                >
-                                  <Icon name="BookOpen" size={16} weight="light" className="w-4 h-4" ariaLabel="how-to" />
-                                  How to do this
-                                </h5>
-                                <div
-                                  className="text-sm leading-relaxed space-y-3"
-                                  style={{ color: 'var(--text-secondary)' }}
-                                >
-                                  {task.how_to.split('\n\n').map((paragraph: string, i: number) => (
-                                    <p key={i}>{paragraph}</p>
-                                  ))}
-                                </div>
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+        <SeasonalCareCalendar tasks={careProfile.tasks} />
       )}
 
       {/* Care Tips */}
@@ -707,45 +560,3 @@ function formatTaskKey(key: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-function getTasksByMonth(tasks: AITask[]) {
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ]
-
-  const tasksByMonth: Record<number, AITask[]> = {}
-
-  tasks.forEach((task) => {
-    const { month_start, month_end } = task
-
-    if (month_start <= month_end) {
-      // Normal range (e.g., March to June)
-      for (let m = month_start; m <= month_end; m++) {
-        if (!tasksByMonth[m]) tasksByMonth[m] = []
-        tasksByMonth[m].push(task)
-      }
-    } else {
-      // Wraps around year (e.g., November to February)
-      for (let m = month_start; m <= 12; m++) {
-        if (!tasksByMonth[m]) tasksByMonth[m] = []
-        tasksByMonth[m].push(task)
-      }
-      for (let m = 1; m <= month_end; m++) {
-        if (!tasksByMonth[m]) tasksByMonth[m] = []
-        tasksByMonth[m].push(task)
-      }
-    }
-  })
-
-  // Convert to array and sort by month
-  return Object.entries(tasksByMonth)
-    .map(([month, tasks]) => ({
-      month: monthNames[parseInt(month) - 1],
-      tasks
-    }))
-    .sort((a, b) => {
-      const aIndex = monthNames.indexOf(a.month)
-      const bIndex = monthNames.indexOf(b.month)
-      return aIndex - bIndex
-    })
-}

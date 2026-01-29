@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
+import ReactMarkdown from 'react-markdown'
 import { CircleNotch, ChatCircle, PaperPlaneRight, Camera, X, ImageSquare, Plus } from '@phosphor-icons/react'
 import type { Plant, TaskHistory, ChatMessage, ChatMessageImage } from '@/types/database'
 import { prepareImageForChat, createImagePreviewUrl, revokeImagePreviewUrl } from '@/lib/utils/image-to-base64'
@@ -424,7 +425,23 @@ export default function PlantChat({ plant }: PlantChatProps) {
                     </div>
                   </div>
                 )}
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+{message.role === 'user' ? (
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                ) : (
+                  <div className="text-sm prose-chat">
+                    <ReactMarkdown
+                      components={{
+                        p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
+                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                        ul: ({ children }) => <ul className="mb-3 last:mb-0 ml-4 space-y-1">{children}</ul>,
+                        ol: ({ children }) => <ol className="mb-3 last:mb-0 ml-4 space-y-1 list-decimal">{children}</ol>,
+                        li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}

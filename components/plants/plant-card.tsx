@@ -18,24 +18,17 @@ const PlantCard = memo(function PlantCard({ plant, index }: PlantCardProps) {
   const careProfile = plant.plant_types?.ai_care_profile
   const taskCount = careProfile?.tasks?.length || 0
   const hasProfile = !!careProfile
-  const topLevel = plant.plant_types?.top_level
-  const middleLevel = plant.plant_types?.middle_level
   const cultivarName = plant.cultivar_name
   const growthHabit = plant.plant_types?.growth_habit || []
 
   // Determine if this is a generic entry (no cultivar specified)
   const isGeneric = !cultivarName || cultivarName.trim() === ''
 
-  // Cultivar-prominent display:
-  // - If has cultivar: show cultivar name large, type as subtitle
-  // - If generic: show middle_level large, top_level as subtitle, with badge
-  const cardTitle = isGeneric
-    ? (middleLevel || topLevel || plant.name)
-    : cultivarName
-
-  const cardSubtitle = isGeneric
-    ? (topLevel && topLevel !== middleLevel ? topLevel : null)
-    : middleLevel
+  // Match the detail page display:
+  // - Title: cultivar_name if exists, otherwise user's plant name
+  // - Subtitle: species (scientific name) or common_name
+  const cardTitle = cultivarName || plant.name
+  const cardSubtitle = plant.species || plant.common_name || null
 
   return (
     <motion.div
