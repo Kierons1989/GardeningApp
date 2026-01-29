@@ -107,9 +107,15 @@ export interface PlantContext {
   climateZone?: number | null;
 }
 
+export interface ChatMessageImage {
+  base64: string;
+  mediaType: 'image/jpeg' | 'image/png' | 'image/webp';
+}
+
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+  image?: ChatMessageImage;
   timestamp?: string;
 }
 

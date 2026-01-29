@@ -71,8 +71,17 @@ export async function POST(request: NextRequest) {
     )
 
     // Add assistant response to messages with timestamp
+    // Strip image data from stored messages to avoid database bloat
+    // (images are only needed for the current request, not history)
+    const messagesForStorage = messages.map((msg: ChatMessage) => ({
+      role: msg.role,
+      content: msg.content,
+      timestamp: msg.timestamp,
+      hasImage: !!msg.image, // Keep a flag that an image was attached
+    }))
+
     const updatedMessages: ChatMessage[] = [
-      ...messages,
+      ...messagesForStorage,
       {
         role: 'assistant' as const,
         content: response,

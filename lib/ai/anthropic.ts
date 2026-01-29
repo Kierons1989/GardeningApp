@@ -66,14 +66,43 @@ export class AnthropicProvider implements AIProvider {
       messages[messages.length - 1]?.content || ''
     )
 
-    // Convert messages to Anthropic format
-    const anthropicMessages = messages.map((msg) => ({
-      role: msg.role as 'user' | 'assistant',
-      content: msg.content,
-    }))
+    // Check if any message contains an image
+    const hasImages = messages.some((msg) => msg.image)
+
+    // Convert messages to Anthropic format, handling images
+    const anthropicMessages = messages.map((msg) => {
+      if (msg.image) {
+        // Message with image: use content blocks array
+        return {
+          role: msg.role as 'user' | 'assistant',
+          content: [
+            {
+              type: 'image' as const,
+              source: {
+                type: 'base64' as const,
+                media_type: msg.image.mediaType,
+                data: msg.image.base64,
+              },
+            },
+            {
+              type: 'text' as const,
+              text: msg.content,
+            },
+          ],
+        }
+      }
+      // Text-only message
+      return {
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+      }
+    })
+
+    // Use Sonnet for vision tasks, Haiku for text-only
+    const model = hasImages ? 'claude-sonnet-4-20250514' : 'claude-3-haiku-20240307'
 
     const response = await this.client.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model,
       max_tokens: 1024,
       system: [
         {
