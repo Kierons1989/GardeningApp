@@ -105,13 +105,6 @@ export default function LoginPage() {
             <label htmlFor="password" className="label mb-0">
               Password
             </label>
-            <Link
-              href="/forgot-password"
-              className="text-sm font-medium transition-colors"
-              style={{ color: 'var(--sage-600)' }}
-            >
-              Forgot password?
-            </Link>
           </div>
           <input
             id="password"

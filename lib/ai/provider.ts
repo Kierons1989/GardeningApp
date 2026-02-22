@@ -1,4 +1,4 @@
-import type { AICareProfile, PlantContext, ChatMessage, ChatContext } from '@/types/database'
+import type { AICareProfile, PlantContext, ChatMessage, ChatContext, GardenChatContext } from '@/types/database'
 import type { PlantVerificationResponse, SpellingSuggestion } from './prompts/plant-verification'
 
 export interface PlantWebVerificationResult {
@@ -15,6 +15,7 @@ export interface PlantWebVerificationResult {
 export interface AIProvider {
   generateCareProfile(plantName: string, context: PlantContext, topLevel?: string): Promise<AICareProfile>
   chat(messages: ChatMessage[], context: ChatContext): Promise<string>
+  gardenChat(messages: ChatMessage[], context: GardenChatContext): Promise<string>
   generateText(prompt: string): Promise<string>
   identifyPlant(query: string): Promise<PlantVerificationResponse>
   verifyPlantWithWebSearch(query: string, initialIdentification: string): Promise<PlantWebVerificationResult>

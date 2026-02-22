@@ -195,21 +195,7 @@ export default function AuthLayout({
         </div>
 
         {/* Footer */}
-        <div
-          className="p-6 text-center text-sm"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          <p>
-            By continuing, you agree to our{' '}
-            <a href="#" className="underline hover:text-sage-600 transition-colors">
-              Terms of Service
-            </a>{' '}
-            and{' '}
-            <a href="#" className="underline hover:text-sage-600 transition-colors">
-              Privacy Policy
-            </a>
-          </p>
-        </div>
+        <div className="p-6" />
       </div>
     </div>
   )

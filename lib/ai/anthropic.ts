@@ -1,8 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { AIProvider, PlantWebVerificationResult } from './provider'
-import type { AICareProfile, PlantContext, ChatMessage, ChatContext } from '@/types/database'
+import type { AICareProfile, PlantContext, ChatMessage, ChatContext, GardenChatContext } from '@/types/database'
 import { buildCareProfilePrompt } from './prompts/care-profile'
 import { buildPlantChatPrompt } from './prompts/plant-chat'
+import { buildGardenChatPrompt } from './prompts/garden-chat'
 import { plantVerificationPrompt, webSearchVerificationPrompt, webSearchDiscoveryPrompt, spellingSuggestionPrompt, type PlantVerificationResponse, type SpellingSuggestion } from './prompts/plant-verification'
 import { plantIdentificationCache } from '@/lib/cache/plant-identification-cache'
 
@@ -104,6 +105,72 @@ export class AnthropicProvider implements AIProvider {
     })
 
     // Use Sonnet for vision tasks, Haiku for text-only
+    const model = hasImages ? 'claude-sonnet-4-20250514' : 'claude-3-haiku-20240307'
+
+    const response = await this.client.messages.create({
+      model,
+      max_tokens: 1024,
+      system: [
+        {
+          type: "text",
+          text: systemPrompt,
+          cache_control: { type: "ephemeral" }
+        }
+      ],
+      messages: anthropicMessages,
+    })
+
+    const textContent = response.content.find((block) => block.type === 'text')
+    if (!textContent || textContent.type !== 'text') {
+      throw new Error('No text content in response')
+    }
+
+    return textContent.text
+  }
+
+  async gardenChat(messages: ChatMessage[], context: GardenChatContext): Promise<string> {
+    const systemPrompt = buildGardenChatPrompt(
+      {
+        plants: context.plants,
+        lawn: context.lawn,
+        plantHistory: context.plantHistory,
+        lawnHistory: context.lawnHistory,
+      },
+      messages[messages.length - 1]?.content || ''
+    )
+
+    const hasImages = messages.some((msg) => msg.image || (msg.images && msg.images.length > 0))
+
+    const anthropicMessages = messages.map((msg) => {
+      const allImages = msg.images || (msg.image ? [msg.image] : [])
+
+      if (allImages.length > 0) {
+        const imageBlocks = allImages.map((img) => ({
+          type: 'image' as const,
+          source: {
+            type: 'base64' as const,
+            media_type: img.mediaType,
+            data: img.base64,
+          },
+        }))
+
+        return {
+          role: msg.role as 'user' | 'assistant',
+          content: [
+            ...imageBlocks,
+            {
+              type: 'text' as const,
+              text: msg.content,
+            },
+          ],
+        }
+      }
+      return {
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+      }
+    })
+
     const model = hasImages ? 'claude-sonnet-4-20250514' : 'claude-3-haiku-20240307'
 
     const response = await this.client.messages.create({

@@ -1,5 +1,7 @@
 // types/database.ts
 
+import type { Lawn, LawnTaskHistory } from './lawn'
+
 export interface Profile {
   id: string;
   display_name: string | null;
@@ -134,6 +136,23 @@ export interface PlantConversation {
   messages: ChatMessage[];
   created_at: string;
   updated_at: string;
+}
+
+export interface GardenConversation {
+  id: string;
+  user_id: string;
+  session_id: string;
+  messages: ChatMessage[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GardenChatContext {
+  plants: Plant[];
+  lawn: Lawn | null;
+  plantHistory: TaskHistory[];
+  lawnHistory: LawnTaskHistory[];
+  currentDate: string;
 }
 
 export interface CareProfileCache {

@@ -8,6 +8,7 @@ import Icon from '@/components/ui/icon'
 import { EmptyGardenIllustration } from '@/components/ui/empty-states'
 import { LawnDashboardWidget } from '@/components/lawn'
 import { MonthlyCalendar } from '@/components/calendar'
+import GardenChat from '@/components/chat/garden-chat'
 import JournalHero from './journal-hero'
 import TodaysFocus from './todays-focus'
 import YourGarden from './your-garden'
@@ -132,6 +133,20 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
         <div className="space-y-8">
           {/* Today's Focus - Featured Task */}
           <TodaysFocus featuredTask={featuredTask} />
+
+          {/* Garden AI Chat */}
+          <section>
+            <h2
+              className="text-lg font-semibold mb-4"
+              style={{
+                fontFamily: 'var(--font-cormorant)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              Garden Chat
+            </h2>
+            <GardenChat />
+          </section>
 
           {/* Monthly Calendar */}
           <MonthlyCalendar plants={plants} taskHistory={taskHistory} />

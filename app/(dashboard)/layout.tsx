@@ -3,9 +3,9 @@
 import { useState, memo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { createClient } from '@/lib/supabase/client'
+
 import { QueryProvider } from '@/components/providers/query-provider'
 import { useProfile } from '@/lib/queries/use-profile'
 import { ToastProvider } from '@/components/ui/toast'
@@ -72,15 +72,8 @@ const NavItem = memo(function NavItem({
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const router = useRouter()
   const { data: profile } = useProfile()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  async function handleSignOut() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
 
   const displayName = profile?.display_name || 'Gardener'
   const displayInitial = displayName[0]?.toUpperCase() || 'G'
@@ -151,13 +144,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               >
                 {displayName}
               </p>
-              <button
-                onClick={handleSignOut}
-                className="text-xs hover:underline"
+              <p
+                className="text-xs"
                 style={{ color: 'var(--text-muted)' }}
               >
-                Sign out
-              </button>
+                My garden
+              </p>
             </div>
           </div>
         </div>
@@ -238,7 +230,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                       {displayName}
                     </p>
                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                      View profile
+                      Settings
                     </p>
                   </div>
                 </div>
@@ -280,16 +272,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 </ul>
               </nav>
 
-              {/* Sign Out */}
-              <div className="p-4 border-t" style={{ borderColor: 'var(--stone-200)' }}>
-                <button
-                  onClick={handleSignOut}
-                  className="w-full btn btn-secondary"
-                >
-                  <Icon name="SignOut" size={18} weight="light" ariaLabel="sign out" />
-                  Sign out
-                </button>
-              </div>
+              {/* Bottom spacer */}
+              <div className="p-4" />
             </motion.div>
           </motion.div>
         )}
