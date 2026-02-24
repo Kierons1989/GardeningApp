@@ -26,46 +26,25 @@ export async function POST(request: NextRequest) {
     }
 
     const aiProvider = getAIProvider()
+    const result = await aiProvider.searchPlant(userInput.trim())
 
-    // Use the same identifyPlant method as the search API
-    const result = await aiProvider.identifyPlant(userInput.trim())
-
-    // If plant wasn't identified or confidence is unknown, try web search discovery
-    if (!result.identified || result.confidence === 'unknown') {
-      const webDiscovery = await aiProvider.discoverPlantFromWeb(userInput.trim())
-
-      if (webDiscovery.identified && webDiscovery.plant) {
-        // Web search found the plant - use this result
-        const plant = webDiscovery.plant
-        const identification: PlantIdentification = {
-          top_level: plant.top_level,
-          middle_level: plant.middle_level,
-          cultivar_name: plant.cultivar_name,
-          growth_habit: plant.growth_habit,
-          confidence: 'high'
-        }
-
-        return NextResponse.json(identification)
-      }
-
-      // Web search also failed
+    if (!result.identified || !result.plant) {
       return NextResponse.json(
         {
           error: 'Could not identify this plant. Please try a different name or add it as a generic plant type (e.g., "rose", "dahlia").',
-          reason: webDiscovery.reason || result.reason
+          reason: result.reason
         },
         { status: 400 }
       )
     }
 
-    // Transform the verification response to PlantIdentification format
-    const plant = result.plant!
+    const plant = result.plant
     const identification: PlantIdentification = {
       top_level: plant.top_level,
       middle_level: plant.middle_level,
       cultivar_name: plant.cultivar_name,
       growth_habit: plant.growth_habit,
-      confidence: result.confidence === 'verified' ? 'high' : 'medium'
+      confidence: 'high'
     }
 
     return NextResponse.json(identification)

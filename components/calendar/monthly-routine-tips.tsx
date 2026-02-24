@@ -22,7 +22,7 @@ export default function MonthlyRoutineTips({ plants, viewingMonth }: MonthlyRout
     const routineMap = new Map<TaskCategory, Map<string, string>>()
 
     plants.forEach((plant) => {
-      const careProfile = plant.plant_types?.ai_care_profile
+      const careProfile = plant.ai_care_profile || plant.plant_types?.ai_care_profile
       if (!careProfile?.tasks) return
 
       careProfile.tasks.forEach((task: AITask) => {

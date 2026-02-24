@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { topLevel, middleLevel, growthHabit, area, plantedIn } = body
+    const { topLevel, middleLevel, growthHabit, area, plantedIn, plantState } = body
 
     if (!topLevel || !middleLevel) {
       return NextResponse.json(
@@ -33,7 +33,8 @@ export async function POST(request: NextRequest) {
       .eq('middle_level', middleLevel)
       .single()
 
-    if (existingType && existingType.ai_care_profile) {
+    // If type exists and has profile AND no plant-specific state was provided, reuse cached profile
+    if (existingType && existingType.ai_care_profile && !plantState) {
       return NextResponse.json({
         plantType: existingType,
         careProfile: existingType.ai_care_profile
@@ -47,12 +48,13 @@ export async function POST(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    // Generate care profile for this plant type
+    // Generate care profile for this plant type (with optional plant state context)
     const context: PlantContext = {
       area: area || null,
       plantedIn: plantedIn || null,
       currentMonth: new Date().getMonth() + 1,
       climateZone: profile?.climate_zone || null,
+      plantState: plantState || null,
     }
 
     const aiProvider = getAIProvider()

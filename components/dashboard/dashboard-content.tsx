@@ -25,7 +25,7 @@ export default function DashboardContent({ plants, taskHistory }: DashboardConte
     const suggestions: TaskSuggestion[] = []
 
     plants.forEach((plant) => {
-      const careProfile = plant.plant_types?.ai_care_profile
+      const careProfile = plant.ai_care_profile || plant.plant_types?.ai_care_profile
       if (!careProfile?.tasks) return
 
       careProfile.tasks.forEach((task: AITask) => {

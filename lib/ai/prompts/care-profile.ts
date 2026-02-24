@@ -18,13 +18,53 @@ export function buildCareProfilePrompt(
     ? `USDA Zone ${context.climateZone}`
     : 'General UK (Zone 8-9)'
 
-  return `You are a UK gardening expert. Generate a comprehensive care profile for this plant type.
+  // Plant state context
+  const plantState = context?.plantState
+  let plantStateSection = ''
+  if (plantState) {
+    const stageLabels: Record<string, string> = {
+      seed: 'Seeds (not yet germinated)',
+      seedling: 'Seedling (recently sprouted)',
+      juvenile: 'Juvenile (young but established)',
+      mature: 'Mature (fully established)',
+      dormant: 'Dormant (winter rest period)',
+      flowering: 'Flowering',
+      fruiting: 'Fruiting/producing',
+    }
+    const envLabels: Record<string, string> = {
+      indoor: 'Indoors (windowsill/grow light)',
+      outdoor: 'Outdoors in the garden',
+      greenhouse: 'In a greenhouse',
+      cold_frame: 'In a cold frame',
+    }
+    const healthLabels: Record<string, string> = {
+      healthy: 'Healthy',
+      struggling: 'Struggling (needs attention)',
+      diseased: 'Diseased',
+      recovering: 'Recovering from issues',
+    }
+
+    plantStateSection = `
+CURRENT PLANT STATE:
+- Growth stage: ${stageLabels[plantState.growth_stage] || plantState.growth_stage}
+- Environment: ${envLabels[plantState.environment] || plantState.environment}
+- Health: ${healthLabels[plantState.health_status] || plantState.health_status}${plantState.health_notes ? `\n- Health notes: ${plantState.health_notes}` : ''}${plantState.date_planted ? `\n- Date planted: ${plantState.date_planted}` : ''}
+
+CRITICAL: Tailor ALL tasks to this plant's CURRENT STATE. For example:
+- If the plant is a seedling indoors, focus on indoor care, hardening off, and transplanting — NOT winter protection or outdoor pruning
+- If the plant is dormant, focus on winter care and preparation for spring
+- If the plant is diseased, prioritise treatment and recovery tasks
+- Adjust task timing based on the growth stage — a seed planted today has different needs than a mature plant
+- Consider the environment: indoor plants don't need frost protection, greenhouse plants have different ventilation needs`
+  }
+
+  return `You are a UK gardening expert. Generate a comprehensive care profile for this plant${plantState ? " based on its current state" : " type"}.
 
 PLANT TYPE: ${plantDescription}
 LOCATION: ${context?.area || 'Not specified'}
 PLANTED IN: ${context?.plantedIn || 'Not specified'}
 CLIMATE ZONE: ${zoneInfo}
-CURRENT MONTH: ${monthNames[currentMonth - 1]}
+CURRENT MONTH: ${monthNames[currentMonth - 1]}${plantStateSection}
 
 Respond with JSON matching this exact schema:
 {

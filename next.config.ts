@@ -13,6 +13,36 @@ const nextConfig: NextConfig = {
         hostname: 'perenual.com',
         pathname: '/storage/**',
       },
+      {
+        protocol: 'https',
+        hostname: '**.rhs.org.uk',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'upload.wikimedia.org',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.crocus.co.uk',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.thompson-morgan.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.davidaustinroses.co.uk',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.gardenersworld.com',
+        pathname: '/**',
+      },
     ],
   },
 };

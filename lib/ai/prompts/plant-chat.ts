@@ -16,7 +16,7 @@ export function buildPlantChatPrompt(
     })
     .join('\n')
 
-  const careProfile = plant.plant_types?.ai_care_profile
+  const careProfile = plant.ai_care_profile || plant.plant_types?.ai_care_profile
   const tasks = careProfile?.tasks
     ?.map((t) => `- ${t.title} (${t.category}, ${formatMonthRange(t.month_start, t.month_end)})`)
     .join('\n')

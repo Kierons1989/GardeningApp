@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { PlantIdentification, PlantSearchResult, LocationType, LocationProtection } from '@/types/database'
+import type { PlantIdentification, PlantSearchResult, LocationType, LocationProtection, GrowthStage, PlantEnvironment } from '@/types/database'
 import { SpinningLeafLoader, GrowingPlantLoader } from '@/components/ui/botanical-loader'
 import Icon from '@/components/ui/icon'
 import ImageUpload, { type ImageUploadRef } from '@/components/plants/image-upload'
@@ -38,6 +38,8 @@ export default function NewPlantPage() {
   const [plantedIn, setPlantedIn] = useState<'ground' | 'pot' | 'raised_bed' | ''>('')
   const [notes, setNotes] = useState('')
   const [pendingImage, setPendingImage] = useState<Blob | null>(null)
+  const [growthStage, setGrowthStage] = useState<GrowthStage>('mature')
+  const [plantEnvironment, setPlantEnvironment] = useState<PlantEnvironment>('outdoor')
 
   // Selected plant from search (if any)
   const [selectedPlant, setSelectedPlant] = useState<PlantSearchResult | null>(null)
@@ -350,6 +352,12 @@ export default function NewPlantPage() {
             growthHabit,
             area: areaForContext,
             planted_in: plantedIn || undefined,
+            plantState: {
+              growth_stage: growthStage,
+              environment: plantEnvironment,
+              health_status: 'healthy',
+              last_updated: new Date().toISOString(),
+            },
           }),
         })
 
@@ -380,6 +388,12 @@ export default function NewPlantPage() {
           planted_in: plantedIn || undefined,
           notes: notes || undefined,
           image_url: selectedPlant?.image_url || undefined,
+          plant_state: {
+            growth_stage: growthStage,
+            environment: plantEnvironment,
+            health_status: 'healthy',
+            last_updated: new Date().toISOString(),
+          },
         }),
       })
 
@@ -888,6 +902,93 @@ export default function NewPlantPage() {
                         </div>
                         <span className="text-sm font-medium">
                           {option.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="label">
+                    Growth stage
+                  </label>
+                  <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                    {([
+                      { value: 'seed', label: 'Seed', iconName: 'Grain' },
+                      { value: 'seedling', label: 'Seedling', iconName: 'Sprout' },
+                      { value: 'juvenile', label: 'Young', iconName: 'Plant' },
+                      { value: 'mature', label: 'Mature', iconName: 'Tree' },
+                      { value: 'dormant', label: 'Dormant', iconName: 'Moon' },
+                      { value: 'flowering', label: 'Flowering', iconName: 'Flower' },
+                      { value: 'fruiting', label: 'Fruiting', iconName: 'Orange' },
+                    ] as const).map((stage) => (
+                      <button
+                        key={stage.value}
+                        type="button"
+                        onClick={() => setGrowthStage(stage.value)}
+                        className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all"
+                        style={{
+                          borderColor: growthStage === stage.value ? 'var(--sage-500)' : 'var(--stone-200)',
+                          background: growthStage === stage.value ? 'var(--sage-50)' : 'white',
+                        }}
+                      >
+                        <Icon
+                          name={stage.iconName}
+                          size={20}
+                          weight="light"
+                          style={{
+                            color: growthStage === stage.value ? 'var(--sage-600)' : 'var(--text-muted)',
+                          }}
+                        />
+                        <span
+                          className="text-xs font-medium"
+                          style={{
+                            color: growthStage === stage.value ? 'var(--sage-700)' : 'var(--text-secondary)',
+                          }}
+                        >
+                          {stage.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="label">
+                    Environment
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {([
+                      { value: 'indoor', label: 'Indoor', iconName: 'House' },
+                      { value: 'outdoor', label: 'Outdoor', iconName: 'Sun' },
+                      { value: 'greenhouse', label: 'Greenhouse', iconName: 'Warehouse' },
+                      { value: 'cold_frame', label: 'Cold frame', iconName: 'Package' },
+                    ] as const).map((env) => (
+                      <button
+                        key={env.value}
+                        type="button"
+                        onClick={() => setPlantEnvironment(env.value)}
+                        className="flex items-center gap-2 p-3 rounded-xl border-2 transition-all"
+                        style={{
+                          borderColor: plantEnvironment === env.value ? 'var(--sage-500)' : 'var(--stone-200)',
+                          background: plantEnvironment === env.value ? 'var(--sage-50)' : 'white',
+                        }}
+                      >
+                        <Icon
+                          name={env.iconName}
+                          size={18}
+                          weight="light"
+                          style={{
+                            color: plantEnvironment === env.value ? 'var(--sage-600)' : 'var(--text-muted)',
+                          }}
+                        />
+                        <span
+                          className="text-sm font-medium"
+                          style={{
+                            color: plantEnvironment === env.value ? 'var(--sage-700)' : 'var(--text-secondary)',
+                          }}
+                        >
+                          {env.label}
                         </span>
                       </button>
                     ))}

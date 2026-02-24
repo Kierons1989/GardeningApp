@@ -15,7 +15,7 @@ interface PlantCardProps {
 }
 
 const PlantCard = memo(function PlantCard({ plant, index }: PlantCardProps) {
-  const careProfile = plant.plant_types?.ai_care_profile
+  const careProfile = plant.ai_care_profile || plant.plant_types?.ai_care_profile
   const taskCount = careProfile?.tasks?.length || 0
   const hasProfile = !!careProfile
   const cultivarName = plant.cultivar_name

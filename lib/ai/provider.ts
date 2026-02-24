@@ -1,26 +1,12 @@
 import type { AICareProfile, PlantContext, ChatMessage, ChatContext, GardenChatContext } from '@/types/database'
-import type { PlantVerificationResponse, SpellingSuggestion } from './prompts/plant-verification'
-
-export interface PlantWebVerificationResult {
-  verified: boolean;
-  scientific_name?: string;
-  source_url?: string;
-  corrections?: {
-    top_level?: string;
-    middle_level?: string;
-  };
-  reason?: string;
-}
+import type { PlantVerificationResponse } from './prompts/plant-verification'
 
 export interface AIProvider {
   generateCareProfile(plantName: string, context: PlantContext, topLevel?: string): Promise<AICareProfile>
   chat(messages: ChatMessage[], context: ChatContext): Promise<string>
   gardenChat(messages: ChatMessage[], context: GardenChatContext): Promise<string>
   generateText(prompt: string): Promise<string>
-  identifyPlant(query: string): Promise<PlantVerificationResponse>
-  verifyPlantWithWebSearch(query: string, initialIdentification: string): Promise<PlantWebVerificationResult>
-  discoverPlantFromWeb(query: string): Promise<PlantVerificationResponse>
-  suggestSpellingCorrection(query: string): Promise<SpellingSuggestion>
+  searchPlant(query: string): Promise<PlantVerificationResponse>
 }
 
 export interface AIResponse<T> {

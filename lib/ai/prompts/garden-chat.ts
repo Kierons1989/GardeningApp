@@ -17,7 +17,7 @@ export function buildGardenChatPrompt(
 
   // Summarise each plant concisely
   const plantSummaries = context.plants.map((plant) => {
-    const careProfile = plant.plant_types?.ai_care_profile
+    const careProfile = plant.ai_care_profile || plant.plant_types?.ai_care_profile
     const activeTasks = careProfile?.tasks
       ?.filter((t) => isTaskInWindow(t.month_start, t.month_end, currentMonth))
       .map((t) => t.title)
@@ -27,7 +27,12 @@ export function buildGardenChatPrompt(
       ? plant.location_type.replace('_', ' ')
       : plant.area || 'unspecified location'
 
-    return `- ${plant.name} (${plant.plant_types?.middle_level || plant.common_name || 'unknown type'}) — ${location}, ${plant.planted_in || 'unknown'}${activeTasks ? `. Current tasks: ${activeTasks}` : ''}`
+    // Include plant state context if available
+    const stateInfo = plant.plant_state
+      ? ` [${plant.plant_state.growth_stage}, ${plant.plant_state.environment}${plant.plant_state.health_status !== 'healthy' ? `, health: ${plant.plant_state.health_status}` : ''}]`
+      : ''
+
+    return `- ${plant.name} (${plant.plant_types?.middle_level || plant.common_name || 'unknown type'}) — ${location}, ${plant.planted_in || 'unknown'}${stateInfo}${activeTasks ? `. Current tasks: ${activeTasks}` : ''}`
   }).join('\n')
 
   // Recent plant care activity

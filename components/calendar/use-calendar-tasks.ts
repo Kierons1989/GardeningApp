@@ -24,7 +24,8 @@ export function useCalendarTasks(
     const viewingMonthNum = viewingMonth.getMonth() + 1 // 1-12
 
     plants.forEach((plant) => {
-      const careProfile = plant.plant_types?.ai_care_profile
+      // Prefer per-plant care profile (from plant state updates) over shared plant_type profile
+      const careProfile = plant.ai_care_profile || plant.plant_types?.ai_care_profile
       if (!careProfile?.tasks) return
 
       careProfile.tasks.forEach((task) => {

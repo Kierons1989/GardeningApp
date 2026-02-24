@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
       location_protection,
       planted_in,
       notes,
-      image_url
+      image_url,
+      plant_state
     } = body as {
       name: string
       common_name?: string
@@ -41,6 +42,7 @@ export async function POST(request: NextRequest) {
       planted_in?: 'ground' | 'pot' | 'raised_bed'
       notes?: string
       image_url?: string
+      plant_state?: Record<string, unknown>
     }
 
     if (!name) {
@@ -120,6 +122,7 @@ export async function POST(request: NextRequest) {
       planted_in: planted_in || null,
       notes: notes || null,
       photo_url: image_url || null,
+      plant_state: plant_state || null,
     }).select().single()
 
     if (error) {

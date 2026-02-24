@@ -16,6 +16,7 @@ import { getPlantTypeIcon } from '@/components/ui/botanical-icons'
 import Icon from '@/components/ui/icon'
 import { getPlantedInIcon, getLocationIcon } from '@/components/ui/botanical-icons'
 import ImageUpload from '@/components/plants/image-upload'
+import PlantStateEditor from '@/components/plants/plant-state-editor'
 import SeasonalCareCalendar from '@/components/plants/seasonal-care-calendar'
 
 interface PlantDetailProps {
@@ -23,9 +24,10 @@ interface PlantDetailProps {
   taskHistory: TaskHistory[]
 }
 
-export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
+export default function PlantDetail({ plant: initialPlant, taskHistory }: PlantDetailProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
+  const [plant, setPlant] = useState(initialPlant)
   const [showChat, setShowChat] = useState(false)
   const [currentTime] = useState(() => Date.now())
   const [showImageEdit, setShowImageEdit] = useState(false)
@@ -64,8 +66,8 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
     },
   })
 
-  // Get care profile from plant_types relation
-  const careProfile = plant.plant_types?.ai_care_profile
+  // Get care profile: prefer per-plant profile (from state updates) over shared plant_type profile
+  const careProfile = plant.ai_care_profile || plant.plant_types?.ai_care_profile
 
   const activeTasks = useMemo(() => {
     const currentMonth = new Date(currentTime).getMonth() + 1
@@ -359,6 +361,14 @@ export default function PlantDetail({ plant, taskHistory }: PlantDetailProps) {
           <PlantChat plant={plant} taskHistory={taskHistory} />
         </motion.div>
       )}
+
+      {/* Plant State Editor */}
+      <div className="mb-6">
+        <PlantStateEditor
+          plant={plant}
+          onUpdate={(updatedPlant) => setPlant(updatedPlant)}
+        />
+      </div>
 
       <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
         {/* Current Tasks */}

@@ -1,11 +1,24 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { AIProvider, PlantWebVerificationResult } from './provider'
+import type { AIProvider } from './provider'
 import type { AICareProfile, PlantContext, ChatMessage, ChatContext, GardenChatContext } from '@/types/database'
 import { buildCareProfilePrompt } from './prompts/care-profile'
 import { buildPlantChatPrompt } from './prompts/plant-chat'
 import { buildGardenChatPrompt } from './prompts/garden-chat'
-import { plantVerificationPrompt, webSearchVerificationPrompt, webSearchDiscoveryPrompt, spellingSuggestionPrompt, type PlantVerificationResponse, type SpellingSuggestion } from './prompts/plant-verification'
+import { unifiedPlantSearchPrompt, type PlantVerificationResponse } from './prompts/plant-verification'
 import { plantIdentificationCache } from '@/lib/cache/plant-identification-cache'
+
+function stripMarkdownCodeBlock(text: string): string {
+  let str = text.trim()
+  if (str.startsWith('```json')) {
+    str = str.slice(7)
+  } else if (str.startsWith('```')) {
+    str = str.slice(3)
+  }
+  if (str.endsWith('```')) {
+    str = str.slice(0, -3)
+  }
+  return str.trim()
+}
 
 export class AnthropicProvider implements AIProvider {
   private client: Anthropic
@@ -30,29 +43,14 @@ export class AnthropicProvider implements AIProvider {
       ],
     })
 
-    // Extract text content from response
     const textContent = response.content.find((block) => block.type === 'text')
     if (!textContent || textContent.type !== 'text') {
       throw new Error('No text content in response')
     }
 
-    // Parse JSON from response
-    let jsonStr = textContent.text.trim()
-
-    // Remove markdown code blocks if present
-    if (jsonStr.startsWith('```json')) {
-      jsonStr = jsonStr.slice(7)
-    } else if (jsonStr.startsWith('```')) {
-      jsonStr = jsonStr.slice(3)
-    }
-    if (jsonStr.endsWith('```')) {
-      jsonStr = jsonStr.slice(0, -3)
-    }
-    jsonStr = jsonStr.trim()
-
+    const jsonStr = stripMarkdownCodeBlock(textContent.text)
     const parsed = JSON.parse(jsonStr)
 
-    // Add metadata
     return {
       ...parsed,
       generated_at: new Date().toISOString(),
@@ -60,23 +58,18 @@ export class AnthropicProvider implements AIProvider {
   }
 
   async chat(messages: ChatMessage[], context: ChatContext): Promise<string> {
-    // Build system context from the first message
     const systemPrompt = buildPlantChatPrompt(
       context.plant,
       context.history,
       messages[messages.length - 1]?.content || ''
     )
 
-    // Check if any message contains images (single or multiple)
     const hasImages = messages.some((msg) => msg.image || (msg.images && msg.images.length > 0))
 
-    // Convert messages to Anthropic format, handling images
     const anthropicMessages = messages.map((msg) => {
-      // Collect all images (support both single image and multiple images)
       const allImages = msg.images || (msg.image ? [msg.image] : [])
 
       if (allImages.length > 0) {
-        // Message with image(s): use content blocks array
         const imageBlocks = allImages.map((img) => ({
           type: 'image' as const,
           source: {
@@ -97,14 +90,12 @@ export class AnthropicProvider implements AIProvider {
           ],
         }
       }
-      // Text-only message
       return {
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
       }
     })
 
-    // Use Sonnet for vision tasks, Haiku for text-only
     const model = hasImages ? 'claude-sonnet-4-20250514' : 'claude-3-haiku-20240307'
 
     const response = await this.client.messages.create({
@@ -214,135 +205,14 @@ export class AnthropicProvider implements AIProvider {
     return textContent.text
   }
 
-  async identifyPlant(query: string): Promise<PlantVerificationResponse> {
+  async searchPlant(query: string): Promise<PlantVerificationResponse> {
     // Check cache first
     const cached = plantIdentificationCache.get(query)
     if (cached) {
       return cached
     }
 
-    const prompt = plantVerificationPrompt(query)
-
-    const response = await this.client.messages.create({
-      model: 'claude-sonnet-4-20250514', // Use Sonnet for better plant knowledge
-      max_tokens: 1024,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    })
-
-    const textContent = response.content.find((block) => block.type === 'text')
-    if (!textContent || textContent.type !== 'text') {
-      throw new Error('No text content in response')
-    }
-
-    // Parse JSON from response
-    let jsonStr = textContent.text.trim()
-
-    // Remove markdown code blocks if present
-    if (jsonStr.startsWith('```json')) {
-      jsonStr = jsonStr.slice(7)
-    } else if (jsonStr.startsWith('```')) {
-      jsonStr = jsonStr.slice(3)
-    }
-    if (jsonStr.endsWith('```')) {
-      jsonStr = jsonStr.slice(0, -3)
-    }
-    jsonStr = jsonStr.trim()
-
-    try {
-      const parsed = JSON.parse(jsonStr) as PlantVerificationResponse
-
-      // Cache successful identifications (both found and not found)
-      plantIdentificationCache.set(query, parsed)
-
-      return parsed
-    } catch {
-      // If parsing fails, return unknown (don't cache failures)
-      return {
-        identified: false,
-        confidence: 'unknown',
-        reason: 'Failed to parse AI response',
-      }
-    }
-  }
-
-  async verifyPlantWithWebSearch(query: string, initialIdentification: string): Promise<PlantWebVerificationResult> {
-    const prompt = webSearchVerificationPrompt(query, initialIdentification)
-
-    try {
-      // Use Claude with web search tool for verification
-      const response = await this.client.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        tools: [
-          {
-            type: 'web_search_20250305',
-            name: 'web_search',
-            max_uses: 3,
-          },
-        ],
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-      })
-
-      // Extract text content from response (may include tool use results)
-      const textContent = response.content.find((block) => block.type === 'text')
-      if (!textContent || textContent.type !== 'text') {
-        return {
-          verified: false,
-          reason: 'No verification response received',
-        }
-      }
-
-      // Parse JSON from response
-      let jsonStr = textContent.text.trim()
-
-      // Remove markdown code blocks if present
-      if (jsonStr.startsWith('```json')) {
-        jsonStr = jsonStr.slice(7)
-      } else if (jsonStr.startsWith('```')) {
-        jsonStr = jsonStr.slice(3)
-      }
-      if (jsonStr.endsWith('```')) {
-        jsonStr = jsonStr.slice(0, -3)
-      }
-      jsonStr = jsonStr.trim()
-
-      try {
-        const parsed = JSON.parse(jsonStr) as PlantWebVerificationResult
-        return parsed
-      } catch {
-        return {
-          verified: false,
-          reason: 'Failed to parse verification response',
-        }
-      }
-    } catch (error) {
-      console.error('Web search verification error:', error)
-      return {
-        verified: false,
-        reason: 'Web search verification failed',
-      }
-    }
-  }
-
-  async discoverPlantFromWeb(query: string): Promise<PlantVerificationResponse> {
-    // Check cache first (web discovery results are cached with 'web:' prefix)
-    const cacheKey = `web:${query}`
-    const cached = plantIdentificationCache.get(cacheKey)
-    if (cached) {
-      return cached
-    }
-
-    const prompt = webSearchDiscoveryPrompt(query)
+    const prompt = unifiedPlantSearchPrompt(query)
 
     try {
       const response = await this.client.messages.create({
@@ -363,117 +233,51 @@ export class AnthropicProvider implements AIProvider {
         ],
       })
 
-      const textContent = response.content.find((block) => block.type === 'text')
-      if (!textContent || textContent.type !== 'text') {
+      // Extract the last text block (after any web search tool use)
+      const textBlocks = response.content.filter((block) => block.type === 'text')
+      const lastTextBlock = textBlocks[textBlocks.length - 1]
+
+      if (!lastTextBlock || lastTextBlock.type !== 'text') {
         return {
           identified: false,
           confidence: 'unknown',
-          reason: 'No response received from web search discovery',
+          reason: 'No text response received from AI',
         }
       }
 
-      let jsonStr = textContent.text.trim()
-
-      if (jsonStr.startsWith('```json')) {
-        jsonStr = jsonStr.slice(7)
-      } else if (jsonStr.startsWith('```')) {
-        jsonStr = jsonStr.slice(3)
-      }
-      if (jsonStr.endsWith('```')) {
-        jsonStr = jsonStr.slice(0, -3)
-      }
-      jsonStr = jsonStr.trim()
+      const jsonStr = stripMarkdownCodeBlock(lastTextBlock.text)
 
       try {
-        const parsed = JSON.parse(jsonStr) as PlantVerificationResponse & { source_url?: string }
+        const parsed = JSON.parse(jsonStr) as PlantVerificationResponse
 
+        // Validate: if identified, must have plant data with required fields
         if (parsed.identified && parsed.plant) {
           if (!parsed.plant.common_name || !parsed.plant.top_level || !parsed.plant.middle_level) {
             return {
               identified: false,
               confidence: 'unknown',
-              reason: 'Incomplete plant information from web search',
+              reason: 'Incomplete plant information from AI',
             }
           }
         }
 
-        // Cache web discovery results
-        plantIdentificationCache.set(cacheKey, parsed)
+        // Cache the result
+        plantIdentificationCache.set(query, parsed)
 
         return parsed
       } catch {
         return {
           identified: false,
           confidence: 'unknown',
-          reason: 'Failed to parse web search discovery response',
+          reason: 'Failed to parse AI response',
         }
       }
     } catch (error) {
-      console.error('Web search discovery error:', error)
+      console.error('Plant search error:', error)
       return {
         identified: false,
         confidence: 'unknown',
-        reason: 'Web search discovery failed due to an error',
-      }
-    }
-  }
-
-  async suggestSpellingCorrection(query: string): Promise<SpellingSuggestion> {
-    const prompt = spellingSuggestionPrompt(query)
-
-    try {
-      const response = await this.client.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        tools: [
-          {
-            type: 'web_search_20250305',
-            name: 'web_search',
-            max_uses: 3,
-          },
-        ],
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-      })
-
-      const textContent = response.content.find((block) => block.type === 'text')
-      if (!textContent || textContent.type !== 'text') {
-        return {
-          hasSuggestion: false,
-          reason: 'No response received from spelling suggestion',
-        }
-      }
-
-      let jsonStr = textContent.text.trim()
-
-      if (jsonStr.startsWith('```json')) {
-        jsonStr = jsonStr.slice(7)
-      } else if (jsonStr.startsWith('```')) {
-        jsonStr = jsonStr.slice(3)
-      }
-      if (jsonStr.endsWith('```')) {
-        jsonStr = jsonStr.slice(0, -3)
-      }
-      jsonStr = jsonStr.trim()
-
-      try {
-        const parsed = JSON.parse(jsonStr) as SpellingSuggestion
-        return parsed
-      } catch {
-        return {
-          hasSuggestion: false,
-          reason: 'Failed to parse spelling suggestion response',
-        }
-      }
-    } catch (error) {
-      console.error('Spelling suggestion error:', error)
-      return {
-        hasSuggestion: false,
-        reason: 'Spelling suggestion failed due to an error',
+        reason: 'Plant search failed due to an error',
       }
     }
   }

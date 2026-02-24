@@ -20,6 +20,19 @@ export interface PlantType {
   updated_at: string;
 }
 
+export type GrowthStage = 'seed' | 'seedling' | 'juvenile' | 'mature' | 'dormant' | 'flowering' | 'fruiting';
+export type PlantEnvironment = 'indoor' | 'outdoor' | 'greenhouse' | 'cold_frame';
+export type HealthStatus = 'healthy' | 'struggling' | 'diseased' | 'recovering';
+
+export interface PlantState {
+  growth_stage: GrowthStage;
+  environment: PlantEnvironment;
+  health_status: HealthStatus;
+  health_notes?: string;
+  date_planted?: string;
+  last_updated: string;
+}
+
 export interface Plant {
   id: string;
   user_id: string;
@@ -36,6 +49,8 @@ export interface Plant {
   planted_in: 'ground' | 'pot' | 'raised_bed' | null;
   notes: string | null;
   photo_url: string | null;
+  plant_state: PlantState | null;
+  ai_care_profile: AICareProfile | null;
   created_at: string;
   updated_at: string;
 }
@@ -107,6 +122,7 @@ export interface PlantContext {
   plantedIn?: string | null;
   currentMonth: number;
   climateZone?: number | null;
+  plantState?: PlantState | null;
 }
 
 export interface ChatMessageImage {
