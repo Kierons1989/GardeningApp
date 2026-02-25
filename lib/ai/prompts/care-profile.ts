@@ -74,7 +74,7 @@ CRITICAL: Tailor ALL tasks to this plant's CURRENT STATE. For example:
     if (parts.length > 0) {
       searchDataSection = `
 
-PREVIOUSLY VERIFIED PLANT DATA (from authoritative sources — use as baseline, supplement with web search for anything missing):
+PREVIOUSLY VERIFIED PLANT DATA (from authoritative sources — use this as your baseline):
 ${parts.map(p => `- ${p}`).join('\n')}`
     }
   }
@@ -111,7 +111,7 @@ Respond with JSON matching this exact schema:
 }
 
 IMPORTANT GUIDELINES:
-- If verified plant data is provided above, use it as your starting point. Use web search to find ADDITIONAL UK-specific care guidance (especially from RHS) rather than re-discovering basic facts.
+- If verified plant data is provided above, use it as your starting point and ensure the care profile is consistent with it.
 - All timing and advice should be UK-specific, tailored to the specified climate zone
 - Zone 7 (coldest): Scottish Highlands - later springs, earlier frosts, more winter protection needed
 - Zone 8 (moderate): Most of UK - standard UK gardening calendar

@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { getAIProvider } from '@/lib/ai'
 import type { PlantContext, AICareProfile } from '@/types/database'
 
+export const maxDuration = 120
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()

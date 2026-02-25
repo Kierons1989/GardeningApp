@@ -21,6 +21,66 @@ function stripMarkdownCodeBlock(text: string): string {
   return str.trim()
 }
 
+/**
+ * Extracts the first valid JSON object from a string that may contain
+ * surrounding text (common with web search responses).
+ */
+function extractJsonObject(text: string): string | null {
+  // First try stripping markdown code blocks
+  const stripped = stripMarkdownCodeBlock(text)
+  try {
+    JSON.parse(stripped)
+    return stripped
+  } catch {
+    // Not pure JSON, try to extract from surrounding text
+  }
+
+  // Find the first '{' and match to its closing '}'
+  const start = text.indexOf('{')
+  if (start === -1) return null
+
+  let depth = 0
+  let inString = false
+  let escape = false
+
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i]
+
+    if (escape) {
+      escape = false
+      continue
+    }
+
+    if (ch === '\\' && inString) {
+      escape = true
+      continue
+    }
+
+    if (ch === '"') {
+      inString = !inString
+      continue
+    }
+
+    if (inString) continue
+
+    if (ch === '{') depth++
+    else if (ch === '}') {
+      depth--
+      if (depth === 0) {
+        const candidate = text.slice(start, i + 1)
+        try {
+          JSON.parse(candidate)
+          return candidate
+        } catch {
+          return null
+        }
+      }
+    }
+  }
+
+  return null
+}
+
 export class AnthropicProvider implements AIProvider {
   private client: Anthropic
 
@@ -36,13 +96,6 @@ export class AnthropicProvider implements AIProvider {
     const response = await this.client.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
-      tools: [
-        {
-          type: 'web_search_20250305',
-          name: 'web_search',
-          max_uses: 3,
-        },
-      ],
       messages: [
         {
           role: 'user',
@@ -51,30 +104,17 @@ export class AnthropicProvider implements AIProvider {
       ],
     })
 
-    // Extract JSON from text blocks - with web search, JSON may not be in the last block
-    const textBlocks = response.content.filter((block) => block.type === 'text')
-
-    if (textBlocks.length === 0) {
+    const textContent = response.content.find((block) => block.type === 'text')
+    if (!textContent || textContent.type !== 'text') {
       throw new Error('No text content in response')
     }
 
-    // Try each text block to find valid JSON
-    let jsonStr = ''
-    for (const block of textBlocks) {
-      if (block.type !== 'text') continue
-      const candidate = stripMarkdownCodeBlock(block.text)
-      if (candidate.includes('{') && candidate.includes('"common_name"')) {
-        jsonStr = candidate
-        break
-      }
-    }
+    console.log(`[generateCareProfile] Plant: "${plantName}", stop_reason: ${response.stop_reason}, response length: ${textContent.text.length}`)
 
-    // Fallback: try the last text block
+    const jsonStr = extractJsonObject(textContent.text)
     if (!jsonStr) {
-      const lastBlock = textBlocks[textBlocks.length - 1]
-      if (lastBlock && lastBlock.type === 'text') {
-        jsonStr = stripMarkdownCodeBlock(lastBlock.text)
-      }
+      console.error(`[generateCareProfile] Could not extract JSON for "${plantName}". Response:`, textContent.text.substring(0, 500))
+      throw new Error('Could not extract care profile JSON from AI response')
     }
 
     const parsed = JSON.parse(jsonStr)
@@ -264,7 +304,10 @@ export class AnthropicProvider implements AIProvider {
       // Extract JSON from text blocks - with web search, JSON may not be in the last block
       const textBlocks = response.content.filter((block) => block.type === 'text')
 
+      console.log(`[searchPlant] Query: "${query}", stop_reason: ${response.stop_reason}, content blocks: ${response.content.length}, text blocks: ${textBlocks.length}`)
+
       if (textBlocks.length === 0) {
+        console.log(`[searchPlant] No text blocks found. Block types: ${response.content.map(b => b.type).join(', ')}`)
         return {
           identified: false,
           confidence: 'unknown',
@@ -272,22 +315,31 @@ export class AnthropicProvider implements AIProvider {
         }
       }
 
-      // Try each text block to find valid JSON (check blocks with '{' first)
-      let jsonStr = ''
+      // Try each text block to extract JSON object
+      let jsonStr: string | null = null
       for (const block of textBlocks) {
         if (block.type !== 'text') continue
-        const candidate = stripMarkdownCodeBlock(block.text)
-        if (candidate.includes('{') && candidate.includes('"identified"')) {
-          jsonStr = candidate
+        const extracted = extractJsonObject(block.text)
+        if (extracted && extracted.includes('"identified"')) {
+          jsonStr = extracted
           break
         }
       }
 
-      // Fallback: try the last text block
+      // Fallback: try the last text block with simpler extraction
       if (!jsonStr) {
         const lastBlock = textBlocks[textBlocks.length - 1]
         if (lastBlock && lastBlock.type === 'text') {
-          jsonStr = stripMarkdownCodeBlock(lastBlock.text)
+          jsonStr = extractJsonObject(lastBlock.text)
+        }
+      }
+
+      if (!jsonStr) {
+        console.log(`[searchPlant] Could not extract JSON. Text blocks:`, textBlocks.map(b => b.type === 'text' ? b.text.substring(0, 200) : ''))
+        return {
+          identified: false,
+          confidence: 'unknown',
+          reason: 'Could not parse AI response',
         }
       }
 
@@ -313,11 +365,14 @@ export class AnthropicProvider implements AIProvider {
           }
         }
 
+        console.log(`[searchPlant] Result for "${query}": identified=${parsed.identified}, plant=${parsed.plant?.common_name || 'none'}, image=${parsed.plant?.image_url ? 'yes' : 'no'}, source=${parsed.source_url || 'none'}`)
+
         // Cache the result
         plantIdentificationCache.set(query, parsed)
 
         return parsed
-      } catch {
+      } catch (parseError) {
+        console.error(`[searchPlant] JSON parse failed for query "${query}":`, parseError, 'Raw JSON:', jsonStr?.substring(0, 500))
         return {
           identified: false,
           confidence: 'unknown',
@@ -325,7 +380,7 @@ export class AnthropicProvider implements AIProvider {
         }
       }
     } catch (error) {
-      console.error('Plant search error:', error)
+      console.error('[searchPlant] API error:', error)
       return {
         identified: false,
         confidence: 'unknown',

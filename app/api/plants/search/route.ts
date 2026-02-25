@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { getAIProvider } from '@/lib/ai'
 import type { PlantSearchResult } from '@/types/database'
 
+export const maxDuration = 120
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()

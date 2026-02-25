@@ -13,6 +13,7 @@ import ImageUpload, { type ImageUploadRef } from '@/components/plants/image-uplo
 import PlantSearchInput from '@/components/plants/plant-search-input'
 import MergePrompt from '@/components/plants/merge-prompt'
 import { createClient } from '@/lib/supabase/client'
+import { inferGrowthStage, mapOverrideToGrowthStage } from '@/lib/utils/growth-stage-inference'
 
 type Step = 'search' | 'identifying' | 'merge' | 'details' | 'generating' | 'review'
 
@@ -39,7 +40,14 @@ export default function NewPlantPage() {
   const [notes, setNotes] = useState('')
   const [pendingImage, setPendingImage] = useState<Blob | null>(null)
   const [growthStage, setGrowthStage] = useState<GrowthStage>('mature')
+  const [growthStageOverrideOpen, setGrowthStageOverrideOpen] = useState(false)
+  const [overrideLifeStage, setOverrideLifeStage] = useState<'seed' | 'seedling' | 'young' | 'established'>('established')
+  const [overrideSeasonalState, setOverrideSeasonalState] = useState<'growing' | 'flowering' | 'fruiting' | 'dormant'>('growing')
+  const [growthStageManuallySet, setGrowthStageManuallySet] = useState(false)
   const [plantEnvironment, setPlantEnvironment] = useState<PlantEnvironment>('outdoor')
+  // Unified growing situation value that drives both plantEnvironment and locationProtection
+  type GrowingSituation = 'outdoor' | 'indoor' | 'greenhouse' | 'polytunnel' | 'cold_frame'
+  const [growingSituation, setGrowingSituation] = useState<GrowingSituation>('outdoor')
 
   // Selected plant from search (if any)
   const [selectedPlant, setSelectedPlant] = useState<PlantSearchResult | null>(null)
@@ -57,6 +65,57 @@ export default function NewPlantPage() {
   // Merge flow state
   const [existingTypeInfo, setExistingTypeInfo] = useState<ExistingTypeInfo | null>(null)
   const [useExistingTypeId, setUseExistingTypeId] = useState<string | null>(null)
+
+  // Inferred growth stage (recomputed when plant type changes)
+  const inferredStage = topLevel || middleLevel
+    ? inferGrowthStage(topLevel, middleLevel)
+    : null
+
+  // Sync growing situation to plantEnvironment and locationProtection
+  function handleGrowingSituationChange(value: GrowingSituation) {
+    setGrowingSituation(value)
+    switch (value) {
+      case 'outdoor':
+        setPlantEnvironment('outdoor')
+        setLocationProtection(null)
+        break
+      case 'indoor':
+        setPlantEnvironment('indoor')
+        setLocationProtection(null)
+        break
+      case 'greenhouse':
+        setPlantEnvironment('greenhouse')
+        setLocationProtection('greenhouse')
+        break
+      case 'polytunnel':
+        setPlantEnvironment('greenhouse') // closest DB equivalent
+        setLocationProtection('polytunnel')
+        break
+      case 'cold_frame':
+        setPlantEnvironment('cold_frame')
+        setLocationProtection('cold_frame')
+        break
+    }
+  }
+
+  // When override values change, compute the GrowthStage
+  function handleGrowthStageOverride(
+    life: 'seed' | 'seedling' | 'young' | 'established',
+    seasonal?: 'growing' | 'flowering' | 'fruiting' | 'dormant'
+  ) {
+    setOverrideLifeStage(life)
+    if (seasonal) setOverrideSeasonalState(seasonal)
+    setGrowthStageManuallySet(true)
+    setGrowthStage(mapOverrideToGrowthStage(life, seasonal || overrideSeasonalState))
+  }
+
+  // Auto-set growth stage from inference when entering details step (unless manually overridden)
+  const inferredStageValue = inferredStage?.stage
+  useEffect(() => {
+    if (step === 'details' && inferredStageValue && !growthStageManuallySet) {
+      setGrowthStage(inferredStageValue)
+    }
+  }, [step, inferredStageValue, growthStageManuallySet])
 
   // Get user ID on mount
   useEffect(() => {
@@ -643,40 +702,39 @@ export default function NewPlantPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            className="space-y-5"
           >
-            {/* Selected plant card */}
+            {/* Hero plant card — larger, more prominent */}
             <div
-              className="rounded-2xl p-6"
+              className="rounded-2xl overflow-hidden"
               style={{
                 background: 'white',
                 boxShadow: 'var(--shadow-md)',
               }}
             >
-              <div className="flex items-start gap-4">
-                {/* Plant image or icon */}
+              <div className="flex items-start gap-4 p-5 sm:p-6">
                 <div
-                  className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+                  className="w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
                   style={{ background: 'var(--sage-100)' }}
                 >
                   {selectedPlant?.image_url ? (
                     <Image
                       src={selectedPlant.image_url}
                       alt={selectedPlant.common_name}
-                      width={64}
-                      height={64}
+                      width={80}
+                      height={80}
                       className="w-full h-full object-cover"
                       unoptimized
                     />
                   ) : (
-                    <Icon name="Seedling" size={28} weight="light" style={{ color: 'var(--sage-600)' }} />
+                    <Icon name="Seedling" size={32} weight="light" style={{ color: 'var(--sage-600)' }} />
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h2
-                      className="text-xl font-semibold truncate"
+                      className="text-2xl font-semibold truncate"
                       style={{
                         fontFamily: 'var(--font-cormorant)',
                         color: 'var(--text-primary)',
@@ -693,13 +751,11 @@ export default function NewPlantPage() {
                       </span>
                     )}
                   </div>
-                  {/* Show plant type as subtitle when we have a cultivar */}
                   {cultivarName && middleLevel && (
                     <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                       {middleLevel}
                     </p>
                   )}
-                  {/* Show top level only when no cultivar and top_level differs from middle_level */}
                   {!cultivarName && topLevel && topLevel !== middleLevel && (
                     <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                       {topLevel}
@@ -733,69 +789,199 @@ export default function NewPlantPage() {
                   <Icon name="PencilSimple" size={16} weight="regular" />
                 </button>
               </div>
+
+              {/* Cultivar field — inline within the plant card */}
+              {!cultivarFromSearch && (
+                <div className="px-5 sm:px-6 pb-5 sm:pb-6 -mt-1">
+                  <label htmlFor="cultivarName" className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--text-muted)' }}>
+                    Variety/Cultivar (optional)
+                  </label>
+                  <input
+                    id="cultivarName"
+                    type="text"
+                    value={cultivarName}
+                    onChange={(e) => setCultivarName(e.target.value)}
+                    className="input"
+                    placeholder="e.g., Iceberg, Graham Thomas, Sungold"
+                  />
+                </div>
+              )}
+              {cultivarFromSearch && cultivarName && (
+                <div className="px-5 sm:px-6 pb-5 sm:pb-6 -mt-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Cultivar:</span>
+                    <span
+                      className="text-sm font-medium px-2.5 py-1 rounded-lg"
+                      style={{ background: 'var(--sage-50)', color: 'var(--sage-700)' }}
+                    >
+                      {cultivarName}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Additional details form */}
+            {/* Smart growth stage inference card */}
+            {inferredStage && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="rounded-2xl overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, var(--sage-50) 0%, var(--earth-50) 100%)',
+                  border: '1px solid var(--sage-200)',
+                }}
+              >
+                <div className="p-5 sm:p-6">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{ background: 'white', boxShadow: 'var(--shadow-sm)' }}
+                      >
+                        <Icon
+                          name={
+                            growthStage === 'dormant' ? 'Moon' :
+                            growthStage === 'flowering' ? 'Flower' :
+                            growthStage === 'fruiting' ? 'Orange' :
+                            growthStage === 'seed' ? 'Grain' :
+                            growthStage === 'seedling' ? 'Sprout' :
+                            growthStage === 'juvenile' ? 'Plant' :
+                            'Tree'
+                          }
+                          size={20}
+                          weight="regular"
+                          style={{ color: 'var(--sage-600)' }}
+                        />
+                      </div>
+                      <div>
+                        <p
+                          className="text-sm leading-relaxed"
+                          style={{ color: 'var(--text-primary)' }}
+                        >
+                          {growthStageManuallySet
+                            ? `You've set this as ${
+                                overrideLifeStage === 'established'
+                                  ? `an established plant (${overrideSeasonalState})`
+                                  : overrideLifeStage === 'seed'
+                                  ? 'a seed'
+                                  : overrideLifeStage === 'seedling'
+                                  ? 'a seedling'
+                                  : 'a young plant'
+                              }.`
+                            : inferredStage.explanation
+                          }
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setGrowthStageOverrideOpen(!growthStageOverrideOpen)}
+                      className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+                      style={{
+                        background: growthStageOverrideOpen ? 'var(--sage-200)' : 'white',
+                        color: 'var(--sage-700)',
+                        boxShadow: growthStageOverrideOpen ? 'none' : 'var(--shadow-sm)',
+                      }}
+                    >
+                      {growthStageOverrideOpen ? 'Done' : 'Change'}
+                    </button>
+                  </div>
+
+                  {/* Override controls */}
+                  <AnimatePresence>
+                    {growthStageOverrideOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pt-4 space-y-4">
+                          {/* Life stage */}
+                          <div>
+                            <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                              How established is it?
+                            </label>
+                            <div className="flex flex-wrap gap-2">
+                              {([
+                                { value: 'seed', label: 'Seed', icon: 'Grain' },
+                                { value: 'seedling', label: 'Seedling', icon: 'Sprout' },
+                                { value: 'young', label: 'Young', icon: 'Plant' },
+                                { value: 'established', label: 'Established', icon: 'Tree' },
+                              ] as const).map((opt) => (
+                                <button
+                                  key={opt.value}
+                                  type="button"
+                                  onClick={() => handleGrowthStageOverride(opt.value, undefined)}
+                                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all"
+                                  style={{
+                                    background: overrideLifeStage === opt.value ? 'var(--sage-600)' : 'white',
+                                    color: overrideLifeStage === opt.value ? 'white' : 'var(--text-secondary)',
+                                    boxShadow: overrideLifeStage === opt.value ? 'none' : 'var(--shadow-sm)',
+                                  }}
+                                >
+                                  <Icon name={opt.icon} size={16} weight={overrideLifeStage === opt.value ? 'regular' : 'light'} />
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Seasonal state — only for established/young plants */}
+                          {(overrideLifeStage === 'established' || overrideLifeStage === 'young') && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -5 }}
+                              animate={{ opacity: 1, y: 0 }}
+                            >
+                              <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                                Current seasonal state
+                              </label>
+                              <div className="flex flex-wrap gap-2">
+                                {([
+                                  { value: 'growing', label: 'Growing', icon: 'TrendUp' },
+                                  { value: 'flowering', label: 'Flowering', icon: 'Flower' },
+                                  { value: 'fruiting', label: 'Fruiting', icon: 'Orange' },
+                                  { value: 'dormant', label: 'Dormant', icon: 'Moon' },
+                                ] as const).map((opt) => (
+                                  <button
+                                    key={opt.value}
+                                    type="button"
+                                    onClick={() => handleGrowthStageOverride(overrideLifeStage, opt.value)}
+                                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all"
+                                    style={{
+                                      background: overrideSeasonalState === opt.value ? 'var(--sage-600)' : 'white',
+                                      color: overrideSeasonalState === opt.value ? 'white' : 'var(--text-secondary)',
+                                      boxShadow: overrideSeasonalState === opt.value ? 'none' : 'var(--shadow-sm)',
+                                    }}
+                                  >
+                                    <Icon name={opt.icon} size={16} weight={overrideSeasonalState === opt.value ? 'regular' : 'light'} />
+                                    {opt.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Form sections */}
             <div
-              className="rounded-2xl p-8"
+              className="rounded-2xl"
               style={{
                 background: 'white',
                 boxShadow: 'var(--shadow-md)',
               }}
             >
-              <h3
-                className="text-lg font-semibold mb-6"
-                style={{
-                  fontFamily: 'var(--font-cormorant)',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                Add details
-              </h3>
-
-              <div className="space-y-6">
-                {cultivarFromSearch && cultivarName ? (
-                  <div>
-                    <label className="label">
-                      Variety/Cultivar
-                    </label>
-                    <div
-                      className="px-4 py-3 rounded-lg"
-                      style={{
-                        background: 'var(--sage-50)',
-                        border: '1px solid var(--sage-200)',
-                      }}
-                    >
-                      <span
-                        className="font-medium"
-                        style={{ color: 'var(--sage-700)' }}
-                      >
-                        {cultivarName}
-                      </span>
-                    </div>
-                    <p className="mt-1.5 text-sm" style={{ color: 'var(--text-muted)' }}>
-                      Cultivar identified from your search
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    <label htmlFor="cultivarName" className="label">
-                      Variety/Cultivar name (optional)
-                    </label>
-                    <input
-                      id="cultivarName"
-                      type="text"
-                      value={cultivarName}
-                      onChange={(e) => setCultivarName(e.target.value)}
-                      className="input"
-                      placeholder="e.g., Iceberg, Graham Thomas, Sungold"
-                    />
-                    <p className="mt-1.5 text-sm" style={{ color: 'var(--text-muted)' }}>
-                      The specific variety name if you know it
-                    </p>
-                  </div>
-                )}
-
+              <div className="p-5 sm:p-6 space-y-6">
+                {/* Where is it? */}
                 <div>
                   <label className="label">
                     Where is it? (optional)
@@ -814,7 +1000,7 @@ export default function NewPlantPage() {
                         className="p-4 rounded-xl border-2 transition-all text-center"
                         style={{
                           borderColor: locationType === option.value ? 'var(--sage-500)' : 'var(--stone-200)',
-                          background: locationType === option.value ? 'var(--sage-50)' : 'white',
+                          background: locationType === option.value ? 'var(--sage-100)' : 'white',
                           color: locationType === option.value ? 'var(--sage-700)' : 'var(--text-secondary)',
                         }}
                       >
@@ -822,7 +1008,7 @@ export default function NewPlantPage() {
                           <Icon
                             name={option.iconName}
                             size={24}
-                            weight="light"
+                            weight={locationType === option.value ? 'regular' : 'light'}
                             style={{ color: locationType === option.value ? 'var(--sage-600)' : 'var(--text-muted)' }}
                           />
                         </div>
@@ -843,48 +1029,48 @@ export default function NewPlantPage() {
                   )}
                 </div>
 
+                {/* Growing situation (merged Environment + Protected) */}
                 <div>
                   <label className="label">
-                    Protected? (optional)
+                    Growing situation
                   </label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
+                  <div className="flex flex-wrap gap-2">
+                    {([
+                      { value: 'outdoor', label: 'Outdoors', iconName: 'Sun' },
+                      { value: 'indoor', label: 'Indoors', iconName: 'House' },
                       { value: 'greenhouse', label: 'Greenhouse', iconName: 'Warehouse' },
                       { value: 'polytunnel', label: 'Polytunnel', iconName: 'Tent' },
                       { value: 'cold_frame', label: 'Cold frame', iconName: 'Package' },
-                    ].map((option) => (
+                    ] as { value: GrowingSituation; label: string; iconName: string }[]).map((option) => (
                       <button
                         key={option.value}
                         type="button"
-                        onClick={() => setLocationProtection(locationProtection === option.value ? null : option.value as LocationProtection)}
-                        className="p-3 rounded-xl border-2 transition-all text-center"
+                        onClick={() => handleGrowingSituationChange(option.value)}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-full transition-all text-sm font-medium"
                         style={{
-                          borderColor: locationProtection === option.value ? 'var(--sage-500)' : 'var(--stone-200)',
-                          background: locationProtection === option.value ? 'var(--sage-50)' : 'white',
-                          color: locationProtection === option.value ? 'var(--sage-700)' : 'var(--text-secondary)',
+                          background: growingSituation === option.value ? 'var(--sage-600)' : 'white',
+                          color: growingSituation === option.value ? 'white' : 'var(--text-secondary)',
+                          border: `1.5px solid ${growingSituation === option.value ? 'var(--sage-600)' : 'var(--stone-200)'}`,
                         }}
                       >
-                        <div className="mb-1.5 flex justify-center">
-                          <Icon
-                            name={option.iconName}
-                            size={20}
-                            weight="light"
-                            style={{ color: locationProtection === option.value ? 'var(--sage-600)' : 'var(--text-muted)' }}
-                          />
-                        </div>
-                        <span className="text-xs font-medium">
-                          {option.label}
-                        </span>
+                        <Icon
+                          name={option.iconName}
+                          size={16}
+                          weight={growingSituation === option.value ? 'regular' : 'light'}
+                          style={{ color: growingSituation === option.value ? 'white' : 'var(--text-muted)' }}
+                        />
+                        {option.label}
                       </button>
                     ))}
                   </div>
                 </div>
 
+                {/* Planted in */}
                 <div>
                   <label className="label">
                     Planted in (optional)
                   </label>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="flex flex-wrap gap-2">
                     {[
                       { value: 'ground', label: 'Ground', iconName: 'Mountains' },
                       { value: 'pot', label: 'Pot', iconName: 'Flower' },
@@ -894,116 +1080,36 @@ export default function NewPlantPage() {
                         key={option.value}
                         type="button"
                         onClick={() => setPlantedIn(plantedIn === option.value ? '' : option.value as typeof plantedIn)}
-                        className="p-4 rounded-xl border-2 transition-all text-center"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-full transition-all text-sm font-medium"
                         style={{
-                          borderColor: plantedIn === option.value ? 'var(--sage-500)' : 'var(--stone-200)',
-                          background: plantedIn === option.value ? 'var(--sage-50)' : 'white',
-                          color: plantedIn === option.value ? 'var(--sage-700)' : 'var(--text-secondary)',
-                        }}
-                      >
-                        <div className="mb-2 flex justify-center">
-                          <Icon
-                            name={option.iconName}
-                            size={24}
-                            weight="light"
-                            style={{ color: plantedIn === option.value ? 'var(--sage-600)' : 'var(--text-muted)' }}
-                          />
-                        </div>
-                        <span className="text-sm font-medium">
-                          {option.label}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="label">
-                    Growth stage
-                  </label>
-                  <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-                    {([
-                      { value: 'seed', label: 'Seed', iconName: 'Grain' },
-                      { value: 'seedling', label: 'Seedling', iconName: 'Sprout' },
-                      { value: 'juvenile', label: 'Young', iconName: 'Plant' },
-                      { value: 'mature', label: 'Mature', iconName: 'Tree' },
-                      { value: 'dormant', label: 'Dormant', iconName: 'Moon' },
-                      { value: 'flowering', label: 'Flowering', iconName: 'Flower' },
-                      { value: 'fruiting', label: 'Fruiting', iconName: 'Orange' },
-                    ] as const).map((stage) => (
-                      <button
-                        key={stage.value}
-                        type="button"
-                        onClick={() => setGrowthStage(stage.value)}
-                        className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all"
-                        style={{
-                          borderColor: growthStage === stage.value ? 'var(--sage-500)' : 'var(--stone-200)',
-                          background: growthStage === stage.value ? 'var(--sage-50)' : 'white',
+                          background: plantedIn === option.value ? 'var(--sage-600)' : 'white',
+                          color: plantedIn === option.value ? 'white' : 'var(--text-secondary)',
+                          border: `1.5px solid ${plantedIn === option.value ? 'var(--sage-600)' : 'var(--stone-200)'}`,
                         }}
                       >
                         <Icon
-                          name={stage.iconName}
-                          size={20}
-                          weight="light"
-                          style={{
-                            color: growthStage === stage.value ? 'var(--sage-600)' : 'var(--text-muted)',
-                          }}
+                          name={option.iconName}
+                          size={16}
+                          weight={plantedIn === option.value ? 'regular' : 'light'}
+                          style={{ color: plantedIn === option.value ? 'white' : 'var(--text-muted)' }}
                         />
-                        <span
-                          className="text-xs font-medium"
-                          style={{
-                            color: growthStage === stage.value ? 'var(--sage-700)' : 'var(--text-secondary)',
-                          }}
-                        >
-                          {stage.label}
-                        </span>
+                        {option.label}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div>
-                  <label className="label">
-                    Environment
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {([
-                      { value: 'indoor', label: 'Indoor', iconName: 'House' },
-                      { value: 'outdoor', label: 'Outdoor', iconName: 'Sun' },
-                      { value: 'greenhouse', label: 'Greenhouse', iconName: 'Warehouse' },
-                      { value: 'cold_frame', label: 'Cold frame', iconName: 'Package' },
-                    ] as const).map((env) => (
-                      <button
-                        key={env.value}
-                        type="button"
-                        onClick={() => setPlantEnvironment(env.value)}
-                        className="flex items-center gap-2 p-3 rounded-xl border-2 transition-all"
-                        style={{
-                          borderColor: plantEnvironment === env.value ? 'var(--sage-500)' : 'var(--stone-200)',
-                          background: plantEnvironment === env.value ? 'var(--sage-50)' : 'white',
-                        }}
-                      >
-                        <Icon
-                          name={env.iconName}
-                          size={18}
-                          weight="light"
-                          style={{
-                            color: plantEnvironment === env.value ? 'var(--sage-600)' : 'var(--text-muted)',
-                          }}
-                        />
-                        <span
-                          className="text-sm font-medium"
-                          style={{
-                            color: plantEnvironment === env.value ? 'var(--sage-700)' : 'var(--text-secondary)',
-                          }}
-                        >
-                          {env.label}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
+                {/* Divider before optional extras */}
+                <div
+                  className="flex items-center gap-3 pt-1"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  <div className="flex-1 h-px" style={{ background: 'var(--stone-200)' }} />
+                  <span className="text-xs font-medium">More details</span>
+                  <div className="flex-1 h-px" style={{ background: 'var(--stone-200)' }} />
                 </div>
 
+                {/* Notes */}
                 <div>
                   <label htmlFor="notes" className="label">
                     Notes (optional)
@@ -1012,11 +1118,12 @@ export default function NewPlantPage() {
                     id="notes"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className="input min-h-[100px] resize-none"
+                    className="input min-h-[80px] resize-none"
                     placeholder="e.g., Planted last spring, gift from mum"
                   />
                 </div>
 
+                {/* Photo */}
                 {userId && (
                   <ImageUpload
                     ref={imageUploadRef}
@@ -1026,7 +1133,11 @@ export default function NewPlantPage() {
                 )}
               </div>
 
-              <div className="flex gap-4 mt-8">
+              {/* Actions */}
+              <div
+                className="flex gap-4 p-5 sm:p-6 border-t"
+                style={{ borderColor: 'var(--stone-200)' }}
+              >
                 <button
                   type="button"
                   onClick={() => {
