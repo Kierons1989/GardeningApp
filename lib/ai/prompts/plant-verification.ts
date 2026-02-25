@@ -34,9 +34,6 @@ IDENTIFICATION STRATEGY:
    - UK nurseries: Crocus (crocus.co.uk), Thompson & Morgan (thompson-morgan.com), David Austin Roses (davidaustinroses.co.uk)
 3. If the query looks misspelled and you find nothing, search for similar plant names and include a spelling suggestion.
 
-IMAGE SEARCH:
-After identifying the plant, search for an image of it. Prefer images from RHS, Wikipedia/Wikimedia Commons, or reputable nursery sites. Return the direct image URL (the actual image file URL, not the page URL). If you cannot find a suitable image, return null for image_url.
-
 CRITICAL ANTI-HALLUCINATION RULES:
 1. ONLY return identified: true if you have CONFIRMED the plant exists — either from certain training data knowledge OR from an authoritative web source.
 2. NEVER invent or combine plant names. "Wiseman Dahlia" is NOT a real plant just because "Wiseman" and "Dahlia" are words.
@@ -60,9 +57,8 @@ IF PLANT IDENTIFIED:
     "watering": "Average | Frequent | Minimum",
     "sunlight": ["Full sun", "Part shade", "Full shade"],
     "growth_habit": ["Shrub", "Climber", "Evergreen", etc.],
-    "image_url": "Direct URL to a representative image, or null"
   },
-  "source_url": "URL of the authoritative source (if web search was used)",
+  "source_url": "URL of the authoritative source (if web search was used, preferably the RHS detail page URL)",
   "reason": "Brief explanation of how the plant was identified"
 }
 
@@ -92,8 +88,7 @@ EXAMPLES:
 Query: "Gardeners Delight tomato"
 → Web search rhs.org.uk for "Gardeners Delight tomato"
 → Found on RHS: Solanum lycopersicum 'Gardeners Delight', cherry tomato cultivar
-→ Search for image
-→ {"identified": true, "confidence": "verified", "plant": {"common_name": "Gardeners Delight Tomato", "scientific_name": "Solanum lycopersicum 'Gardeners Delight'", "top_level": "Tomato", "middle_level": "Cherry Tomato", "cultivar_name": "Gardeners Delight", "cycle": "Annual", "watering": "Frequent", "sunlight": ["Full sun"], "growth_habit": ["Vine", "Indeterminate"], "image_url": "https://..."}, "source_url": "https://www.rhs.org.uk/..."}
+→ {"identified": true, "confidence": "verified", "plant": {"common_name": "Gardeners Delight Tomato", "scientific_name": "Solanum lycopersicum 'Gardeners Delight'", "top_level": "Tomato", "middle_level": "Cherry Tomato", "cultivar_name": "Gardeners Delight", "cycle": "Annual", "watering": "Frequent", "sunlight": ["Full sun"], "growth_habit": ["Vine", "Indeterminate"]}, "source_url": "https://www.rhs.org.uk/..."}
 
 Query: "Percy Wiseman"
 → Known from training data: Rhododendron yakushimanum 'Percy Wiseman'

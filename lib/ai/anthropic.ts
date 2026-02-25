@@ -6,6 +6,7 @@ import { buildPlantChatPrompt } from './prompts/plant-chat'
 import { buildGardenChatPrompt } from './prompts/garden-chat'
 import { unifiedPlantSearchPrompt, type PlantVerificationResponse } from './prompts/plant-verification'
 import { plantIdentificationCache } from '@/lib/cache/plant-identification-cache'
+import { fetchRHSImage } from '@/lib/rhs/client'
 
 function stripMarkdownCodeBlock(text: string): string {
   let str = text.trim()
@@ -222,7 +223,7 @@ export class AnthropicProvider implements AIProvider {
           {
             type: 'web_search_20250305',
             name: 'web_search',
-            max_uses: 8,
+            max_uses: 5,
           },
         ],
         messages: [
@@ -233,11 +234,10 @@ export class AnthropicProvider implements AIProvider {
         ],
       })
 
-      // Extract the last text block (after any web search tool use)
+      // Extract JSON from text blocks - with web search, JSON may not be in the last block
       const textBlocks = response.content.filter((block) => block.type === 'text')
-      const lastTextBlock = textBlocks[textBlocks.length - 1]
 
-      if (!lastTextBlock || lastTextBlock.type !== 'text') {
+      if (textBlocks.length === 0) {
         return {
           identified: false,
           confidence: 'unknown',
@@ -245,7 +245,24 @@ export class AnthropicProvider implements AIProvider {
         }
       }
 
-      const jsonStr = stripMarkdownCodeBlock(lastTextBlock.text)
+      // Try each text block to find valid JSON (check blocks with '{' first)
+      let jsonStr = ''
+      for (const block of textBlocks) {
+        if (block.type !== 'text') continue
+        const candidate = stripMarkdownCodeBlock(block.text)
+        if (candidate.includes('{') && candidate.includes('"identified"')) {
+          jsonStr = candidate
+          break
+        }
+      }
+
+      // Fallback: try the last text block
+      if (!jsonStr) {
+        const lastBlock = textBlocks[textBlocks.length - 1]
+        if (lastBlock && lastBlock.type === 'text') {
+          jsonStr = stripMarkdownCodeBlock(lastBlock.text)
+        }
+      }
 
       try {
         const parsed = JSON.parse(jsonStr) as PlantVerificationResponse
@@ -257,6 +274,14 @@ export class AnthropicProvider implements AIProvider {
               identified: false,
               confidence: 'unknown',
               reason: 'Incomplete plant information from AI',
+            }
+          }
+
+          // Enrich with RHS image if source_url is an RHS page and no image was returned
+          if (!parsed.plant.image_url && parsed.source_url?.includes('rhs.org.uk')) {
+            const rhsImage = await fetchRHSImage(parsed.source_url)
+            if (rhsImage) {
+              parsed.plant.image_url = rhsImage
             }
           }
         }
