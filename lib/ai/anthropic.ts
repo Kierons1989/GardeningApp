@@ -281,30 +281,54 @@ export class AnthropicProvider implements AIProvider {
     }
 
     const prompt = unifiedPlantSearchPrompt(query)
+    const maxContinuations = 5
 
     try {
-      const response = await this.client.messages.create({
+      const tools = [
+        {
+          type: 'web_search_20250305' as const,
+          name: 'web_search' as const,
+          max_uses: 5,
+        },
+      ]
+
+      let messages: Anthropic.Messages.MessageParam[] = [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ]
+
+      let response = await this.client.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 4096,
-        tools: [
-          {
-            type: 'web_search_20250305',
-            name: 'web_search',
-            max_uses: 5,
-          },
-        ],
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
+        tools,
+        messages,
       })
+
+      console.log(`[searchPlant] Query: "${query}", stop_reason: ${response.stop_reason}, content blocks: ${response.content.length}`)
+
+      // Handle pause_turn: the server-side web search loop hit its iteration limit
+      // Continue the conversation to let Claude finish processing
+      for (let i = 0; i < maxContinuations && response.stop_reason === 'pause_turn'; i++) {
+        console.log(`[searchPlant] pause_turn detected for "${query}", continuing (attempt ${i + 1})`)
+        messages = [
+          { role: 'user', content: prompt },
+          { role: 'assistant', content: response.content },
+        ]
+        response = await this.client.messages.create({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 4096,
+          tools,
+          messages,
+        })
+        console.log(`[searchPlant] Continuation ${i + 1} for "${query}": stop_reason: ${response.stop_reason}, content blocks: ${response.content.length}`)
+      }
 
       // Extract JSON from text blocks - with web search, JSON may not be in the last block
       const textBlocks = response.content.filter((block) => block.type === 'text')
 
-      console.log(`[searchPlant] Query: "${query}", stop_reason: ${response.stop_reason}, content blocks: ${response.content.length}, text blocks: ${textBlocks.length}`)
+      console.log(`[searchPlant] Final response for "${query}": text blocks: ${textBlocks.length}`)
 
       if (textBlocks.length === 0) {
         console.log(`[searchPlant] No text blocks found. Block types: ${response.content.map(b => b.type).join(', ')}`)

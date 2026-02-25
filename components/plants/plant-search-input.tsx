@@ -466,22 +466,44 @@ export default function PlantSearchInput({
 
                 <div
                   className="rounded-lg p-4 mb-3"
-                  style={{ background: 'var(--stone-50)', border: '1px dashed var(--stone-200)' }}
+                  style={{
+                    background: searchState.message?.includes('unavailable') ? 'var(--earth-50)' : 'var(--stone-50)',
+                    border: searchState.message?.includes('unavailable') ? '1px dashed var(--earth-200)' : '1px dashed var(--stone-200)',
+                  }}
                 >
                   <div className="flex items-start gap-3">
                     <div
                       className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                      style={{ background: 'var(--stone-100)' }}
+                      style={{
+                        background: searchState.message?.includes('unavailable') ? 'var(--earth-100)' : 'var(--stone-100)',
+                      }}
                     >
-                      <Icon name="MagnifyingGlass" size={20} weight="light" style={{ color: 'var(--text-muted)' }} />
+                      {searchState.message?.includes('unavailable') ? (
+                        <Icon name="Warning" size={20} weight="fill" style={{ color: 'var(--earth-600)' }} />
+                      ) : (
+                        <Icon name="MagnifyingGlass" size={20} weight="light" style={{ color: 'var(--text-muted)' }} />
+                      )}
                     </div>
                     <div>
-                      <p className="font-medium" style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
-                        No exact match found
-                      </p>
-                      <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                        We couldn&apos;t find &quot;{query}&quot; in our database. You can add it as a custom plant and we&apos;ll identify it for you.
-                      </p>
+                      {searchState.message?.includes('unavailable') ? (
+                        <>
+                          <p className="font-medium" style={{ color: 'var(--earth-700)', fontSize: '14px' }}>
+                            Search temporarily unavailable
+                          </p>
+                          <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                            Our plant search service is busy right now. Please try again in a moment, or add it as a custom plant below.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="font-medium" style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+                            No exact match found
+                          </p>
+                          <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                            We couldn&apos;t find &quot;{query}&quot; in our database. You can add it as a custom plant and we&apos;ll identify it for you.
+                          </p>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
