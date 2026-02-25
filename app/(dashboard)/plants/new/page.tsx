@@ -358,6 +358,15 @@ export default function NewPlantPage() {
               health_status: 'healthy',
               last_updated: new Date().toISOString(),
             },
+            searchData: selectedPlant ? {
+              scientific_name: selectedPlant.scientific_name,
+              cycle: selectedPlant.cycle,
+              watering: selectedPlant.watering,
+              sunlight: selectedPlant.sunlight,
+              growth_habit: selectedPlant.growth_habit,
+              uk_hardiness: selectedPlant.uk_hardiness,
+              source_url: selectedPlant.verification?.source_url,
+            } : undefined,
           }),
         })
 

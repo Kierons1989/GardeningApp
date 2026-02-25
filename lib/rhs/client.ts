@@ -27,16 +27,34 @@ export async function fetchRHSImage(rhsPageUrl: string): Promise<string | null> 
 
     const html = await response.text()
 
-    // Extract first image filename from the "images" array in embedded JSON
-    const match = html.match(/"images"\s*:\s*\[\s*\{\s*"image"\s*:\s*"([^"]+)"/)
-    if (!match?.[1]) {
-      imageCache.set(rhsPageUrl, { imageUrl: null, timestamp: Date.now() })
-      return null
+    // Try multiple extraction strategies
+
+    // Strategy 1: JSON embedded images array
+    const jsonMatch = html.match(/"images"\s*:\s*\[\s*\{\s*"image"\s*:\s*"([^"]+)"/)
+    if (jsonMatch?.[1]) {
+      const imageUrl = `${RHS_IMAGE_BASE}${jsonMatch[1]}`
+      imageCache.set(rhsPageUrl, { imageUrl, timestamp: Date.now() })
+      return imageUrl
     }
 
-    const imageUrl = `${RHS_IMAGE_BASE}${match[1]}`
-    imageCache.set(rhsPageUrl, { imageUrl, timestamp: Date.now() })
-    return imageUrl
+    // Strategy 2: og:image meta tag
+    const ogMatch = html.match(/<meta\s+(?:property|name)="og:image"\s+content="([^"]+)"/i)
+      || html.match(/content="([^"]+)"\s+(?:property|name)="og:image"/i)
+    if (ogMatch?.[1]) {
+      imageCache.set(rhsPageUrl, { imageUrl: ogMatch[1], timestamp: Date.now() })
+      return ogMatch[1]
+    }
+
+    // Strategy 3: RHS plant selector image in img tags
+    const imgMatch = html.match(/plantselectorimages\/detail\/([^"'\s]+)/i)
+    if (imgMatch?.[1]) {
+      const imageUrl = `${RHS_IMAGE_BASE}${imgMatch[1]}`
+      imageCache.set(rhsPageUrl, { imageUrl, timestamp: Date.now() })
+      return imageUrl
+    }
+
+    imageCache.set(rhsPageUrl, { imageUrl: null, timestamp: Date.now() })
+    return null
   } catch {
     return null
   }

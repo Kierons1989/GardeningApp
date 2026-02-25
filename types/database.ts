@@ -117,12 +117,23 @@ export interface TaskSuggestion {
   last_action: TaskHistory | null;
 }
 
+export interface PlantSearchData {
+  scientific_name?: string | null;
+  cycle?: string | null;
+  watering?: string | null;
+  sunlight?: string[] | null;
+  growth_habit?: string[] | null;
+  uk_hardiness?: string | null;
+  source_url?: string | null;
+}
+
 export interface PlantContext {
   area?: string | null;
   plantedIn?: string | null;
   currentMonth: number;
   climateZone?: number | null;
   plantState?: PlantState | null;
+  searchData?: PlantSearchData | null;
 }
 
 export interface ChatMessageImage {
@@ -217,6 +228,7 @@ export interface PlantSearchResult {
   watering: string;                // "Average", "Frequent", "Minimum"
   sunlight: string[];              // ["Full sun", "Part shade"]
   growth_habit: string[];          // ["Climber", "Perennial"]
+  uk_hardiness: string | null;       // UK hardiness rating e.g. "Hardy to -15°C (H5)"
   source: 'perenual' | 'ai' | 'ai_verified';  // Track data origin
   verification?: PlantVerification;  // Verification details for AI results
 }

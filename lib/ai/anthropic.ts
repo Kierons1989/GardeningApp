@@ -34,8 +34,15 @@ export class AnthropicProvider implements AIProvider {
     const prompt = buildCareProfilePrompt(plantName, topLevel, context)
 
     const response = await this.client.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 2048,
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4096,
+      tools: [
+        {
+          type: 'web_search_20250305',
+          name: 'web_search',
+          max_uses: 3,
+        },
+      ],
       messages: [
         {
           role: 'user',
@@ -44,12 +51,32 @@ export class AnthropicProvider implements AIProvider {
       ],
     })
 
-    const textContent = response.content.find((block) => block.type === 'text')
-    if (!textContent || textContent.type !== 'text') {
+    // Extract JSON from text blocks - with web search, JSON may not be in the last block
+    const textBlocks = response.content.filter((block) => block.type === 'text')
+
+    if (textBlocks.length === 0) {
       throw new Error('No text content in response')
     }
 
-    const jsonStr = stripMarkdownCodeBlock(textContent.text)
+    // Try each text block to find valid JSON
+    let jsonStr = ''
+    for (const block of textBlocks) {
+      if (block.type !== 'text') continue
+      const candidate = stripMarkdownCodeBlock(block.text)
+      if (candidate.includes('{') && candidate.includes('"common_name"')) {
+        jsonStr = candidate
+        break
+      }
+    }
+
+    // Fallback: try the last text block
+    if (!jsonStr) {
+      const lastBlock = textBlocks[textBlocks.length - 1]
+      if (lastBlock && lastBlock.type === 'text') {
+        jsonStr = stripMarkdownCodeBlock(lastBlock.text)
+      }
+    }
+
     const parsed = JSON.parse(jsonStr)
 
     return {

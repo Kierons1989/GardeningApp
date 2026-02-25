@@ -15,6 +15,7 @@ export interface PlantVerificationResponse {
     sunlight: string[];
     growth_habit: string[];
     image_url: string | null;
+    uk_hardiness: string | null;
   };
   source_url?: string;
   spelling_suggestion?: string;
@@ -41,6 +42,12 @@ CRITICAL ANTI-HALLUCINATION RULES:
 4. If the query is gibberish or not a plant name, return unknown.
 5. If web search finds conflicting information, prefer RHS over other sources.
 
+IMAGE EXTRACTION:
+When you visit an RHS plant page or other authoritative source during web search, look for the plant's primary photo URL and include it in the image_url field. Prefer images from:
+- RHS plant detail pages (apps.rhs.org.uk/plantselectorimages/detail/...)
+- Wikipedia commons images
+- UK nursery product images (crocus.co.uk, thompson-morgan.com, davidaustinroses.co.uk)
+
 Return a JSON object with this structure:
 
 IF PLANT IDENTIFIED:
@@ -57,6 +64,8 @@ IF PLANT IDENTIFIED:
     "watering": "Average | Frequent | Minimum",
     "sunlight": ["Full sun", "Part shade", "Full shade"],
     "growth_habit": ["Shrub", "Climber", "Evergreen", etc.],
+    "image_url": "Direct URL to a photo of this plant from the source page, or null if not found",
+    "uk_hardiness": "UK hardiness rating if found (e.g., 'Hardy to -15°C (H5)', 'Half-hardy (H3)'), or null"
   },
   "source_url": "URL of the authoritative source (if web search was used, preferably the RHS detail page URL)",
   "reason": "Brief explanation of how the plant was identified"
@@ -88,15 +97,15 @@ EXAMPLES:
 Query: "Gardeners Delight tomato"
 → Web search rhs.org.uk for "Gardeners Delight tomato"
 → Found on RHS: Solanum lycopersicum 'Gardeners Delight', cherry tomato cultivar
-→ {"identified": true, "confidence": "verified", "plant": {"common_name": "Gardeners Delight Tomato", "scientific_name": "Solanum lycopersicum 'Gardeners Delight'", "top_level": "Tomato", "middle_level": "Cherry Tomato", "cultivar_name": "Gardeners Delight", "cycle": "Annual", "watering": "Frequent", "sunlight": ["Full sun"], "growth_habit": ["Vine", "Indeterminate"]}, "source_url": "https://www.rhs.org.uk/..."}
+→ {"identified": true, "confidence": "verified", "plant": {"common_name": "Gardeners Delight Tomato", "scientific_name": "Solanum lycopersicum 'Gardeners Delight'", "top_level": "Tomato", "middle_level": "Cherry Tomato", "cultivar_name": "Gardeners Delight", "cycle": "Annual", "watering": "Frequent", "sunlight": ["Full sun"], "growth_habit": ["Vine", "Indeterminate"], "image_url": "https://apps.rhs.org.uk/plantselectorimages/detail/WSY0034498_4106.jpg", "uk_hardiness": "Half-hardy (H2)"}, "source_url": "https://www.rhs.org.uk/vegetables/tomatoes/grow-your-own"}
 
 Query: "Percy Wiseman"
 → Known from training data: Rhododendron yakushimanum 'Percy Wiseman'
-→ {"identified": true, "confidence": "verified", "plant": {"common_name": "Percy Wiseman Rhododendron", "scientific_name": "Rhododendron yakushimanum 'Percy Wiseman'", "top_level": "Rhododendron", "middle_level": "Yakushimanum Hybrid", "cultivar_name": "Percy Wiseman", ...}}
+→ {"identified": true, "confidence": "verified", "plant": {"common_name": "Percy Wiseman Rhododendron", "scientific_name": "Rhododendron yakushimanum 'Percy Wiseman'", "top_level": "Rhododendron", "middle_level": "Yakushimanum Hybrid", "cultivar_name": "Percy Wiseman", "cycle": "Perennial", "watering": "Average", "sunlight": ["Part shade", "Full sun"], "growth_habit": ["Shrub", "Evergreen"], "image_url": null, "uk_hardiness": "Hardy to -15°C (H5)"}, "source_url": null}
 
 Query: "Lavender"
 → Generic genus, identify from training data
-→ {"identified": true, "confidence": "verified", "plant": {"common_name": "Lavender", ..., "top_level": "Lavender", "middle_level": "Lavender", "cultivar_name": null, ...}}
+→ {"identified": true, "confidence": "verified", "plant": {"common_name": "Lavender", "scientific_name": "Lavandula", "top_level": "Lavender", "middle_level": "Lavender", "cultivar_name": null, "cycle": "Perennial", "watering": "Minimum", "sunlight": ["Full sun"], "growth_habit": ["Shrub", "Evergreen"], "image_url": null, "uk_hardiness": "Hardy to -15°C (H5)"}}
 
 Query: "Wiseman Dahlia"
 → Search for "Wiseman Dahlia" cultivar — not found on any authoritative source

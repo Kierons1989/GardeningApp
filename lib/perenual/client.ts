@@ -279,6 +279,7 @@ function transformToSearchResult(plant: PerenualPlant): PlantSearchResult {
     watering,
     sunlight: filteredSunlight,
     growth_habit: deriveGrowthHabit(plant),
+    uk_hardiness: null,
     source: 'perenual',
   }
 }

@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
           watering: plant.watering,
           sunlight: plant.sunlight,
           growth_habit: plant.growth_habit,
+          uk_hardiness: plant.uk_hardiness || null,
           source: 'ai_verified',
           verification: {
             status: searchResult.source_url ? 'web_verified' : 'ai_identified',

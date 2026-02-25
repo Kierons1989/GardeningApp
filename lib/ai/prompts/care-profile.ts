@@ -58,13 +58,34 @@ CRITICAL: Tailor ALL tasks to this plant's CURRENT STATE. For example:
 - Consider the environment: indoor plants don't need frost protection, greenhouse plants have different ventilation needs`
   }
 
+  // Search data context
+  const searchData = context?.searchData
+  let searchDataSection = ''
+  if (searchData) {
+    const parts: string[] = []
+    if (searchData.scientific_name) parts.push(`Scientific name: ${searchData.scientific_name}`)
+    if (searchData.cycle) parts.push(`Life cycle: ${searchData.cycle}`)
+    if (searchData.watering) parts.push(`Watering needs: ${searchData.watering}`)
+    if (searchData.sunlight?.length) parts.push(`Sunlight: ${searchData.sunlight.join(', ')}`)
+    if (searchData.growth_habit?.length) parts.push(`Growth habit: ${searchData.growth_habit.join(', ')}`)
+    if (searchData.uk_hardiness) parts.push(`UK hardiness: ${searchData.uk_hardiness}`)
+    if (searchData.source_url) parts.push(`Authoritative source: ${searchData.source_url}`)
+
+    if (parts.length > 0) {
+      searchDataSection = `
+
+PREVIOUSLY VERIFIED PLANT DATA (from authoritative sources — use as baseline, supplement with web search for anything missing):
+${parts.map(p => `- ${p}`).join('\n')}`
+    }
+  }
+
   return `You are a UK gardening expert. Generate a comprehensive care profile for this plant${plantState ? " based on its current state" : " type"}.
 
 PLANT TYPE: ${plantDescription}
 LOCATION: ${context?.area || 'Not specified'}
 PLANTED IN: ${context?.plantedIn || 'Not specified'}
 CLIMATE ZONE: ${zoneInfo}
-CURRENT MONTH: ${monthNames[currentMonth - 1]}${plantStateSection}
+CURRENT MONTH: ${monthNames[currentMonth - 1]}${searchDataSection}${plantStateSection}
 
 Respond with JSON matching this exact schema:
 {
@@ -90,6 +111,7 @@ Respond with JSON matching this exact schema:
 }
 
 IMPORTANT GUIDELINES:
+- If verified plant data is provided above, use it as your starting point. Use web search to find ADDITIONAL UK-specific care guidance (especially from RHS) rather than re-discovering basic facts.
 - All timing and advice should be UK-specific, tailored to the specified climate zone
 - Zone 7 (coldest): Scottish Highlands - later springs, earlier frosts, more winter protection needed
 - Zone 8 (moderate): Most of UK - standard UK gardening calendar

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { topLevel, middleLevel, growthHabit, area, plantedIn, plantState } = body
+    const { topLevel, middleLevel, growthHabit, area, plantedIn, plantState, searchData } = body
 
     if (!topLevel || !middleLevel) {
       return NextResponse.json(
@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
       currentMonth: new Date().getMonth() + 1,
       climateZone: profile?.climate_zone || null,
       plantState: plantState || null,
+      searchData: searchData || null,
     }
 
     const aiProvider = getAIProvider()
