@@ -285,7 +285,7 @@ export class AnthropicProvider implements AIProvider {
     try {
       const response = await this.client.messages.create({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 2048,
+        max_tokens: 4096,
         tools: [
           {
             type: 'web_search_20250305',
@@ -346,9 +346,13 @@ export class AnthropicProvider implements AIProvider {
       try {
         const parsed = JSON.parse(jsonStr) as PlantVerificationResponse
 
-        // Validate: if identified, must have plant data with required fields
-        if (parsed.identified && parsed.plant) {
-          if (!parsed.plant.common_name || !parsed.plant.top_level || !parsed.plant.middle_level) {
+        // Validate: if identified, must have plants array with required fields
+        if (parsed.identified && parsed.plants && parsed.plants.length > 0) {
+          const validPlants = parsed.plants.filter(p =>
+            p.common_name && p.top_level && p.middle_level
+          )
+
+          if (validPlants.length === 0) {
             return {
               identified: false,
               confidence: 'unknown',
@@ -356,16 +360,20 @@ export class AnthropicProvider implements AIProvider {
             }
           }
 
-          // Enrich with RHS image if source_url is an RHS page and no image was returned
-          if (!parsed.plant.image_url && parsed.source_url?.includes('rhs.org.uk')) {
-            const rhsImage = await fetchRHSImage(parsed.source_url)
-            if (rhsImage) {
-              parsed.plant.image_url = rhsImage
+          // Enrich with RHS image for plants without image_url that have an RHS source_url
+          for (const plant of validPlants) {
+            if (!plant.image_url && plant.source_url?.includes('rhs.org.uk')) {
+              const rhsImage = await fetchRHSImage(plant.source_url)
+              if (rhsImage) {
+                plant.image_url = rhsImage
+              }
             }
           }
+
+          parsed.plants = validPlants
         }
 
-        console.log(`[searchPlant] Result for "${query}": identified=${parsed.identified}, plant=${parsed.plant?.common_name || 'none'}, image=${parsed.plant?.image_url ? 'yes' : 'no'}, source=${parsed.source_url || 'none'}`)
+        console.log(`[searchPlant] Result for "${query}": identified=${parsed.identified}, count=${parsed.plants?.length || 0}, names=${parsed.plants?.map(p => p.common_name).join(', ') || 'none'}`)
 
         // Cache the result
         plantIdentificationCache.set(query, parsed)

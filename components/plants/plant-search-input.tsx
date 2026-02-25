@@ -350,7 +350,7 @@ export default function PlantSearchInput({
 
                 {searchState.results.map((plant, index) => (
                   <button
-                    key={`${plant.source}-${plant.id}`}
+                    key={`${plant.source}-${index}-${plant.common_name}`}
                     type="button"
                     onClick={() => handleSelect(plant)}
                     onMouseEnter={() => setFocusedIndex(index)}

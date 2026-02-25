@@ -33,10 +33,9 @@ export async function GET(request: NextRequest) {
       const aiProvider = getAIProvider()
       const searchResult = await aiProvider.searchPlant(trimmedQuery)
 
-      // Plant identified successfully
-      if (searchResult.identified && searchResult.plant) {
-        const plant = searchResult.plant
-        const result: PlantSearchResult = {
+      // Plant(s) identified successfully
+      if (searchResult.identified && searchResult.plants && searchResult.plants.length > 0) {
+        const results: PlantSearchResult[] = searchResult.plants.map((plant) => ({
           id: -1,
           common_name: plant.common_name,
           scientific_name: plant.scientific_name,
@@ -51,14 +50,14 @@ export async function GET(request: NextRequest) {
           uk_hardiness: plant.uk_hardiness || null,
           source: 'ai_verified',
           verification: {
-            status: searchResult.source_url ? 'web_verified' : 'ai_identified',
+            status: plant.source_url ? 'web_verified' : 'ai_identified',
             confidence: 'high',
-            source_url: searchResult.source_url,
+            source_url: plant.source_url,
           },
-        }
+        }))
 
         return NextResponse.json({
-          results: [result],
+          results,
           query: trimmedQuery,
           source: 'ai',
         })
