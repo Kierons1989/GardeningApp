@@ -187,6 +187,20 @@ export default function NewPlantPage() {
       return ''
     }
 
+    // Check against scientific name components (e.g., user searches "Buddleia" for "Buddleja davidii")
+    if (plant.scientific_name) {
+      const sciParts = plant.scientific_name.toLowerCase().split(/\s+/)
+      for (const part of sciParts) {
+        if (queryLower === part) return ''
+        // Handle common spelling variants of genus names (e.g., Buddleia/Buddleja)
+        if (part.length >= 5 && queryLower.length >= 5 &&
+            part.substring(0, 4) === queryLower.substring(0, 4) &&
+            Math.abs(part.length - queryLower.length) <= 2) {
+          return ''
+        }
+      }
+    }
+
     // Common plant type suffixes that shouldn't be part of cultivar names
     const plantSuffixes = ['rose', 'roses', 'tree', 'trees', 'plant', 'plants', 'flower', 'flowers',
                           'shrub', 'shrubs', 'bush', 'bushes', 'vine', 'vines', 'herb', 'herbs',
@@ -198,6 +212,11 @@ export default function NewPlantPage() {
 
     // Add full phrases first (more specific matches take priority)
     const baseNames = [middleLevel, commonName, topLevel]
+    // Include scientific name genus so it's recognized as a plant word
+    if (plant.scientific_name) {
+      const genus = plant.scientific_name.toLowerCase().split(/\s+/)[0]
+      if (genus && genus.length >= 3) baseNames.push(genus)
+    }
     for (const name of baseNames) {
       if (name.length >= 3) {
         plantTypePatterns.push(name)
@@ -297,7 +316,13 @@ export default function NewPlantPage() {
 
     const queryWords = queryLower.split(/\s+/)
     const hasAnyPlantWord = queryWords.some(qWord =>
-      allPlantWords.some(pWord => pWord.length >= 3 && qWord === pWord)
+      allPlantWords.some(pWord => pWord.length >= 3 && (
+        qWord === pWord ||
+        // Handle spelling variants of genus names (e.g., buddleia/buddleja)
+        (pWord.length >= 5 && qWord.length >= 5 &&
+         qWord.substring(0, 4) === pWord.substring(0, 4) &&
+         Math.abs(qWord.length - pWord.length) <= 2)
+      ))
     )
 
     if (!hasAnyPlantWord && query.length >= 2) {
