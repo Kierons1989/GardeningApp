@@ -380,7 +380,16 @@ export default function NewPlantPage() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to identify plant')
+        let errorMessage = 'Failed to identify plant'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.error || errorMessage
+        } catch {
+          if (response.status === 504) {
+            errorMessage = 'Plant identification timed out. Please try again.'
+          }
+        }
+        throw new Error(errorMessage)
       }
 
       const data: PlantIdentification = await response.json()
@@ -397,8 +406,8 @@ export default function NewPlantPage() {
       } else {
         setStep('details')
       }
-    } catch {
-      setAiError('Failed to identify plant. Please try again.')
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'Failed to identify plant. Please try again.')
       setStep('search')
     }
   }
@@ -476,6 +485,9 @@ export default function NewPlantPage() {
         }
         const { plantType: generatedType, careProfile: generatedProfile } = typeData
         plantTypeId = generatedType?.id
+        if (!plantTypeId) {
+          throw new Error('Care profile was generated but failed to save. Please try again.')
+        }
         careProfileCommonName = generatedProfile?.common_name
         careProfileSpecies = generatedProfile?.species
       }

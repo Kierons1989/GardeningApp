@@ -92,28 +92,53 @@ export class AnthropicProvider implements AIProvider {
 
   async generateCareProfile(plantName: string, context: PlantContext, topLevel?: string): Promise<AICareProfile> {
     const prompt = buildCareProfilePrompt(plantName, topLevel, context)
+    const maxContinuations = 2
 
-    const response = await this.client.messages.create({
+    let messages: Anthropic.Messages.MessageParam[] = [
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ]
+
+    let response = await this.client.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 16384,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
+      messages,
     })
 
+    let fullText = ''
     const textContent = response.content.find((block) => block.type === 'text')
     if (!textContent || textContent.type !== 'text') {
       throw new Error('No text content in response')
     }
+    fullText = textContent.text
 
-    console.log(`[generateCareProfile] Plant: "${plantName}", stop_reason: ${response.stop_reason}, response length: ${textContent.text.length}`)
+    console.log(`[generateCareProfile] Plant: "${plantName}", stop_reason: ${response.stop_reason}, response length: ${fullText.length}`)
 
-    const jsonStr = extractJsonObject(textContent.text)
+    // Handle truncation: if stop_reason is max_tokens, the JSON is incomplete
+    for (let i = 0; i < maxContinuations && response.stop_reason === 'max_tokens'; i++) {
+      console.log(`[generateCareProfile] Response truncated for "${plantName}", continuing (attempt ${i + 1})`)
+      messages = [
+        { role: 'user', content: prompt },
+        { role: 'assistant', content: fullText },
+        { role: 'user', content: 'Your response was truncated. Continue the JSON exactly from where you left off. Do not repeat any content.' },
+      ]
+      response = await this.client.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 16384,
+        messages,
+      })
+      const continuation = response.content.find((block) => block.type === 'text')
+      if (continuation && continuation.type === 'text') {
+        fullText += continuation.text
+        console.log(`[generateCareProfile] Continuation ${i + 1} for "${plantName}": stop_reason: ${response.stop_reason}, total length: ${fullText.length}`)
+      }
+    }
+
+    const jsonStr = extractJsonObject(fullText)
     if (!jsonStr) {
-      console.error(`[generateCareProfile] Could not extract JSON for "${plantName}". Response:`, textContent.text.substring(0, 500))
+      console.error(`[generateCareProfile] Could not extract JSON for "${plantName}". Response:`, fullText.substring(0, 500))
       throw new Error('Could not extract care profile JSON from AI response')
     }
 

@@ -22,7 +22,8 @@
       "Bash(Remove-Item .gitindex -Force -ErrorAction SilentlyContinue)",
       "Bash(npm install:*)",
       "WebFetch(domain:www.rhs.org.uk)",
-      "WebFetch(domain:apps.rhs.org.uk)"
+      "WebFetch(domain:apps.rhs.org.uk)",
+      "WebFetch(domain:docs.anthropic.com)"
     ]
   }
 }

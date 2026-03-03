@@ -35,8 +35,10 @@ export async function POST(request: NextRequest) {
       .eq('middle_level', middleLevel)
       .single()
 
-    // If type exists and has profile AND no plant-specific state was provided, reuse cached profile
-    if (existingType && existingType.ai_care_profile && !plantState) {
+    // If type exists and has a care profile, reuse it.
+    // The type-level profile describes general care for this plant type.
+    // Per-plant personalization based on state happens via PATCH /api/plants/[id]/state.
+    if (existingType && existingType.ai_care_profile) {
       return NextResponse.json({
         plantType: existingType,
         careProfile: existingType.ai_care_profile
