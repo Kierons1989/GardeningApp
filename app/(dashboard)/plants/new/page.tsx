@@ -410,7 +410,7 @@ export default function NewPlantPage() {
             middleLevel,
             growthHabit,
             area: areaForContext,
-            planted_in: plantedIn || undefined,
+            plantedIn: plantedIn || undefined,
             plantState: {
               growth_stage: growthStage,
               environment: plantEnvironment,
