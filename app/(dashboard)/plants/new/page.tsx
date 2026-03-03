@@ -430,11 +430,26 @@ export default function NewPlantPage() {
         })
 
         if (!typeResponse.ok) {
-          const data = await typeResponse.json()
-          throw new Error(data.error || 'Failed to generate care profile')
+          let errorMessage = 'Failed to generate care profile'
+          try {
+            const data = await typeResponse.json()
+            errorMessage = data.error || errorMessage
+          } catch {
+            // Response wasn't JSON (e.g. timeout HTML page)
+            if (typeResponse.status === 504) {
+              errorMessage = 'Care profile generation timed out. Please try again.'
+            }
+          }
+          throw new Error(errorMessage)
         }
 
-        const { plantType: generatedType, careProfile: generatedProfile } = await typeResponse.json()
+        let typeData
+        try {
+          typeData = await typeResponse.json()
+        } catch {
+          throw new Error('Failed to read care profile response. Please try again.')
+        }
+        const { plantType: generatedType, careProfile: generatedProfile } = typeData
         plantTypeId = generatedType?.id
         careProfileCommonName = generatedProfile?.common_name
         careProfileSpecies = generatedProfile?.species
@@ -466,8 +481,14 @@ export default function NewPlantPage() {
       })
 
       if (!plantResponse.ok) {
-        const data = await plantResponse.json()
-        throw new Error(data.error || 'Failed to save plant')
+        let errorMessage = 'Failed to save plant'
+        try {
+          const data = await plantResponse.json()
+          errorMessage = data.error || errorMessage
+        } catch {
+          // Response wasn't JSON
+        }
+        throw new Error(errorMessage)
       }
 
       const plant = await plantResponse.json()
