@@ -5,7 +5,6 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import Icon from '@/components/ui/icon'
 import { resizeImage, validateImageType, validateImageSize } from '@/lib/utils/image-resize'
-import { createClient } from '@/lib/supabase/client'
 
 interface ImageUploadProps {
   plantId?: string
@@ -31,27 +30,22 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
   const inputRef = useRef<HTMLInputElement>(null)
   const pendingBlobRef = useRef<Blob | null>(null)
 
-  const uploadToStorage = useCallback(async (blob: Blob, targetUserId: string, targetPlantId: string): Promise<string> => {
-    const supabase = createClient()
-    const timestamp = Date.now()
-    const random = Math.random().toString(36).substring(2, 8)
-    const extension = blob.type === 'image/webp' ? 'webp' : 'jpg'
-    const filePath = `${targetUserId}/${targetPlantId}/${timestamp}-${random}.${extension}`
+  const uploadToStorage = useCallback(async (blob: Blob, _targetUserId: string, targetPlantId: string): Promise<string> => {
+    const formData = new FormData()
+    formData.append('image', blob)
 
-    const { error: uploadError } = await supabase.storage
-      .from('plant-images')
-      .upload(filePath, blob, {
-        contentType: blob.type,
-        upsert: false,
-      })
+    const response = await fetch(`/api/plants/${targetPlantId}/image`, {
+      method: 'POST',
+      body: formData,
+    })
 
-    if (uploadError) throw uploadError
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({ error: 'Upload failed' }))
+      throw new Error(data.error || 'Upload failed')
+    }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('plant-images')
-      .getPublicUrl(filePath)
-
-    return publicUrl
+    const data = await response.json()
+    return data.photo_url
   }, [])
 
   useImperativeHandle(ref, () => ({
@@ -103,25 +97,12 @@ const ImageUpload = forwardRef<ImageUploadRef, ImageUploadProps>(function ImageU
       }
 
       if (plantId) {
-        // Edit mode: upload immediately and save to database
+        // Edit mode: upload immediately via API (which also saves URL to database)
         setUploading(true)
         setProgress(50)
 
         try {
           const url = await uploadToStorage(resizedBlob, userId, plantId)
-          setProgress(75)
-
-          // Save the URL to the database
-          const patchResponse = await fetch(`/api/plants/${plantId}/image`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ photo_url: url }),
-          })
-
-          if (!patchResponse.ok) {
-            throw new Error('Failed to save image URL')
-          }
-
           setProgress(100)
           onImageChange?.(url)
         } catch (err) {

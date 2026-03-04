@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getOwnerUserId } from '@/lib/supabase/owner'
 
 export async function POST(
   request: NextRequest,
@@ -8,15 +8,10 @@ export async function POST(
 ) {
   try {
     const { id: plantId } = await params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const supabase = createAdminClient()
+    const userId = getOwnerUserId()
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const adminClient = createAdminClient()
-    const { data: plant, error: plantError } = await adminClient
+    const { data: plant, error: plantError } = await supabase
       .from('plants')
       .select('id, user_id, photo_url')
       .eq('id', plantId)
@@ -26,7 +21,7 @@ export async function POST(
       return NextResponse.json({ error: 'Plant not found' }, { status: 404 })
     }
 
-    if (plant.user_id !== user.id) {
+    if (plant.user_id !== userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -50,7 +45,7 @@ export async function POST(
     if (plant.photo_url) {
       const oldPath = extractPathFromUrl(plant.photo_url)
       if (oldPath) {
-        await adminClient.storage.from('plant-images').remove([oldPath])
+        await supabase.storage.from('plant-images').remove([oldPath])
       }
     }
 
@@ -58,10 +53,10 @@ export async function POST(
     const timestamp = Date.now()
     const random = Math.random().toString(36).substring(2, 8)
     const extension = file.type === 'image/webp' ? 'webp' : 'jpg'
-    const filePath = `${user.id}/${plantId}/${timestamp}-${random}.${extension}`
+    const filePath = `${userId}/${plantId}/${timestamp}-${random}.${extension}`
 
     const buffer = await file.arrayBuffer()
-    const { error: uploadError } = await adminClient.storage
+    const { error: uploadError } = await supabase.storage
       .from('plant-images')
       .upload(filePath, buffer, {
         contentType: file.type,
@@ -73,17 +68,17 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 })
     }
 
-    const { data: { publicUrl } } = adminClient.storage
+    const { data: { publicUrl } } = supabase.storage
       .from('plant-images')
       .getPublicUrl(filePath)
 
-    const { error: updateError } = await adminClient
+    const { error: updateError } = await supabase
       .from('plants')
       .update({ photo_url: publicUrl })
       .eq('id', plantId)
 
     if (updateError) {
-      await adminClient.storage.from('plant-images').remove([filePath])
+      await supabase.storage.from('plant-images').remove([filePath])
       return NextResponse.json({ error: 'Failed to update plant' }, { status: 500 })
     }
 
@@ -102,15 +97,10 @@ export async function DELETE(
 ) {
   try {
     const { id: plantId } = await params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const supabase = createAdminClient()
+    const userId = getOwnerUserId()
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const adminClient = createAdminClient()
-    const { data: plant, error: plantError } = await adminClient
+    const { data: plant, error: plantError } = await supabase
       .from('plants')
       .select('id, user_id, photo_url')
       .eq('id', plantId)
@@ -120,18 +110,18 @@ export async function DELETE(
       return NextResponse.json({ error: 'Plant not found' }, { status: 404 })
     }
 
-    if (plant.user_id !== user.id) {
+    if (plant.user_id !== userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
     if (plant.photo_url) {
       const path = extractPathFromUrl(plant.photo_url)
       if (path) {
-        await adminClient.storage.from('plant-images').remove([path])
+        await supabase.storage.from('plant-images').remove([path])
       }
     }
 
-    await adminClient
+    await supabase
       .from('plants')
       .update({ photo_url: null })
       .eq('id', plantId)
@@ -160,15 +150,10 @@ export async function PATCH(
 ) {
   try {
     const { id: plantId } = await params
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const supabase = createAdminClient()
+    const userId = getOwnerUserId()
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const adminClient = createAdminClient()
-    const { data: plant, error: plantError } = await adminClient
+    const { data: plant, error: plantError } = await supabase
       .from('plants')
       .select('id, user_id')
       .eq('id', plantId)
@@ -178,7 +163,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Plant not found' }, { status: 404 })
     }
 
-    if (plant.user_id !== user.id) {
+    if (plant.user_id !== userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -189,7 +174,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'photo_url is required' }, { status: 400 })
     }
 
-    const { error: updateError } = await adminClient
+    const { error: updateError } = await supabase
       .from('plants')
       .update({ photo_url })
       .eq('id', plantId)

@@ -1,18 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getOwnerUserId } from '@/lib/supabase/owner'
 import { getClimateZone } from '@/lib/climate/uk-zones'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    const supabase = createAdminClient()
+    const userId = getOwnerUserId()
 
     const body = await request.json()
     const { location } = body
@@ -34,7 +28,7 @@ export async function POST(request: NextRequest) {
         location: location.trim(),
         climate_zone: climateZone,
       })
-      .eq('id', user.id)
+      .eq('id', userId)
       .select()
       .single()
 

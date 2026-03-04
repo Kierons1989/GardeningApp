@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getOwnerUserId } from '@/lib/supabase/owner'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const supabase = createAdminClient()
+    const userId = getOwnerUserId()
 
     const topLevel = request.nextUrl.searchParams.get('topLevel')
     const middleLevel = request.nextUrl.searchParams.get('middleLevel')
@@ -35,7 +30,7 @@ export async function GET(request: NextRequest) {
     const { data: existingPlants } = await supabase
       .from('plants')
       .select('id, cultivar_name')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('plant_type_id', plantType.id)
 
     if (!existingPlants || existingPlants.length === 0) {

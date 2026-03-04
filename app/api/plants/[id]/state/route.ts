@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getOwnerUserId } from '@/lib/supabase/owner'
 import { getAIProvider } from '@/lib/ai'
 import type { PlantState, PlantContext, AICareProfile } from '@/types/database'
 
@@ -14,12 +14,8 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const supabase = createAdminClient()
+    const userId = getOwnerUserId()
 
     const body = await request.json()
     const { growth_stage, environment, health_status, health_notes, date_planted } = body
@@ -58,7 +54,7 @@ export async function PATCH(
         )
       `)
       .eq('id', id)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single()
 
     if (fetchError || !plant) {
@@ -69,7 +65,7 @@ export async function PATCH(
     const { data: profile } = await supabase
       .from('profiles')
       .select('climate_zone')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     // Regenerate the care profile with plant state context
@@ -88,8 +84,7 @@ export async function PATCH(
     const careProfile: AICareProfile = await aiProvider.generateCareProfile(plantName, context, topLevel)
 
     // Update the plant with new state and per-plant care profile
-    const adminClient = createAdminClient()
-    const { data: updatedPlant, error: updateError } = await adminClient
+    const { data: updatedPlant, error: updateError } = await supabase
       .from('plants')
       .update({
         plant_state: plantState,
@@ -97,7 +92,7 @@ export async function PATCH(
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .select(`
         *,
         plant_types (

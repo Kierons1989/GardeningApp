@@ -12,7 +12,7 @@ import Icon from '@/components/ui/icon'
 import ImageUpload, { type ImageUploadRef } from '@/components/plants/image-upload'
 import PlantSearchInput from '@/components/plants/plant-search-input'
 import MergePrompt from '@/components/plants/merge-prompt'
-import { createClient } from '@/lib/supabase/client'
+import { getOwnerUserId } from '@/lib/supabase/owner'
 import { inferGrowthStage, mapOverrideToGrowthStage } from '@/lib/utils/growth-stage-inference'
 
 type Step = 'search' | 'identifying' | 'merge' | 'details' | 'generating' | 'review'
@@ -28,7 +28,7 @@ export default function NewPlantPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [step, setStep] = useState<Step>('search')
-  const [userId, setUserId] = useState<string | null>(null)
+  const userId = getOwnerUserId()
   const imageUploadRef = useRef<ImageUploadRef>(null)
 
   // Form state
@@ -117,37 +117,21 @@ export default function NewPlantPage() {
     }
   }, [step, inferredStageValue, growthStageManuallySet])
 
-  // Get user ID on mount
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserId(user.id)
-    })
-  }, [])
-
-  // Fallback function to upload image directly if ImageUpload component is unmounted
-  async function uploadImageDirectly(blob: Blob, targetUserId: string, plantId: string): Promise<string | null> {
+  // Fallback function to upload image via API if ImageUpload component is unmounted
+  async function uploadImageDirectly(blob: Blob, _targetUserId: string, plantId: string): Promise<string | null> {
     try {
-      const supabase = createClient()
-      const timestamp = Date.now()
-      const random = Math.random().toString(36).substring(2, 8)
-      const extension = blob.type === 'image/webp' ? 'webp' : 'jpg'
-      const filePath = `${targetUserId}/${plantId}/${timestamp}-${random}.${extension}`
+      const formData = new FormData()
+      formData.append('image', blob)
 
-      const { error: uploadError } = await supabase.storage
-        .from('plant-images')
-        .upload(filePath, blob, {
-          contentType: blob.type,
-          upsert: false,
-        })
+      const response = await fetch(`/api/plants/${plantId}/image`, {
+        method: 'POST',
+        body: formData,
+      })
 
-      if (uploadError) throw uploadError
+      if (!response.ok) throw new Error('Upload failed')
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('plant-images')
-        .getPublicUrl(filePath)
-
-      return publicUrl
+      const data = await response.json()
+      return data.photo_url
     } catch (err) {
       console.error('Direct upload error:', err)
       return null

@@ -66,12 +66,46 @@ The plant identification system is designed to NEVER hallucinate or invent fake 
 3. Ensure "unknown" confidence results are rejected/filtered out
 4. Add explicit negative examples to the prompt for the problematic case
 
+### Single-User Architecture
+
+This is a personal single-user app. There is no authentication or login flow. All API routes use the Supabase admin client (`lib/supabase/admin.ts`) which bypasses RLS, and a hardcoded owner user ID from `NEXT_PUBLIC_OWNER_USER_ID` env var via `lib/supabase/owner.ts`. Client-side hooks fetch data through API routes (not direct Supabase queries). This means the app works on any browser/device without cookies or sessions.
+
+### Plant Creation & Care Profile Flow (READ BEFORE DEBUGGING)
+
+This is the end-to-end flow for adding a plant and generating its care profile. Care profile issues are recurring — trace through these steps to diagnose.
+
+**Step 1: Search** — User types a plant name. Frontend calls `GET /api/plants/search?q=...` which calls `aiProvider.searchPlant()` (in `lib/ai/anthropic.ts`). This uses Claude with the `web_search` tool to identify the plant. Returns an array of `PlantSearchResult` objects. If the API is overloaded (529), the frontend shows a distinct "overloaded" warning vs a genuine "no match" message.
+
+**Step 2: Check for existing type** — Frontend calls `GET /api/plants/check-type?topLevel=...&middleLevel=...` to see if the user already has plants of this type. If so, the merge prompt is shown (`components/plants/merge-prompt.tsx`) letting the user either add a new cultivar or reuse the existing type.
+
+**Step 3: Generate care profile** — Frontend calls `POST /api/ai/generate-type-profile` with the plant's taxonomy (topLevel, middleLevel, growthHabit) plus optional context (area, plantedIn, plantState, searchData from step 1). This route first checks if a `plant_types` row already exists with an `ai_care_profile` — if so, it reuses it (no AI call needed). Otherwise it calls `aiProvider.generateCareProfile()` which sends the `buildCareProfilePrompt()` to Claude and parses the JSON response. The result is upserted into the `plant_types` table.
+
+**Step 4: Create plant record** — Frontend calls `POST /api/plants` with the name, taxonomy, location, image URL, and `plant_type_id` from step 3. This creates the row in the `plants` table.
+
+**Step 5: Image upload** — If the user selected an image, it's uploaded via `POST /api/plants/[id]/image` (multipart form data). The API uses the admin client to upload to Supabase Storage and updates the plant's `photo_url`.
+
+**Care profile display:** The task display code prefers `plant.ai_care_profile` (per-plant personalized profile) over `plant.plant_types.ai_care_profile` (shared type-level profile). Per-plant profiles are generated when the user updates plant state via `PATCH /api/plants/[id]/state`.
+
+**Common failure points:**
+- `generateCareProfile()` can hit `max_tokens` truncation — there's a continuation loop (up to 2 retries) in `lib/ai/anthropic.ts`
+- JSON extraction can fail if the AI response is malformed — `extractJsonObject()` in `lib/ai/anthropic.ts`
+- The `plant_types` upsert uses `onConflict: 'top_level,middle_level'` — if the unique constraint doesn't exist, it will create duplicates
+- `care_profile_cache` table (used by the older `generate-profile` route) requires service_role for writes
+
+**Key files for this flow:**
+- `app/(dashboard)/plants/new/page.tsx` — Frontend orchestration of the entire flow
+- `app/api/ai/generate-type-profile/route.ts` — Care profile generation + plant_types upsert
+- `lib/ai/anthropic.ts` — `generateCareProfile()` method
+- `lib/ai/prompts/care-profile.ts` — The prompt that generates the care profile JSON
+- `types/database.ts` — `AICareProfile` type definition
+
 ## Important Files
 
 - `lib/ai/prompts/plant-verification.ts` - Plant identification prompt (CRITICAL - anti-hallucination rules)
 - `lib/ai/anthropic.ts` - AI provider implementation
 - `app/api/plants/search/route.ts` - Plant search API
-- `lib/perenual/client.ts` - External plant database client
+- `lib/supabase/owner.ts` - Single source of truth for owner user ID
+- `lib/supabase/admin.ts` - Supabase admin client (all API routes use this)
 
 ## Commands
 

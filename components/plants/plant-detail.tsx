@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { Plant, TaskHistory } from '@/types/database'
-import { createClient } from '@/lib/supabase/client'
+import { getOwnerUserId } from '@/lib/supabase/owner'
 import TaskActions from '@/components/tasks/task-actions'
 import PlantChat from '@/components/chat/plant-chat'
 import { getCategoryColor } from '@/lib/utils/category-colors'
@@ -32,33 +32,21 @@ export default function PlantDetail({ plant: initialPlant, taskHistory }: PlantD
   const [currentTime] = useState(() => Date.now())
   const [showImageEdit, setShowImageEdit] = useState(false)
   const [currentPhotoUrl, setCurrentPhotoUrl] = useState(plant.photo_url)
-  const [userId, setUserId] = useState<string | null>(null)
-
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserId(user.id)
-    })
-  }, [])
+  const userId = getOwnerUserId()
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const supabase = createClient()
-
-      // Delete storage files first if image exists
-      if (currentPhotoUrl && userId) {
-        const { data: files } = await supabase.storage
-          .from('plant-images')
-          .list(`${userId}/${plant.id}`)
-
-        if (files && files.length > 0) {
-          const paths = files.map(f => `${userId}/${plant.id}/${f.name}`)
-          await supabase.storage.from('plant-images').remove(paths)
-        }
+      // Delete image via API first if one exists
+      if (currentPhotoUrl) {
+        await fetch(`/api/plants/${plant.id}/image`, { method: 'DELETE' })
       }
 
-      const { error } = await supabase.from('plants').delete().eq('id', plant.id)
-      if (error) throw error
+      // Delete the plant via API
+      const response = await fetch(`/api/plants/${plant.id}`, { method: 'DELETE' })
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({ error: 'Failed to delete plant' }))
+        throw new Error(data.error || 'Failed to delete plant')
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['plants'] })

@@ -1,22 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getOwnerUserId } from '@/lib/supabase/owner'
 import type { LawnSetupFormData } from '@/types/lawn'
 
 // GET - Fetch user's lawn (single lawn per user for now)
 export async function GET() {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const supabase = createAdminClient()
+    const userId = getOwnerUserId()
 
     const { data: lawn, error } = await supabase
       .from('lawns')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single()
 
     // PGRST116 means no rows found - return null instead of error
@@ -41,12 +37,8 @@ export async function GET() {
 // POST - Create new lawn
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const supabase = createAdminClient()
+    const userId = getOwnerUserId()
 
     const body = await request.json() as LawnSetupFormData & { ai_care_profile?: unknown }
 
@@ -68,14 +60,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Lawn name is required' }, { status: 400 })
     }
 
-    // Use admin client to ensure profile exists
-    const adminClient = createAdminClient()
-
     // Check if user already has a lawn
-    const { data: existingLawn } = await adminClient
+    const { data: existingLawn } = await supabase
       .from('lawns')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single()
 
     if (existingLawn) {
@@ -83,10 +72,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Ensure profile exists
-    const { data: existingProfile, error: profileCheckError } = await adminClient
+    const { data: existingProfile, error: profileCheckError } = await supabase
       .from('profiles')
       .select('id')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     if (profileCheckError && profileCheckError.code !== 'PGRST116') {
@@ -94,9 +83,9 @@ export async function POST(request: NextRequest) {
     }
 
     if (!existingProfile) {
-      const { error: profileError } = await adminClient.from('profiles').insert({
-        id: user.id,
-        display_name: user.user_metadata?.display_name || null,
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id: userId,
+        display_name: null,
       })
 
       if (profileError) {
@@ -105,8 +94,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the lawn
-    const { data: lawn, error } = await adminClient.from('lawns').insert({
-      user_id: user.id,
+    const { data: lawn, error } = await supabase.from('lawns').insert({
+      user_id: userId,
       name,
       size: size || 'medium',
       size_sqm: size_sqm || null,
@@ -140,21 +129,16 @@ export async function POST(request: NextRequest) {
 // PUT - Update lawn
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const supabase = createAdminClient()
+    const userId = getOwnerUserId()
 
     const body = await request.json()
-    const adminClient = createAdminClient()
 
     // Get existing lawn
-    const { data: existingLawn, error: fetchError } = await adminClient
+    const { data: existingLawn, error: fetchError } = await supabase
       .from('lawns')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single()
 
     if (fetchError || !existingLawn) {
@@ -162,7 +146,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update the lawn
-    const { data: lawn, error } = await adminClient
+    const { data: lawn, error } = await supabase
       .from('lawns')
       .update({
         ...body,
@@ -189,19 +173,13 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete lawn
 export async function DELETE() {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const supabase = createAdminClient()
+    const userId = getOwnerUserId()
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const adminClient = createAdminClient()
-
-    const { error } = await adminClient
+    const { error } = await supabase
       .from('lawns')
       .delete()
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
 
     if (error) {
       console.error('Lawn deletion error:', error)

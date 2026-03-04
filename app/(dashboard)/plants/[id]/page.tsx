@@ -1,5 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect, notFound } from 'next/navigation'
+import { notFound } from 'next/navigation'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getOwnerUserId } from '@/lib/supabase/owner'
 import PlantDetail from '@/components/plants/plant-detail'
 
 interface PlantPageProps {
@@ -8,12 +9,8 @@ interface PlantPageProps {
 
 export default async function PlantPage({ params }: PlantPageProps) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/login')
-  }
+  const supabase = createAdminClient()
+  const userId = getOwnerUserId()
 
   // Fetch plant with plant type and care profile
   const { data: plant, error } = await supabase
@@ -29,7 +26,7 @@ export default async function PlantPage({ params }: PlantPageProps) {
       )
     `)
     .eq('id', id)
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .single()
 
   if (error || !plant) {

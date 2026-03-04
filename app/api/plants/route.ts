@@ -1,20 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getOwnerUserId } from '@/lib/supabase/owner'
+
+export async function GET() {
+  try {
+    const supabase = createAdminClient()
+    const userId = getOwnerUserId()
+
+    const { data } = await supabase
+      .from('plants')
+      .select(`
+        *,
+        plant_types (
+          id,
+          top_level,
+          middle_level,
+          growth_habit,
+          ai_care_profile
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+
+    return NextResponse.json(data || [])
+  } catch (error) {
+    console.error('Error fetching plants:', error)
+    return NextResponse.json({ error: 'Failed to fetch plants' }, { status: 500 })
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError) {
-      console.error('Auth error:', authError)
-      return NextResponse.json({ error: `Auth error: ${authError.message}` }, { status: 401 })
-    }
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized - no user found' }, { status: 401 })
-    }
+    const supabase = createAdminClient()
+    const userId = getOwnerUserId()
 
     const body = await request.json()
     const {
@@ -49,11 +67,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Plant name is required' }, { status: 400 })
     }
 
-    // Use admin client to ensure profile exists (bypasses RLS)
-    const adminClient = createAdminClient()
-
     // First check if tables exist by trying a simple query
-    const { error: tableCheckError } = await adminClient
+    const { error: tableCheckError } = await supabase
       .from('profiles')
       .select('id')
       .limit(1)
@@ -65,10 +80,10 @@ export async function POST(request: NextRequest) {
       }, { status: 500 })
     }
 
-    const { data: existingProfile, error: profileCheckError } = await adminClient
+    const { data: existingProfile, error: profileCheckError } = await supabase
       .from('profiles')
       .select('id')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     // PGRST116 means no rows found, which is fine - we'll create the profile
@@ -78,9 +93,9 @@ export async function POST(request: NextRequest) {
     }
 
     if (!existingProfile) {
-      const { error: profileError } = await adminClient.from('profiles').insert({
-        id: user.id,
-        display_name: user.user_metadata?.display_name || null,
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id: userId,
+        display_name: null,
       })
 
       if (profileError) {
@@ -92,10 +107,10 @@ export async function POST(request: NextRequest) {
     // Check for duplicate generic entry (one generic per type per user)
     const isGenericEntry = !cultivar_name || cultivar_name.trim() === ''
     if (isGenericEntry && plant_type_id) {
-      const { data: existingGeneric } = await adminClient
+      const { data: existingGeneric } = await supabase
         .from('plants')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('plant_type_id', plant_type_id)
         .or('cultivar_name.is.null,cultivar_name.eq.')
         .limit(1)
@@ -109,8 +124,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Now insert the plant using admin client to ensure it works
-    const { data: plant, error } = await adminClient.from('plants').insert({
-      user_id: user.id,
+    const { data: plant, error } = await supabase.from('plants').insert({
+      user_id: userId,
       name,
       common_name: common_name || null,
       species: species || null,

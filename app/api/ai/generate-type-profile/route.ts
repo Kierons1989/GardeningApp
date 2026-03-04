@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getOwnerUserId } from '@/lib/supabase/owner'
 import { getAIProvider } from '@/lib/ai'
 import type { PlantContext, AICareProfile } from '@/types/database'
 
@@ -7,15 +8,8 @@ export const maxDuration = 120
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    const supabase = createAdminClient()
+    const userId = getOwnerUserId()
 
     const body = await request.json()
     const { topLevel, middleLevel, growthHabit, area, plantedIn, plantState, searchData } = body
@@ -49,7 +43,7 @@ export async function POST(request: NextRequest) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('climate_zone')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     // Generate care profile for this plant type (with optional plant state context)

@@ -1,22 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getOwnerUserId } from '@/lib/supabase/owner'
 import type { LawnHealthStatus } from '@/types/lawn'
 
 // GET - Fetch health check history
 export async function GET() {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const supabase = createAdminClient()
+    const userId = getOwnerUserId()
 
     const { data: healthChecks, error } = await supabase
       .from('lawn_health_checks')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(20)
 
@@ -37,12 +33,8 @@ export async function GET() {
 // POST - Record new health check
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const supabase = createAdminClient()
+    const userId = getOwnerUserId()
 
     const body = await request.json()
     const { lawn_id, health_status, issues_reported, notes } = body as {
@@ -56,14 +48,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'lawn_id and health_status are required' }, { status: 400 })
     }
 
-    const adminClient = createAdminClient()
-
     // Verify lawn belongs to user
-    const { data: lawn, error: lawnError } = await adminClient
+    const { data: lawn, error: lawnError } = await supabase
       .from('lawns')
       .select('id')
       .eq('id', lawn_id)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single()
 
     if (lawnError || !lawn) {
@@ -80,8 +70,8 @@ export async function POST(request: NextRequest) {
     else season = 'winter'
 
     // Record the health check
-    const { data: healthCheck, error: insertError } = await adminClient.from('lawn_health_checks').insert({
-      user_id: user.id,
+    const { data: healthCheck, error: insertError } = await supabase.from('lawn_health_checks').insert({
+      user_id: userId,
       lawn_id,
       health_status,
       issues_reported: issues_reported || [],
@@ -95,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Also update the lawn's health_status
-    const { error: updateError } = await adminClient
+    const { error: updateError } = await supabase
       .from('lawns')
       .update({
         health_status,

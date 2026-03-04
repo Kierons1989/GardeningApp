@@ -1,21 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { buildLawnCareProfilePrompt } from '@/lib/ai/prompts/lawn-care-profile'
 import type { LawnSetupFormData, LawnCareProfile } from '@/types/lawn'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
     const body = await request.json()
     const lawnData: LawnSetupFormData = body
 

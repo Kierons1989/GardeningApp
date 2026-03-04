@@ -1,21 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getAIProvider } from '@/lib/ai'
 import { generateCacheKey, normalizePlantName, CURRENT_CACHE_VERSION } from '@/lib/cache/profile-cache'
 import type { PlantContext } from '@/types/database'
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify user is authenticated
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    const supabase = createAdminClient()
 
     // Parse request body
     const body = await request.json()

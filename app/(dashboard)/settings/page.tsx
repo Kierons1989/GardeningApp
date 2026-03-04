@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { createClient } from '@/lib/supabase/client'
 import { getZoneDescription, getZoneTemperatureRange } from '@/lib/climate/uk-zones'
 import type { Profile } from '@/types/database'
 import Icon from '@/components/ui/icon'
@@ -14,19 +13,15 @@ export default function SettingsPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const supabase = createClient()
-
   useEffect(() => {
     async function loadProfile() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      const response = await fetch('/api/profile')
+      if (!response.ok) {
+        setLoading(false)
+        return
+      }
 
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
+      const data: Profile = await response.json()
       if (data) {
         setProfile(data)
         setLocation(data.location || '')
@@ -35,7 +30,7 @@ export default function SettingsPage() {
     }
 
     loadProfile()
-  }, [supabase])
+  }, [])
 
   async function handleSaveLocation(e: React.FormEvent) {
     e.preventDefault()
