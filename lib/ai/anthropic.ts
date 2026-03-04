@@ -327,7 +327,7 @@ export class AnthropicProvider implements AIProvider {
       ]
 
       let response = await this.client.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 4096,
         tools,
         messages,
@@ -344,7 +344,7 @@ export class AnthropicProvider implements AIProvider {
           { role: 'assistant', content: response.content },
         ]
         response = await this.client.messages.create({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-haiku-4-5-20251001',
           max_tokens: 4096,
           tools,
           messages,
