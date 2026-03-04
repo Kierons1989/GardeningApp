@@ -57,7 +57,40 @@ export async function POST(request: NextRequest) {
     }
 
     const aiProvider = getAIProvider()
-    const careProfile: AICareProfile = await aiProvider.generateCareProfile(middleLevel, context, topLevel)
+
+    let careProfile: AICareProfile | undefined
+    const maxRetries = 2
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        careProfile = await aiProvider.generateCareProfile(middleLevel, context, topLevel)
+        break
+      } catch (err: unknown) {
+        const isRateLimit = err instanceof Error && 'status' in err && (err as { status: number }).status === 429
+        if (isRateLimit && attempt < maxRetries) {
+          const retryAfter = err instanceof Error && 'headers' in err
+            ? parseInt((err as { headers: Headers }).headers?.get?.('retry-after') || '30', 10)
+            : 30
+          const waitTime = Math.min(retryAfter, 60) * 1000
+          console.log(`[generate-type-profile] Rate limited, waiting ${waitTime / 1000}s before retry ${attempt + 1}`)
+          await new Promise(resolve => setTimeout(resolve, waitTime))
+          continue
+        }
+        if (isRateLimit) {
+          return NextResponse.json(
+            { error: 'AI service is busy. Please wait a minute and try again.' },
+            { status: 429 }
+          )
+        }
+        throw err
+      }
+    }
+
+    if (!careProfile) {
+      return NextResponse.json(
+        { error: 'Failed to generate care profile after retries' },
+        { status: 500 }
+      )
+    }
 
     // Upsert plant type with care profile
     const { data: plantType, error: upsertError } = await supabase

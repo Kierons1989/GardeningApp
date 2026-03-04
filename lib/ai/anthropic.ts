@@ -101,8 +101,10 @@ export class AnthropicProvider implements AIProvider {
       },
     ]
 
+    const careModel = 'claude-haiku-4-5-20251001'
+
     let response = await this.client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: careModel,
       max_tokens: 16384,
       messages,
     })
@@ -114,7 +116,7 @@ export class AnthropicProvider implements AIProvider {
     }
     fullText = textContent.text
 
-    console.log(`[generateCareProfile] Plant: "${plantName}", stop_reason: ${response.stop_reason}, response length: ${fullText.length}`)
+    console.log(`[generateCareProfile] Plant: "${plantName}", model: ${careModel}, stop_reason: ${response.stop_reason}, response length: ${fullText.length}`)
 
     // Handle truncation: if stop_reason is max_tokens, the JSON is incomplete
     for (let i = 0; i < maxContinuations && response.stop_reason === 'max_tokens'; i++) {
@@ -125,7 +127,7 @@ export class AnthropicProvider implements AIProvider {
         { role: 'user', content: 'Your response was truncated. Continue the JSON exactly from where you left off. Do not repeat any content.' },
       ]
       response = await this.client.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: careModel,
         max_tokens: 16384,
         messages,
       })

@@ -456,6 +456,8 @@ export default function NewPlantPage() {
             // Response wasn't JSON (e.g. timeout HTML page)
             if (typeResponse.status === 504) {
               errorMessage = 'Care profile generation timed out. Please try again.'
+            } else if (typeResponse.status === 429) {
+              errorMessage = 'AI service is busy. Please wait a minute and try again.'
             }
           }
           throw new Error(errorMessage)
